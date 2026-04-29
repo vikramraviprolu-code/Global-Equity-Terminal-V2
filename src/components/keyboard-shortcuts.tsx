@@ -32,9 +32,12 @@ const GLOSSARY_GROUP_ORDER: Array<{ key: string; label: string }> = [
   { key: "metric", label: "Technicals" },
   { key: "fundamental", label: "Fundamentals" },
   { key: "score", label: "Scores" },
+  { key: "recommendation", label: "Recommendation" },
   { key: "data", label: "Data Quality" },
   { key: "alert", label: "Alerts" },
   { key: "portfolio", label: "Portfolio" },
+  { key: "market", label: "Market Structure" },
+  { key: "navigation", label: "App Concepts" },
 ];
 
 function isTypingTarget(el: EventTarget | null): boolean {

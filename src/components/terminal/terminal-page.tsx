@@ -475,7 +475,7 @@ function ValueSection({ r }: { r: Success }) {
         <div className="overflow-x-auto">
           <table className="term">
             <thead>
-              <tr><th>Company</th><th>Ticker</th><th>Exch</th><th>Ccy</th><th>Price</th><th>52W Low</th><th>% From Low</th><th>P/E</th><th>Mcap (USD)</th><th>Avg Vol</th><th>Industry</th></tr>
+              <tr><th>Company</th><th>Ticker</th><th>Exch</th><th>Ccy</th><th>Price</th><th>52W Low</th><th><MetricLabel term="pctFromLow">% From Low</MetricLabel></th><th><MetricLabel term="peRatio">P/E</MetricLabel></th><th><MetricLabel term="marketCap">Mcap (USD)</MetricLabel></th><th>Avg Vol</th><th>Industry</th></tr>
             </thead>
             <tbody>
               {includeTarget && <ValueRow m={r.target} highlight />}
@@ -533,7 +533,7 @@ function MomentumSection({ r }: { r: Success }) {
         <div className="overflow-x-auto">
           <table className="term">
             <thead>
-              <tr><th>#</th><th>Company</th><th>Ticker</th><th>Exch</th><th>5D %</th><th>ROC14</th><th>ROC21</th><th>RSI</th><th>RSI Label</th><th>20D</th><th>50D</th><th>200D</th><th>Signal</th><th>Outlook</th><th>Conf</th></tr>
+              <tr><th>#</th><th>Company</th><th>Ticker</th><th>Exch</th><th><MetricLabel term="perf5d">5D %</MetricLabel></th><th><MetricLabel term="roc">ROC14</MetricLabel></th><th><MetricLabel term="roc">ROC21</MetricLabel></th><th><MetricLabel term="rsi">RSI</MetricLabel></th><th>RSI Label</th><th>20D</th><th>50D</th><th>200D</th><th>Signal</th><th>Outlook</th><th><MetricLabel term="confidence">Conf</MetricLabel></th></tr>
             </thead>
             <tbody>
               {rows.length === 0 && <tr><td colSpan={15} className="text-center text-muted-foreground py-8">No peers qualified for momentum ranking.</td></tr>}
@@ -633,9 +633,9 @@ function FinalSection({ r }: { r: Success }) {
           <div className="mt-3 text-xs font-mono text-muted-foreground">CONFIDENCE: <span className="text-foreground">{rec.confidence}</span></div>
           <div className="text-xs font-mono text-muted-foreground">HORIZON: <span className="text-foreground">{rec.horizon}</span></div>
           <div className="mt-5 grid grid-cols-3 gap-2 text-xs font-mono border-t border-border pt-4">
-            <div><div className="text-muted-foreground">Value</div><div className="text-[color:var(--bull)] text-lg">{rec.valueScore}/3</div></div>
-            <div><div className="text-muted-foreground">Mom.</div><div className="text-primary text-lg">{rec.momentumScore}/7</div></div>
-            <div><div className="text-muted-foreground">Penalty</div><div className="text-[color:var(--bear)] text-lg">−{rec.penalties}</div></div>
+            <div><div className="text-muted-foreground"><MetricLabel term="valueScore">Value</MetricLabel></div><div className="text-[color:var(--bull)] text-lg">{rec.valueScore}/3</div></div>
+            <div><div className="text-muted-foreground"><MetricLabel term="momentumScore">Mom.</MetricLabel></div><div className="text-primary text-lg">{rec.momentumScore}/7</div></div>
+            <div><div className="text-muted-foreground"><MetricLabel term="riskScore">Penalty</MetricLabel></div><div className="text-[color:var(--bear)] text-lg">−{rec.penalties}</div></div>
           </div>
           <p className="mt-5 text-xs text-left">
             {t.companyName} ({t.symbol}) on {t.fullExchange ?? t.exchange} currently {t.passesGlobal ? "meets" : "fails"} {t.region} liquidity/size filters and {t.passesValue ? "qualifies" : "does not qualify"} as a value candidate. Momentum is <span className="text-foreground">{t.outlook.toLowerCase()}</span> with {t.signal.toLowerCase()} signals. Net composite score is {rec.net}/10. {rec.rec === "Buy" ? "Setup combines favorable risk/reward across both screens." : rec.rec === "Avoid" ? "Risk indicators outweigh constructive signals." : "Mixed signals warrant patience for clearer confirmation."}

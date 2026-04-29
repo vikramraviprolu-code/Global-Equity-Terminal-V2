@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import type { ScoredRow } from "@/lib/scores";
 import { fmtPriceDisplay, fmtPct, colorFor } from "@/lib/format";
 import { useDisplayCurrency } from "@/hooks/use-display-currency";
+import { MetricLabel } from "@/components/metric-label";
+import type { GlossaryKey } from "@/lib/glossary";
 
 type Meta = { retrievedAt: string; total: number; mockCount: number; liveCount: number };
 

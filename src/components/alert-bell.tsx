@@ -16,15 +16,29 @@ export function AlertBell() {
 
   const { data } = useQuery({
     queryKey: ["alert-events", user?.id],
-    queryFn: () => listAlertEvents(),
+    queryFn: async () => {
+      try {
+        return await listAlertEvents();
+      } catch (e) {
+        // Swallow auth/network errors so the UI never crashes
+        return { events: [], unreadCount: 0 } as any;
+      }
+    },
     enabled: !!user,
     refetchInterval: 60_000,
+    retry: false,
   });
 
   // Periodically evaluate alerts server-side while the user is active
   const evalMut = useMutation({
-    mutationFn: () => evaluateMyAlerts({ data: undefined as any }),
-    onSuccess: (r) => { if (r.fired > 0) qc.invalidateQueries({ queryKey: ["alert-events"] }); },
+    mutationFn: async () => {
+      try {
+        return await evaluateMyAlerts({ data: undefined as any });
+      } catch {
+        return { fired: 0 } as any;
+      }
+    },
+    onSuccess: (r) => { if (r?.fired > 0) qc.invalidateQueries({ queryKey: ["alert-events"] }); },
   });
   useEffect(() => {
     if (!user) return;

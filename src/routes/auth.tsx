@@ -28,10 +28,19 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
+  const { popup } = Route.useSearch();
 
   useEffect(() => {
-    if (!loading && session) navigate({ to: "/app", search: { preset: "all" } as any, replace: true });
-  }, [session, loading, navigate]);
+    if (loading || !session) return;
+    if (popup) {
+      // Notify the opener (so it can refresh auth state) and close this tab.
+      try { window.opener?.postMessage({ type: "get-auth-success" }, window.location.origin); } catch {}
+      // Slight delay so the toast is visible.
+      const t = setTimeout(() => { try { window.close(); } catch {} }, 600);
+      return () => clearTimeout(t);
+    }
+    navigate({ to: "/app", search: { preset: "all" } as any, replace: true });
+  }, [session, loading, navigate, popup]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
@@ -42,7 +51,11 @@ function AuthPage() {
             <span className="font-mono text-xs tracking-widest text-primary">GLOBAL EQUITY TERMINAL</span>
           </div>
           <CardTitle>Welcome</CardTitle>
-          <CardDescription>Sign in to track your portfolio and get alerts.</CardDescription>
+          <CardDescription>
+            {popup
+              ? "Sign in here — this tab will close automatically."
+              : "Sign in to track your portfolio and get alerts."}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin">
@@ -56,10 +69,19 @@ function AuthPage() {
           <div className="my-4 flex items-center gap-3 text-[11px] uppercase tracking-wider text-muted-foreground">
             <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
           </div>
-          <GoogleButton />
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            <Link to="/" className="hover:text-foreground">← Back to home</Link>
-          </p>
+          <GoogleButton popup={popup} />
+          {!popup && (
+            <p className="mt-6 text-center text-xs text-muted-foreground">
+              <Link to="/" className="hover:text-foreground">← Back to home</Link>
+            </p>
+          )}
+          {popup && (
+            <p className="mt-6 text-center text-xs text-muted-foreground">
+              <button type="button" onClick={() => { try { window.close(); } catch {} }} className="hover:text-foreground">
+                Close this tab
+              </button>
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

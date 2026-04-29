@@ -80,7 +80,7 @@ export function LandingAbout() {
             search={{ preset: "all" } as any}
             className="px-5 py-2.5 bg-primary text-primary-foreground font-mono text-[11px] uppercase tracking-widest rounded-sm hover:opacity-90"
           >
-            Launch the terminal →
+            Launch Screener →
           </Link>
           <Link
             to="/changelog"

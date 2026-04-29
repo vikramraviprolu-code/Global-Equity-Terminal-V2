@@ -1,6 +1,6 @@
 # Global Equity Terminal
 
-> **v1.1.0 — "Beacon"** · A keyboard-driven, AI-augmented research terminal for global equities.
+> **v1.2.0 — "Compass"** · A keyboard-driven, AI-augmented research terminal for global equities.
 
 Global Equity Terminal blends Bloomberg-style data density with an AI co-pilot
 layer. It's built for retail and prosumer investors who want fast research,
@@ -37,8 +37,9 @@ Hong Kong, Korea, Taiwan, Singapore, and Australia**.
 
 ## Routes
 
-- `/` — public marketing landing (hero, About, CTA). Signed-in users are
-  auto-redirected to `/app`.
+- `/` — public marketing landing. Seven-section flow: Hero, Proof Strip
+  (live region coverage + top movers), About, How it works, Capabilities,
+  Personas, and final CTA. Signed-in users are auto-redirected to `/app`.
 - `/app` — the workspace: screener, filters, presets, table / cards / heatmap.
   All URL search state is preserved, so deep links still work.
 - `/terminal/$symbol`, `/compare`, `/watchlist`, `/portfolio`, `/alerts`,

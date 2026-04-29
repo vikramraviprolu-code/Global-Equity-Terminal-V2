@@ -34,20 +34,10 @@ export function LandingAboutStory() {
             insight faster.
           </p>
           <p>
-            Whether you&rsquo;re scanning opportunities or monitoring positions,
-            everything is one keystroke away. Screen thousands of names, drill into a
-            company&rsquo;s fundamentals, watch the news that actually matters, and
-            track your portfolio with live P&amp;L and allocation breakdowns.
-          </p>
-          <p>
             Built for flow: keyboard shortcuts, a command palette, and a calm
-            interface that keeps you focused. Behind the scenes, it&rsquo;s powered by
-            a modern stack and secure infrastructure&nbsp;— so you can spend your
-            time on decisions, not plumbing.
-          </p>
-          <p className="text-foreground font-medium">
-            Designed for serious retail and prosumer investors. Cut through the
-            noise, understand markets faster, and act with more confidence.
+            interface that keeps you focused. Designed for serious retail and
+            prosumer investors who want to cut through the noise, understand
+            markets faster, and act with more confidence.
           </p>
         </div>
       </div>

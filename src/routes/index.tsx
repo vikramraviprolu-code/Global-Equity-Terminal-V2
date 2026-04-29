@@ -5,8 +5,11 @@ import { fetchUniverse } from "@/server/screen.functions";
 import { scoreAll } from "@/lib/scores";
 import { SiteNav } from "@/components/site-nav";
 import { LandingHero } from "@/components/landing-hero";
+import { LandingProofStrip } from "@/components/landing-proof-strip";
 import { LandingAbout } from "@/components/landing-about";
 import { LandingAboutStory } from "@/components/landing-about-story";
+import { LandingHowItWorks } from "@/components/landing-how-it-works";
+import { LandingPersonas } from "@/components/landing-personas";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/")({
@@ -56,9 +59,12 @@ function LandingPage() {
     <div className="min-h-screen flex flex-col">
       <SiteNav />
       <main className="flex-1">
-        <LandingHero meta={data?.meta} rows={scored} isLoading={isLoading} onPickPreset={goToScreener} />
+        <LandingHero meta={data?.meta} isLoading={isLoading} />
+        <LandingProofStrip rows={scored} />
         <LandingAboutStory />
+        <LandingHowItWorks onPickPreset={goToScreener} />
         <LandingAbout />
+        <LandingPersonas />
         <section className="bg-card/30">
           <div className="max-w-[1400px] mx-auto px-4 py-16 text-center">
             <h2 className="text-2xl lg:text-3xl font-semibold tracking-tight mb-3">

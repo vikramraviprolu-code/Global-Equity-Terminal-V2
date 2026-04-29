@@ -3,6 +3,34 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.2.0] — 2026-04-29 — "Compass"
+
+Landing page restructured into a tight 7-section flow modelled on the patterns
+used by leading equity-research platforms (Koyfin, Atom Finance, TIKR,
+Simply Wall St): lead with proof and product, then narrative, then conversion.
+
+### Changed
+- **Landing flow** — new section order: Hero → Proof Strip (region coverage +
+  top movers) → About → How it works → Capabilities → Personas → Final CTA.
+- **Hero** — slimmed to headline, single CTA (Launch Screener), AI shortcut,
+  and Network Status panel. Live data band and "How it works" extracted to
+  dedicated sections so the hero stays scannable.
+- **About story** — condensed to two paragraphs to fit higher up the flow
+  without crowding the proof signals above it.
+
+### Added
+- **`LandingProofStrip`** — region coverage grid + top-movers tape, now its own
+  section between Hero and About so visitors see live product data first.
+- **`LandingHowItWorks`** — 3-step Screen → Analyze → Track explainer with
+  preset shortcuts.
+- **`LandingPersonas`** — "One terminal, three workflows" section for value
+  investors, momentum traders and portfolio trackers, each linking to a
+  matching screener preset.
+
+### Docs
+- README and changelog updated to reflect the new landing structure and
+  v1.2.0 "Compass" release.
+
 ## [1.1.0] — 2026-04-29 — "Beacon"
 
 Landing page is now separate from the workspace. The marketing site greets new

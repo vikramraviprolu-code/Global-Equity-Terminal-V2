@@ -183,7 +183,7 @@ function AllocationCard({ title, rows }: { title: string; rows: { key: string; v
   );
 }
 
-function AddHoldingForm({ onDone }: { onDone: () => void }) {
+function AddHoldingForm({ headers, onDone }: { headers?: HeadersInit; onDone: () => void }) {
   const [symbol, setSymbol] = useState("");
   const [shares, setShares] = useState("");
   const [costBasis, setCostBasis] = useState("");
@@ -199,7 +199,7 @@ function AddHoldingForm({ onDone }: { onDone: () => void }) {
         shares: Number(shares),
         costBasis: Number(costBasis),
         currency: currency.toUpperCase(),
-      }});
+      }, headers });
       toast.success(`${symbol.toUpperCase()} added`);
       onDone();
     } catch (e: any) {

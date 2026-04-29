@@ -29,18 +29,73 @@ function AuthPage() {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
   const { popup } = Route.useSearch();
+  const hasOpener = typeof window !== "undefined" && !!window.opener && !window.opener.closed;
+  // "popup mode but no opener" = popup was blocked and we navigated in the
+  // same tab as a fallback. Show a success screen instead of trying to close.
+  const isFallback = popup && !hasOpener;
+  const [returnTo, setReturnTo] = useState<string>("/");
+
+  useEffect(() => {
+    try {
+      const v = sessionStorage.getItem("auth:return-to");
+      if (v) setReturnTo(v);
+    } catch {}
+  }, []);
 
   useEffect(() => {
     if (loading || !session) return;
-    if (popup) {
-      // Notify the opener (so it can refresh auth state) and close this tab.
+    if (popup && hasOpener) {
+      // True popup tab: notify opener and close.
       try { window.opener?.postMessage({ type: "get-auth-success" }, window.location.origin); } catch {}
-      // Slight delay so the toast is visible.
       const t = setTimeout(() => { try { window.close(); } catch {} }, 600);
       return () => clearTimeout(t);
     }
+    if (isFallback) {
+      // Same-tab fallback after blocked popup: don't auto-redirect — let the
+      // user choose where to go (back to where they were, or to /app).
+      return;
+    }
     navigate({ to: "/app", search: { preset: "all" } as any, replace: true });
-  }, [session, loading, navigate, popup]);
+  }, [session, loading, navigate, popup, hasOpener, isFallback]);
+
+  // Success screen for the same-tab fallback flow.
+  if (isFallback && session && !loading) {
+    const goBack = () => {
+      try { sessionStorage.removeItem("auth:return-to"); } catch {}
+      window.location.href = returnTo || "/";
+    };
+    const goApp = () => {
+      try { sessionStorage.removeItem("auth:return-to"); } catch {}
+      navigate({ to: "/app", search: { preset: "all" } as any, replace: true });
+    };
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <div className="w-2 h-2 bg-primary rounded-sm" />
+              <span className="font-mono text-xs tracking-widest text-primary">GLOBAL EQUITY TERMINAL</span>
+            </div>
+            <CardTitle>You're signed in</CardTitle>
+            <CardDescription>
+              Your session is active. Where would you like to go?
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Button className="w-full" onClick={goBack}>
+              ← Back to where you were
+            </Button>
+            <Button variant="outline" className="w-full" onClick={goApp}>
+              Continue to the terminal
+            </Button>
+            <p className="pt-2 text-center text-[11px] text-muted-foreground">
+              You can also just close this tab — your session is saved.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
@@ -52,9 +107,11 @@ function AuthPage() {
           </div>
           <CardTitle>Welcome</CardTitle>
           <CardDescription>
-            {popup
+            {popup && hasOpener
               ? "Sign in here — this tab will close automatically."
-              : "Sign in to track your portfolio and get alerts."}
+              : popup
+                ? "Sign in to continue. We'll bring you back to where you were."
+                : "Sign in to track your portfolio and get alerts."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -70,16 +127,15 @@ function AuthPage() {
             <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
           </div>
           <GoogleButton popup={popup} />
-          {!popup && (
-            <p className="mt-6 text-center text-xs text-muted-foreground">
-              <Link to="/" className="hover:text-foreground">← Back to home</Link>
-            </p>
-          )}
-          {popup && (
+          {popup && hasOpener ? (
             <p className="mt-6 text-center text-xs text-muted-foreground">
               <button type="button" onClick={() => { try { window.close(); } catch {} }} className="hover:text-foreground">
-                Close this tab
+                Cancel and close this tab
               </button>
+            </p>
+          ) : (
+            <p className="mt-6 text-center text-xs text-muted-foreground">
+              <Link to="/" className="hover:text-foreground">← Back to home</Link>
             </p>
           )}
         </CardContent>

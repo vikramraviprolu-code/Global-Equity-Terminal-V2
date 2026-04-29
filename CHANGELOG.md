@@ -3,6 +3,28 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.3.2] — 2026-04-29 — "Console" (patch)
+
+Popup-blocker resilience for the new-tab auth flow.
+
+### Added
+- When the browser blocks the new auth tab, we now save the user's current
+  URL to `sessionStorage` (`auth:return-to`) and navigate `/auth` in the same
+  tab as a fallback. After successful sign-in, the auth page shows a
+  dedicated success screen with two clear actions:
+  - **← Back to where you were** — returns to the original screen with the
+    session intact (no data loss).
+  - **Continue to the terminal** — goes to `/app`.
+- The popup tab itself now has an explicit **Cancel and close this tab**
+  affordance so users can abort sign-in without affecting the opener tab's
+  session.
+
+### Changed
+- `openAuthPopup()` now detects blocked popups (null / immediately closed
+  window handle) and triggers the same-tab fallback automatically.
+- Auth page no longer auto-redirects to `/app` in the same-tab fallback flow
+  — the user explicitly chooses where to go next.
+
 ## [1.3.1] — 2026-04-29 — "Console" (patch)
 
 Auth flow polish: signed-in users can now return to the landing page, and

@@ -15,10 +15,12 @@ import { Route as SourcesRouteImport } from './routes/sources'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DataQualityRouteImport } from './routes/data-quality'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TerminalSymbolRouteImport } from './routes/terminal.$symbol'
 
@@ -52,6 +54,11 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortfolioRoute = PortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EventsRoute = EventsRouteImport.update({
   id: '/events',
   path: '/events',
@@ -72,6 +79,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AlertsRoute = AlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -85,10 +97,12 @@ const TerminalSymbolRoute = TerminalSymbolRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
   '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/data-quality': typeof DataQualityRoute
   '/events': typeof EventsRoute
+  '/portfolio': typeof PortfolioRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -99,10 +113,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
   '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/data-quality': typeof DataQualityRoute
   '/events': typeof EventsRoute
+  '/portfolio': typeof PortfolioRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -114,10 +130,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
   '/auth': typeof AuthRoute
   '/compare': typeof CompareRoute
   '/data-quality': typeof DataQualityRoute
   '/events': typeof EventsRoute
+  '/portfolio': typeof PortfolioRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -130,10 +148,12 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/alerts'
     | '/auth'
     | '/compare'
     | '/data-quality'
     | '/events'
+    | '/portfolio'
     | '/robots.txt'
     | '/settings'
     | '/sitemap.xml'
@@ -144,10 +164,12 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/alerts'
     | '/auth'
     | '/compare'
     | '/data-quality'
     | '/events'
+    | '/portfolio'
     | '/robots.txt'
     | '/settings'
     | '/sitemap.xml'
@@ -158,10 +180,12 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/alerts'
     | '/auth'
     | '/compare'
     | '/data-quality'
     | '/events'
+    | '/portfolio'
     | '/robots.txt'
     | '/settings'
     | '/sitemap.xml'
@@ -173,10 +197,12 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlertsRoute: typeof AlertsRoute
   AuthRoute: typeof AuthRoute
   CompareRoute: typeof CompareRoute
   DataQualityRoute: typeof DataQualityRoute
   EventsRoute: typeof EventsRoute
+  PortfolioRoute: typeof PortfolioRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -229,6 +255,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portfolio': {
+      id: '/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof PortfolioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/events': {
       id: '/events'
       path: '/events'
@@ -255,6 +288,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alerts': {
+      id: '/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -288,10 +328,12 @@ const TerminalRouteWithChildren = TerminalRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlertsRoute: AlertsRoute,
   AuthRoute: AuthRoute,
   CompareRoute: CompareRoute,
   DataQualityRoute: DataQualityRoute,
   EventsRoute: EventsRoute,
+  PortfolioRoute: PortfolioRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

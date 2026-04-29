@@ -21,7 +21,17 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
 
 export const getRouter = () => {
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { staleTime: 60_000, retry: 1 } },
+    defaultOptions: {
+      queries: {
+        staleTime: 60_000,
+        retry: (failureCount, error: any) => {
+          // Don't retry auth failures (401) — they're expected when signed out
+          const msg = String(error?.message ?? error ?? "");
+          if (msg.includes("401") || msg.toLowerCase().includes("unauthorized")) return false;
+          return failureCount < 1;
+        },
+      },
+    },
   });
   return createRouter({
     routeTree,

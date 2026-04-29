@@ -70,10 +70,10 @@ function PortfolioContent() {
 
         {/* Totals */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-          <Stat label="Cost basis" value={fmtPrice(data?.totals.cost ?? 0, "USD")} mono />
-          <Stat label="Market value" value={fmtPrice(data?.totals.value ?? 0, "USD")} mono />
-          <Stat label="Unrealized P&L" value={fmtPrice(data?.totals.pnl ?? 0, "USD")} cls={colorFor(data?.totals.pnl ?? 0)} mono />
-          <Stat label="Return" value={fmtPct(data?.totals.pnlPct ?? 0)} cls={colorFor(data?.totals.pnlPct ?? 0)} mono />
+          <Stat label="Cost basis" value={fmtPrice(data?.totals?.cost ?? 0, "USD")} mono />
+          <Stat label="Market value" value={fmtPrice(data?.totals?.value ?? 0, "USD")} mono />
+          <Stat label="Unrealized P&L" value={fmtPrice(data?.totals?.pnl ?? 0, "USD")} cls={colorFor(data?.totals?.pnl ?? 0)} mono />
+          <Stat label="Return" value={fmtPct(data?.totals?.pnlPct ?? 0)} cls={colorFor(data?.totals?.pnlPct ?? 0)} mono />
         </div>
 
         {/* Allocation */}

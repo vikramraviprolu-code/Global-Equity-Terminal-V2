@@ -20,12 +20,63 @@ const REGIONS: { code: string; label: string }[] = [
   { code: "SG", label: "SGP" },
 ];
 
-const PRESET_CARDS = [
-  { id: "valueLow", num: "01", tag: "VALUE", title: "Deep Value", desc: "Cheap multiples within reach of 52-week lows." },
-  { id: "momentum", num: "02", tag: "MOMENTUM", title: "Velocity Leaders", desc: "Positive ROC, RSI 40–70, trading above 50-day MA." },
-  { id: "quality", num: "03", tag: "QUALITY", title: "Capital Compounders", desc: "Large caps with positive earnings and high confidence." },
-  { id: "breakout", num: "04", tag: "BREAKOUT", title: "Breakout Candidates", desc: "Above key MAs with positive ROC, near 52-week highs." },
-] as const;
+const PRESET_CARDS: {
+  id: "valueLow" | "momentum" | "quality" | "breakout";
+  num: string;
+  tag: string;
+  title: string;
+  desc: ReactNode;
+}[] = [
+  {
+    id: "valueLow",
+    num: "01",
+    tag: "VALUE",
+    title: "Deep Value",
+    desc: (
+      <>
+        Cheap multiples within reach of <MetricLabel term="low52w">52-week lows</MetricLabel>.
+      </>
+    ),
+  },
+  {
+    id: "momentum",
+    num: "02",
+    tag: "MOMENTUM",
+    title: "Velocity Leaders",
+    desc: (
+      <>
+        Positive <MetricLabel term="roc">ROC</MetricLabel>,{" "}
+        <MetricLabel term="rsi">RSI</MetricLabel> 40–70, trading above{" "}
+        <MetricLabel term="ma50">50-day MA</MetricLabel>.
+      </>
+    ),
+  },
+  {
+    id: "quality",
+    num: "03",
+    tag: "QUALITY",
+    title: "Capital Compounders",
+    desc: (
+      <>
+        Large caps with positive earnings and high{" "}
+        <MetricLabel term="confidence">confidence</MetricLabel>.
+      </>
+    ),
+  },
+  {
+    id: "breakout",
+    num: "04",
+    tag: "BREAKOUT",
+    title: "Breakout Candidates",
+    desc: (
+      <>
+        Above key <MetricLabel term="ma50">MAs</MetricLabel> with positive{" "}
+        <MetricLabel term="roc">ROC</MetricLabel>, near{" "}
+        <MetricLabel term="high52w">52-week highs</MetricLabel>.
+      </>
+    ),
+  },
+];
 
 export function LandingHero({
   meta,

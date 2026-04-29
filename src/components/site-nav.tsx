@@ -7,6 +7,8 @@ const NAV: NavItem[] = [
   { to: "/terminal", label: "Analysis" },
   { to: "/compare", label: "Compare" },
   { to: "/watchlist", label: "Watchlists" },
+  { to: "/portfolio", label: "Portfolio" },
+  { to: "/alerts", label: "Alerts" },
   { to: "/events", label: "Events" },
   { to: "/data-quality", label: "Data Quality" },
   { to: "/sources", label: "Sources" },

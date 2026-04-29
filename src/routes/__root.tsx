@@ -4,6 +4,8 @@ import appCss from "../styles.css?url";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import { CommandBar } from "@/components/command-bar";
+import { AuthProvider } from "@/hooks/use-auth";
+import { Toaster } from "sonner";
 
 function NotFoundComponent() {
   return (
@@ -70,9 +72,12 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <KeyboardShortcuts />
-      <CommandBar />
+      <AuthProvider>
+        <Outlet />
+        <KeyboardShortcuts />
+        <CommandBar />
+        <Toaster theme="dark" position="top-right" richColors closeButton />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

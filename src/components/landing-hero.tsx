@@ -197,27 +197,39 @@ export function LandingHero({
           </div>
           <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Powered by Lovable AI</span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-border border border-border mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-border border border-border mb-10">
           <Capability
             num="A1"
-            tag="CO-PILOT"
-            title="Ask in plain English"
-            desc="Press ⌘K and describe what you want. The AI translates natural-language queries into screener filters and navigation."
+            tag="PORTFOLIO"
+            title="Track real holdings"
+            desc="Add cost basis and shares; get live P&L, allocation by sector and region, and currency-aware valuation. Synced to your account."
           />
           <Capability
             num="A2"
+            tag="ALERTS"
+            title="Rule-based alerts"
+            desc="Set price, RSI, 52-week range or momentum thresholds. Server-side evaluation with in-app toast and bell notifications."
+          />
+          <Capability
+            num="A3"
+            tag="NEWS"
+            title="News & catalysts"
+            desc="Ask what's moving any ticker. AI-curated answers with cited sources, right inside the terminal page."
+          />
+          <Capability
+            num="A4"
+            tag="CO-PILOT"
+            title="Ask in plain English"
+            desc="Press ⌘K and describe what you want. The AI translates natural-language queries into filters and navigation."
+          />
+          <Capability
+            num="A5"
             tag="NARRATIVE"
             title="AI analyst thesis"
             desc="Every ticker gets a 3-paragraph thesis grounded in its specific fundamentals, momentum and risk metrics."
           />
           <Capability
-            num="A3"
-            tag="TREND"
-            title="Inline sparklines"
-            desc="Screener and watchlist rows now render compact 5-day price sparklines so trend reads at a glance."
-          />
-          <Capability
-            num="A4"
+            num="A6"
             tag="DIFF"
             title="Compare diff mode"
             desc="On the Compare page, hide identical rows and highlight metric divergence to surface what actually differs."

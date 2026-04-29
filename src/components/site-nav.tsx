@@ -5,7 +5,7 @@ import { APP_VERSION } from "@/lib/version";
 
 type NavItem = { to: string; label: string; exact?: boolean };
 const NAV: NavItem[] = [
-  { to: "/", label: "Screener", exact: true },
+  { to: "/app", label: "Screener" },
   { to: "/terminal", label: "Analysis" },
   { to: "/compare", label: "Compare" },
   { to: "/watchlist", label: "Watchlists" },

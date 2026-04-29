@@ -144,12 +144,13 @@ export function LandingHero({
             — built from raw fundamentals.
           </p>
           <div className="flex flex-wrap gap-3 mt-8">
-            <a
-              href="#screener"
+            <Link
+              to="/app"
+              search={{ preset: "all" } as any}
               className="px-5 py-2.5 bg-foreground text-background font-mono text-xs uppercase tracking-widest rounded-sm hover:opacity-90 transition-opacity"
             >
               Browse Screener →
-            </a>
+            </Link>
             <button
               type="button"
               onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
@@ -229,7 +230,7 @@ export function LandingHero({
             <h2 className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
               Top Movers <span className="text-muted-foreground/60">// 5-day</span>
             </h2>
-            <Link to="/" search={{ sortBy: "perf5d", sortDir: "desc" } as any} className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-primary">
+            <Link to="/app" search={{ sortBy: "perf5d", sortDir: "desc" } as any} className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-primary">
               View All →
             </Link>
           </div>

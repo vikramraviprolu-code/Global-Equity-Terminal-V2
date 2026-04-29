@@ -35,15 +35,27 @@ function PortfolioPage() {
 
 function PortfolioContent() {
   const qc = useQueryClient();
+  const { session } = useAuth();
+  const token = session?.access_token;
+  const authHeaders = token ? { Authorization: `Bearer ${token}` } : undefined;
   const { data, isLoading } = useQuery({
     queryKey: ["portfolio"],
-    queryFn: () => getPortfolio(),
+    queryFn: async () => {
+      if (!authHeaders) return { positions: [], totals: { cost: 0, value: 0, pnl: 0, pnlPct: 0 }, allocation: { bySector: [], byRegion: [] } };
+      try {
+        return await getPortfolio({ headers: authHeaders });
+      } catch {
+        return { positions: [], totals: { cost: 0, value: 0, pnl: 0, pnlPct: 0 }, allocation: { bySector: [], byRegion: [] } };
+      }
+    },
+    enabled: !!token,
     refetchInterval: 5 * 60 * 1000,
+    retry: false,
   });
   const [open, setOpen] = useState(false);
 
   const removeMut = useMutation({
-    mutationFn: (id: string) => deleteHolding({ data: { id } }),
+    mutationFn: (id: string) => deleteHolding({ data: { id }, headers: authHeaders }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["portfolio"] }); toast.success("Holding removed"); },
     onError: (e: any) => toast.error(e?.message ?? "Failed to remove"),
   });
@@ -62,7 +74,7 @@ function PortfolioContent() {
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild><Button size="sm"><Plus className="w-3.5 h-3.5 mr-1" /> Add holding</Button></DialogTrigger>
               <DialogContent>
-                <AddHoldingForm onDone={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["portfolio"] }); }} />
+                <AddHoldingForm headers={authHeaders} onDone={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["portfolio"] }); }} />
               </DialogContent>
             </Dialog>
           </div>

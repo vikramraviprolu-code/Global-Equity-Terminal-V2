@@ -26,7 +26,7 @@ function AuthPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && session) navigate({ to: "/portfolio" });
+    if (!loading && session) navigate({ to: "/app", search: { preset: "all" } as any, replace: true });
   }, [session, loading, navigate]);
 
   return (
@@ -74,7 +74,7 @@ function EmailForm({ mode }: { mode: "signin" | "signup" }) {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: `${window.location.origin}/portfolio` },
+          options: { emailRedirectTo: `${window.location.origin}/app` },
         });
         if (error) throw error;
         toast.success("Account created — you're signed in.");
@@ -110,7 +110,7 @@ function GoogleButton() {
   const [busy, setBusy] = useState(false);
   const onClick = async () => {
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/portfolio" });
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/app" });
     if (result.error) { toast.error("Google sign-in failed"); setBusy(false); return; }
     if (result.redirected) return;
   };

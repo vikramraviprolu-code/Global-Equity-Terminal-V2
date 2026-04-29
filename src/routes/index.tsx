@@ -1,6 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { fetchUniverse } from "@/server/screen.functions";
 import { scoreAll } from "@/lib/scores";
 import { SiteNav } from "@/components/site-nav";
@@ -10,7 +9,6 @@ import { LandingAbout } from "@/components/landing-about";
 import { LandingAboutStory } from "@/components/landing-about-story";
 import { LandingHowItWorks } from "@/components/landing-how-it-works";
 import { LandingPersonas } from "@/components/landing-personas";
-import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,14 +32,9 @@ export const Route = createFileRoute("/")({
 
 function LandingPage() {
   const navigate = useNavigate();
-  const { session, loading } = useAuth();
 
-  // Auto-redirect signed-in users into the app
-  useEffect(() => {
-    if (!loading && session) {
-      navigate({ to: "/app", search: { preset: "all" } as any, replace: true });
-    }
-  }, [loading, session, navigate]);
+  // Note: signed-in users can still view the landing page.
+  // Use the "Launch Screener" CTA or nav to enter the workspace.
 
   const { data, isLoading } = useQuery({
     queryKey: ["universe"],

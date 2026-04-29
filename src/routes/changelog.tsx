@@ -126,7 +126,7 @@ function ChangelogPage() {
                 <button
                   key={opt.key}
                   type="button"
-                  onClick={() => navigate({ search: (prev) => ({ ...prev, v: opt.key }) })}
+                  onClick={() => navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, v: opt.key }) })}
                   className={
                     "px-2 py-1 rounded border transition-colors " +
                     (active
@@ -144,7 +144,7 @@ function ChangelogPage() {
               type="search"
               value={q}
               onChange={(e) =>
-                navigate({ search: (prev) => ({ ...prev, q: e.target.value }) })
+                navigate({ search: (prev: z.infer<typeof searchSchema>) => ({ ...prev, q: e.target.value }) })
               }
               placeholder="Filter by keyword (e.g. portfolio, RSI, OAuth)"
               className="w-full bg-card border border-border rounded px-3 py-1.5 text-sm font-mono placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary"

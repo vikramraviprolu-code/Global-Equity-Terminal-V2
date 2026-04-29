@@ -438,6 +438,11 @@ export const GLOSSARY = {
     definition: "Replay of how a strategy or screener preset would have performed over historical data.",
     group: "navigation",
   },
+  regressionSuite: {
+    term: "Regression suite",
+    definition: "Vitest unit + Playwright E2E tests run on every build to block regressions to routes, screener, terminal deep-links, and auth gating.",
+    group: "navigation",
+  },
 } as const satisfies Record<string, GlossaryEntry>;
 
 export type GlossaryKey = keyof typeof GLOSSARY;

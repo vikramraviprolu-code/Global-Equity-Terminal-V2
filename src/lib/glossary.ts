@@ -368,9 +368,14 @@ export const GLOSSARY = {
   // =========================================================================
   // APP CONCEPTS
   // =========================================================================
+  navGroups: {
+    term: "Nav Groups",
+    definition: "Top nav is grouped into 4 dropdown menus: Research (Screener, Analysis, Compare), Workspace (Watchlists, Portfolio, Alerts), Market (Events), and System (Data Quality, Sources, Settings).",
+    group: "navigation",
+  },
   screener: {
     term: "Screener",
-    definition: "Default landing page for filtering the universe by region, sector, valuation, and momentum metrics.",
+    definition: "Default landing page for filtering the universe by region, sector, valuation, and momentum metrics. Lives under the Research menu.",
     group: "navigation",
   },
   terminal: {

@@ -50,9 +50,11 @@ const NAV_GROUPS: NavGroup[] = [
 
 function NavGroupMenu({ group, currentPath }: { group: NavGroup; currentPath: string }) {
   const isActive = group.items.some((i) => currentPath === i.to || currentPath.startsWith(i.to + "/"));
+  const tooltip = `${group.label}: ${group.items.map((i) => i.label).join(" · ")}`;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
+        title={tooltip}
         className={`h-full px-3 flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider transition-colors outline-none ${
           isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
         }`}

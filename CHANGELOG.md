@@ -3,6 +3,25 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.3.0] — 2026-04-29 — "Console"
+
+Top navigation restructured from a flat 10-link bar into 4 grouped dropdowns,
+modelled on Koyfin / Bloomberg Terminal patterns. Same destinations, faster
+to scan, no more wrapping at narrow widths.
+
+### Changed
+- **`SiteNav`** — replaced flat link row with 4 grouped menus:
+  **Research** (Screener · Analysis · Compare),
+  **Workspace** (Watchlists · Portfolio · Alerts),
+  **Market** (Events),
+  **System** (Data Quality · Sources · Settings).
+- Active group highlights in primary color when any child route is active.
+- Brand collapses to "GET" abbreviation on small screens; version tag hidden
+  below `md` to keep the header single-row.
+
+### Docs
+- README and changelog updated for v1.3.0 "Console".
+
 ## [1.2.0] — 2026-04-29 — "Compass"
 
 Landing page restructured into a tight 7-section flow modelled on the patterns

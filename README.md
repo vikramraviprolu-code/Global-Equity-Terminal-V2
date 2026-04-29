@@ -1,6 +1,6 @@
 # Global Equity Terminal
 
-> **v1.0.0 — "Atlas"** · A keyboard-driven, AI-augmented research terminal for global equities.
+> **v1.1.0 — "Beacon"** · A keyboard-driven, AI-augmented research terminal for global equities.
 
 Global Equity Terminal blends Bloomberg-style data density with an AI co-pilot
 layer. It's built for retail and prosumer investors who want fast research,
@@ -34,6 +34,15 @@ Hong Kong, Korea, Taiwan, Singapore, and Australia**.
 - **Backend**: Lovable Cloud (Postgres + Auth + RLS) via server functions
 - **AI**: Lovable AI Gateway (Gemini / GPT models) for narrative & catalysts
 - **Deploy**: Cloudflare Workers (edge SSR)
+
+## Routes
+
+- `/` — public marketing landing (hero, About, CTA). Signed-in users are
+  auto-redirected to `/app`.
+- `/app` — the workspace: screener, filters, presets, table / cards / heatmap.
+  All URL search state is preserved, so deep links still work.
+- `/terminal/$symbol`, `/compare`, `/watchlist`, `/portfolio`, `/alerts`,
+  `/events`, `/data-quality`, `/sources`, `/settings`, `/changelog`, `/auth`.
 
 ## Getting around
 

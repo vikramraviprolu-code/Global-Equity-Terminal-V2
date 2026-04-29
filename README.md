@@ -37,8 +37,9 @@ Hong Kong, Korea, Taiwan, Singapore, and Australia**.
 
 ## Routes
 
-- `/` — public marketing landing (hero, About, CTA). Signed-in users are
-  auto-redirected to `/app`.
+- `/` — public marketing landing. Seven-section flow: Hero, Proof Strip
+  (live region coverage + top movers), About, How it works, Capabilities,
+  Personas, and final CTA. Signed-in users are auto-redirected to `/app`.
 - `/app` — the workspace: screener, filters, presets, table / cards / heatmap.
   All URL search state is preserved, so deep links still work.
 - `/terminal/$symbol`, `/compare`, `/watchlist`, `/portfolio`, `/alerts`,

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { supabaseAuthHeaders } from "./supabase-auth-headers";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { fetchScreenerRow } from "./finimpulse.server";
 import { UNIVERSE } from "./universe";
@@ -15,7 +16,7 @@ const HoldingInput = z.object({
 });
 
 export const listHoldings = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("holdings")
@@ -26,7 +27,7 @@ export const listHoldings = createServerFn({ method: "GET" })
   });
 
 export const addHolding = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) => HoldingInput.parse(d))
   .handler(async ({ data, context }) => {
     const { error, data: row } = await context.supabase
@@ -46,7 +47,7 @@ export const addHolding = createServerFn({ method: "POST" })
   });
 
 export const deleteHolding = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("holdings").delete().eq("id", data.id);
@@ -57,7 +58,7 @@ export const deleteHolding = createServerFn({ method: "POST" })
 // ---------- Portfolio with live valuation ----------
 
 export const getPortfolio = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data: holdings, error } = await context.supabase
       .from("holdings")

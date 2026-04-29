@@ -3,6 +3,14 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.3.3] — 2026-04-29 — "Console" (patch)
+
+Authenticated alert and portfolio server calls now attach the active session token explicitly, preventing raw 401 `Response` errors from surfacing as blank-screen runtime crashes.
+
+### Fixed
+- `AlertBell` now waits for a valid auth token before listing, evaluating, or marking alert events, and falls back to empty notification state on transient auth errors.
+- `/alerts` and `/portfolio` now pass auth headers to their protected server functions and return safe empty states instead of letting unauthorised responses reach the router error boundary.
+
 ## [1.3.2] — 2026-04-29 — "Console" (patch)
 
 Popup-blocker resilience for the new-tab auth flow.

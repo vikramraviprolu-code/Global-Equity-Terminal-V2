@@ -273,6 +273,11 @@ export const GLOSSARY = {
     definition: "Origin metadata for a value: source name, retrieval timestamp, freshness, and confidence.",
     group: "data",
   },
+  authSession: {
+    term: "Auth Session",
+    definition: "The signed-in user's active session token used to authorise protected portfolio and alert requests.",
+    group: "data",
+  },
 
   // =========================================================================
   // ALERTS

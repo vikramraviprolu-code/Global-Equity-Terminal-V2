@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { supabaseAuthHeaders } from "./supabase-auth-headers";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { fetchScreenerRow } from "./finimpulse.server";
 import { UNIVERSE } from "./universe";
@@ -19,7 +20,7 @@ const AlertInput = z.object({
 });
 
 export const listAlerts = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("alerts").select("*").order("created_at", { ascending: false });
@@ -28,7 +29,7 @@ export const listAlerts = createServerFn({ method: "GET" })
   });
 
 export const addAlert = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) => AlertInput.parse(d))
   .handler(async ({ data, context }) => {
     const { error, data: row } = await context.supabase
@@ -46,7 +47,7 @@ export const addAlert = createServerFn({ method: "POST" })
   });
 
 export const toggleAlert = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) => z.object({ id: z.string().uuid(), active: z.boolean() }).parse(d))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
@@ -56,7 +57,7 @@ export const toggleAlert = createServerFn({ method: "POST" })
   });
 
 export const deleteAlert = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("alerts").delete().eq("id", data.id);
@@ -67,7 +68,7 @@ export const deleteAlert = createServerFn({ method: "POST" })
 // ---------- Alert events (notifications) ----------
 
 export const listAlertEvents = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("alert_events").select("*").order("created_at", { ascending: false }).limit(50);
@@ -77,7 +78,7 @@ export const listAlertEvents = createServerFn({ method: "GET" })
   });
 
 export const markAlertEventsRead = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { error } = await context.supabase
       .from("alert_events").update({ read: true }).eq("user_id", context.userId).eq("read", false);
@@ -117,7 +118,7 @@ function evaluate(type: AlertType, threshold: number, q: any): { fires: boolean;
  * Re-fires each at most once per 12h (last_fired_at gate).
  */
 export const evaluateMyAlerts = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data: alerts, error } = await context.supabase
       .from("alerts").select("*").eq("active", true);

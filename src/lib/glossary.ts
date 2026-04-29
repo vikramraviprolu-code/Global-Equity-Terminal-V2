@@ -278,6 +278,11 @@ export const GLOSSARY = {
     definition: "The signed-in user's active session token used to authorise protected portfolio and alert requests.",
     group: "data",
   },
+  accountMenu: {
+    term: "Account Menu",
+    definition: "Top-right dropdown for signed-in users with Switch user… and Sign out actions.",
+    group: "navigation",
+  },
 
   // =========================================================================
   // ALERTS

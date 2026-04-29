@@ -3,6 +3,19 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.3.4] — 2026-04-29 — "Console" (minor)
+
+First-class account menu for signed-in users.
+
+### Added
+- **Account menu** in the top nav for signed-in users — replaces the lone
+  "Sign out" button with a dropdown that exposes:
+  - **Switch user…** — signs the current user out and immediately opens the
+    auth popup so a different user can sign in without losing the tab.
+  - **Sign out** — ends the session and shows a confirmation toast.
+- The trigger shows the user's email (md+) plus a one-letter avatar bubble
+  for narrow widths, keeping the header single-row.
+
 ## [1.3.3] — 2026-04-29 — "Console" (patch)
 
 Authenticated alert and portfolio server calls now attach the active session token explicitly, preventing raw 401 `Response` errors from surfacing as blank-screen runtime crashes.

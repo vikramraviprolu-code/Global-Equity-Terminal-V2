@@ -14,7 +14,122 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alert_events: {
+        Row: {
+          alert_id: string
+          alert_type: Database["public"]["Enums"]["alert_type"]
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          symbol: string
+          threshold: number
+          user_id: string
+          value_at_trigger: number
+        }
+        Insert: {
+          alert_id: string
+          alert_type: Database["public"]["Enums"]["alert_type"]
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          symbol: string
+          threshold: number
+          user_id: string
+          value_at_trigger: number
+        }
+        Update: {
+          alert_id?: string
+          alert_type?: Database["public"]["Enums"]["alert_type"]
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          symbol?: string
+          threshold?: number
+          user_id?: string
+          value_at_trigger?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_events_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alerts: {
+        Row: {
+          active: boolean
+          alert_type: Database["public"]["Enums"]["alert_type"]
+          created_at: string
+          id: string
+          last_fired_at: string | null
+          symbol: string
+          threshold: number
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          alert_type: Database["public"]["Enums"]["alert_type"]
+          created_at?: string
+          id?: string
+          last_fired_at?: string | null
+          symbol: string
+          threshold: number
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          alert_type?: Database["public"]["Enums"]["alert_type"]
+          created_at?: string
+          id?: string
+          last_fired_at?: string | null
+          symbol?: string
+          threshold?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      holdings: {
+        Row: {
+          cost_basis: number
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          shares: number
+          symbol: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cost_basis: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          shares: number
+          symbol: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cost_basis?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          shares?: number
+          symbol?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +138,15 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      alert_type:
+        | "price_above"
+        | "price_below"
+        | "rsi_above"
+        | "rsi_below"
+        | "near_52w_high"
+        | "near_52w_low"
+        | "pct_change_above"
+        | "pct_change_below"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +273,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      alert_type: [
+        "price_above",
+        "price_below",
+        "rsi_above",
+        "rsi_below",
+        "near_52w_high",
+        "near_52w_low",
+        "pct_change_above",
+        "pct_change_below",
+      ],
+    },
   },
 } as const

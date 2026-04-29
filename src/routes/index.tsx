@@ -33,7 +33,6 @@ export const Route = createFileRoute("/")({
 
 function LandingPage() {
   const navigate = useNavigate();
-  const { session, loading } = useAuth();
 
   // Note: signed-in users can still view the landing page.
   // Use the "Launch Screener" CTA or nav to enter the workspace.

@@ -91,6 +91,8 @@ function NavGroupMenu({ group, currentPath }: { group: NavGroup; currentPath: st
 
 export function SiteNav({ right }: { right?: React.ReactNode }) {
   const currentPath = useRouterState({ select: (s) => s.location.pathname });
+  const versionLabel = `v${APP_VERSION}`;
+  const versionTitle = `Version ${APP_VERSION} — view changelog`;
   return (
     <header className="border-b border-border bg-card sticky top-0 z-20 backdrop-blur supports-[backdrop-filter]:bg-card/85">
       <div className="max-w-[1400px] mx-auto px-4 h-12 flex items-center gap-4">
@@ -105,10 +107,10 @@ export function SiteNav({ right }: { right?: React.ReactNode }) {
         </Link>
         <Link
           to="/changelog"
-          title={`Version ${APP_VERSION} — view changelog`}
+          title={versionTitle}
           className="font-mono text-[10px] text-muted-foreground hover:text-foreground tracking-widest -ml-2 hidden md:inline"
         >
-          v{APP_VERSION}
+          {versionLabel}
         </Link>
 
         <nav className="ml-2 flex items-center h-full">

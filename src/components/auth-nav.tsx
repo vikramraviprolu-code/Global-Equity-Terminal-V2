@@ -3,6 +3,16 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { AlertBell } from "@/components/alert-bell";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { LogOut, UserCog, ChevronDown } from "lucide-react";
+import { toast } from "sonner";
 
 /**
  * Open /auth in a new tab. After successful auth, the popup tab posts
@@ -51,6 +61,29 @@ export function AuthNav() {
       </a>
     );
   }
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success("Signed out");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Sign-out failed");
+    }
+  };
+
+  // Sign out the current user, then open the auth popup so they can sign in
+  // as a different user — without losing the current tab.
+  const handleSwitchUser = async () => {
+    try {
+      await signOut();
+      openAuthPopup();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Switch user failed");
+    }
+  };
+
+  const initial = (user.email ?? "?").trim().charAt(0).toUpperCase();
+
   return (
     <div className="flex items-center gap-2">
       <Link
@@ -61,12 +94,41 @@ export function AuthNav() {
         Home
       </Link>
       <AlertBell />
-      <span className="hidden md:inline text-[11px] font-mono text-muted-foreground truncate max-w-[140px]">
-        {user.email}
-      </span>
-      <Button variant="ghost" size="sm" className="h-6 text-[11px]" onClick={() => signOut()}>
-        Sign out
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 gap-1.5 px-2 text-[11px] font-mono"
+            aria-label="Account menu"
+          >
+            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary/15 text-primary text-[10px] font-bold">
+              {initial}
+            </span>
+            <span className="hidden md:inline truncate max-w-[140px] normal-case">
+              {user.email}
+            </span>
+            <ChevronDown className="w-3 h-3 opacity-70" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuLabel className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+            Signed in as
+          </DropdownMenuLabel>
+          <div className="px-2 pb-2 text-xs truncate" title={user.email ?? ""}>
+            {user.email}
+          </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={() => void handleSwitchUser()}>
+            <UserCog className="w-3.5 h-3.5 mr-2" />
+            Switch user…
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => void handleSignOut()}>
+            <LogOut className="w-3.5 h-3.5 mr-2" />
+            Sign out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

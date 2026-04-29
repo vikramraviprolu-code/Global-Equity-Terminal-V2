@@ -87,7 +87,7 @@ export function CommandBar() {
           if (typeof v === "string" && v === "" && k !== "q" && k !== "sector" && k !== "region") continue;
           search[k] = v;
         }
-        navigate({ to: "/", search: search as any });
+        navigate({ to: "/app", search: search as any });
         setOpen(false);
         return;
       }

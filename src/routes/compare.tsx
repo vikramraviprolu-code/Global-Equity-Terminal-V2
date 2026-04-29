@@ -130,7 +130,7 @@ function ComparePage() {
         {!isLoading && rows.length === 0 && (
           <div className="panel p-10 text-center mt-4">
             <div className="font-mono text-sm text-muted-foreground">Pick stocks from the screener or watchlists to compare.</div>
-            <Link to="/" className="inline-block mt-4 font-mono text-[10px] uppercase tracking-wider border border-primary/50 text-primary px-4 py-2 rounded hover:bg-primary/10">
+            <Link to="/app" className="inline-block mt-4 font-mono text-[10px] uppercase tracking-wider border border-primary/50 text-primary px-4 py-2 rounded hover:bg-primary/10">
               Open Screener
             </Link>
           </div>

@@ -88,7 +88,7 @@ function WatchlistPage() {
         {items.length === 0 ? (
           <div className="panel p-10 text-center mt-6">
             <div className="font-mono text-sm text-muted-foreground">"{active}" is empty.</div>
-            <Link to="/" className="inline-block mt-4 font-mono text-[10px] uppercase tracking-wider border border-primary/50 text-primary px-4 py-2 rounded hover:bg-primary/10">
+            <Link to="/app" className="inline-block mt-4 font-mono text-[10px] uppercase tracking-wider border border-primary/50 text-primary px-4 py-2 rounded hover:bg-primary/10">
               Browse the screener
             </Link>
           </div>

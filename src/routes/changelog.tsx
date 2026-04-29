@@ -196,7 +196,7 @@ function ChangelogPage() {
         )}
 
         <p className="mt-10 text-xs text-muted-foreground">
-          <Link to="/" className="hover:text-foreground">← Back to terminal</Link>
+          <Link to="/app" className="hover:text-foreground">← Back to terminal</Link>
         </p>
         <Disclaimer />
       </main>

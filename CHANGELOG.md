@@ -3,6 +3,26 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.1.0] — 2026-04-29 — "Beacon"
+
+Landing page is now separate from the workspace. The marketing site greets new
+visitors at `/`; the screener and all in-app routes live under `/app`. Signed-in
+users are auto-redirected from `/` into the workspace.
+
+### Changed
+- **Routes** — `/` is now a pure marketing landing (hero + about + CTA).
+  The screener moved to `/app` (deep-link + URL-state preserved). All in-app
+  links, the command palette, and "Back to screener" CTAs now target `/app`.
+- **Auth-aware redirect** — authenticated users hitting `/` are sent straight
+  to `/app` (with `replace`), so the landing is shown to logged-out visitors only.
+- **SiteNav** — the "Screener" nav item points to `/app`. Logo still goes to `/`.
+- **SEO** — distinct titles, descriptions, and canonical URLs for `/` (landing)
+  and `/app` (screener).
+
+### Docs
+- README, in-app About section, and changelog updated to reflect the
+  landing/app split.
+
 ## [1.0.0] — 2026-04-29 — "Atlas"
 
 First stable release. The terminal now covers research, monitoring, and personal portfolio tracking end-to-end.

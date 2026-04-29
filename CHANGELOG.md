@@ -3,6 +3,20 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.3.5] — 2026-04-29 — "Console" (patch)
+
+Deep-link reliability for `/terminal/$symbol`.
+
+### Fixed
+- `/terminal/AAPL` and other ticker deep-links no longer return a hard 404 when
+  the server-side analyze call fails or rate-limits. The route now skips the
+  blocking loader and lets the client-side terminal handle the analysis,
+  surfacing analyzer errors inline instead of breaking navigation.
+
+### Changed
+- Route metadata for `/terminal/$symbol` is derived from the URL ticker so
+  share previews work even before analysis completes.
+
 ## [1.3.4] — 2026-04-29 — "Console" (minor)
 
 First-class account menu for signed-in users.

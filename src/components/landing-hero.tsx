@@ -111,9 +111,9 @@ export function LandingHero({
       {/* Ticker tape strip — universe meta */}
       <div className="border-b border-border bg-card/40 overflow-x-auto">
         <div className="max-w-[1400px] mx-auto px-4 h-9 flex items-center gap-6 font-mono text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">
-          <span>Universe: <span className="text-foreground">{meta?.total ?? "—"}</span></span>
-          <span className="border-l border-border pl-6">Live: <span className="text-[color:var(--bull)]">{meta?.liveCount ?? 0}</span></span>
-          <span>Mock: <span className="text-primary">{meta?.mockCount ?? 0}</span></span>
+          <span><MetricLabel term="universe">Universe</MetricLabel>: <span className="text-foreground">{meta?.total ?? "—"}</span></span>
+          <span className="border-l border-border pl-6"><MetricLabel term="verified">Live</MetricLabel>: <span className="text-[color:var(--bull)]">{meta?.liveCount ?? 0}</span></span>
+          <span><MetricLabel term="mock">Mock</MetricLabel>: <span className="text-primary">{meta?.mockCount ?? 0}</span></span>
           <span className="border-l border-border pl-6">Last refresh: <span className="text-foreground">{refreshTime}</span></span>
           <span className="ml-auto flex items-center gap-2">
             <span className={`size-1.5 rounded-full ${isLoading ? "bg-primary animate-pulse" : "bg-[color:var(--bull)]"}`} />
@@ -135,7 +135,13 @@ export function LandingHero({
           </h1>
           <p className="text-base text-muted-foreground max-w-[60ch] mt-6 leading-relaxed">
             Screen, score and dissect names across nine global markets. Every ticker is graded on five
-            transparent vectors — Value, Momentum, Quality, Risk and Confidence — built from raw fundamentals.
+            transparent vectors —{" "}
+            <MetricLabel term="valueScore">Value</MetricLabel>,{" "}
+            <MetricLabel term="momentumScore">Momentum</MetricLabel>,{" "}
+            <MetricLabel term="qualityScore">Quality</MetricLabel>,{" "}
+            <MetricLabel term="riskScore">Risk</MetricLabel> and{" "}
+            <MetricLabel term="confidence">Confidence</MetricLabel>{" "}
+            — built from raw fundamentals.
           </p>
           <div className="flex flex-wrap gap-3 mt-8">
             <a

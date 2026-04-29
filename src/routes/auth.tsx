@@ -26,7 +26,7 @@ function AuthPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && session) navigate({ to: "/portfolio" });
+    if (!loading && session) navigate({ to: "/app", search: { preset: "all" } as any, replace: true });
   }, [session, loading, navigate]);
 
   return (

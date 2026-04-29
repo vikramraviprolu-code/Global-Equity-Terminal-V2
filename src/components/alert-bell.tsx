@@ -9,22 +9,25 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 export function AlertBell() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const lastSeenIds = useRef<Set<string>>(new Set());
+  const token = session?.access_token;
+  const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
 
   const { data } = useQuery({
     queryKey: ["alert-events", user?.id],
     queryFn: async () => {
       try {
-        return await listAlertEvents();
+        if (!headers) return { events: [], unreadCount: 0 } as any;
+        return await listAlertEvents({ headers });
       } catch (e) {
         // Swallow auth/network errors so the UI never crashes
         return { events: [], unreadCount: 0 } as any;
       }
     },
-    enabled: !!user,
+    enabled: !!user && !!token,
     refetchInterval: 60_000,
     retry: false,
   });
@@ -33,7 +36,8 @@ export function AlertBell() {
   const evalMut = useMutation({
     mutationFn: async () => {
       try {
-        return await evaluateMyAlerts({ data: undefined as any });
+        if (!headers) return { fired: 0 } as any;
+        return await evaluateMyAlerts({ data: undefined as any, headers });
       } catch {
         return { fired: 0 } as any;
       }
@@ -41,12 +45,12 @@ export function AlertBell() {
     onSuccess: (r) => { if (r?.fired > 0) qc.invalidateQueries({ queryKey: ["alert-events"] }); },
   });
   useEffect(() => {
-    if (!user) return;
+    if (!user || !token) return;
     evalMut.mutate();
     const t = setInterval(() => evalMut.mutate(), 5 * 60 * 1000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user?.id, token]);
 
   // Toast on newly arriving unread events
   useEffect(() => {
@@ -61,7 +65,7 @@ export function AlertBell() {
   }, [data?.events, navigate]);
 
   const markRead = useMutation({
-    mutationFn: () => markAlertEventsRead({ data: undefined as any }),
+    mutationFn: () => headers ? markAlertEventsRead({ data: undefined as any, headers }) : Promise.resolve({ ok: true }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["alert-events"] }),
   });
 

@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { fmtPrice, fmtPct, colorFor } from "@/lib/format";
 import { Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { MetricLabel } from "@/components/metric-label";
 
 export const Route = createFileRoute("/portfolio")({
   head: () => ({
@@ -99,9 +100,9 @@ function PortfolioContent() {
                 <table className="w-full text-xs">
                   <thead className="text-muted-foreground border-b border-border">
                     <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:text-left font-mono uppercase tracking-wider">
-                      <th>Symbol</th><th>Shares</th><th className="text-right">Cost</th>
-                      <th className="text-right">Price</th><th className="text-right">Value</th>
-                      <th className="text-right">P&L</th><th className="text-right">%</th>
+                      <th>Symbol</th><th>Shares</th><th className="text-right"><MetricLabel term="costBasis">Cost</MetricLabel></th>
+                      <th className="text-right">Price</th><th className="text-right"><MetricLabel term="allocation">Value</MetricLabel></th>
+                      <th className="text-right"><MetricLabel term="unrealizedPnl">P&L</MetricLabel></th><th className="text-right">%</th>
                       <th>Sector</th><th></th>
                     </tr>
                   </thead>

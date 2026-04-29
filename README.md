@@ -1,6 +1,6 @@
 # Global Equity Terminal
 
-> **v1.3.5 — "Console"** · A keyboard-driven, AI-augmented research terminal for global equities.
+> **v1.4.0 — "Console"** · A keyboard-driven, AI-augmented research terminal for global equities.
 
 Global Equity Terminal blends Bloomberg-style data density with an AI co-pilot
 layer. It's built for retail and prosumer investors who want fast research,

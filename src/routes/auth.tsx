@@ -74,7 +74,7 @@ function EmailForm({ mode }: { mode: "signin" | "signup" }) {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: `${window.location.origin}/portfolio` },
+          options: { emailRedirectTo: `${window.location.origin}/app` },
         });
         if (error) throw error;
         toast.success("Account created — you're signed in.");

@@ -57,25 +57,27 @@ function LandingPage() {
       <main className="flex-1">
         <LandingHero meta={data?.meta} rows={scored} isLoading={isLoading} onPickPreset={goToScreener} />
         <LandingAbout />
-        <section className="border-b border-border bg-card/30">
-          <div className="max-w-[1400px] mx-auto px-4 py-12 text-center">
-            <h2 className="text-2xl lg:text-3xl font-semibold tracking-tight mb-3">Ready to screen the global universe?</h2>
-            <p className="text-sm text-muted-foreground max-w-[60ch] mx-auto mb-6">
-              Open the workspace to filter, score, compare and track stocks across 9 markets — or sign in to sync your portfolio, watchlists and alerts.
+        <section className="bg-card/30">
+          <div className="max-w-[1400px] mx-auto px-4 py-16 text-center">
+            <h2 className="text-2xl lg:text-3xl font-semibold tracking-tight mb-3">
+              Ready when you are.
+            </h2>
+            <p className="text-sm text-muted-foreground max-w-[55ch] mx-auto mb-7">
+              Open the workspace to screen, score and track stocks across 9 markets. Sign in to sync your portfolio, watchlists and alerts.
             </p>
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="flex flex-wrap justify-center items-center gap-5">
               <Link
                 to="/app"
                 search={{ preset: "all" } as any}
-                className="px-5 py-2.5 bg-primary text-primary-foreground font-mono text-xs uppercase tracking-widest rounded-sm hover:opacity-90"
+                className="px-6 py-3 bg-primary text-primary-foreground font-mono text-xs uppercase tracking-widest rounded-sm hover:opacity-90"
               >
                 Launch Screener →
               </Link>
               <Link
                 to="/auth"
-                className="px-5 py-2.5 border border-border text-foreground font-mono text-xs uppercase tracking-widest rounded-sm hover:border-primary/40 hover:text-primary"
+                className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
               >
-                Sign in / Sign up
+                Sign in / Sign up →
               </Link>
             </div>
           </div>

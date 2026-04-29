@@ -11,6 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    popup: s.popup === "1" || s.popup === 1 || s.popup === true,
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — Global Equity Terminal" },

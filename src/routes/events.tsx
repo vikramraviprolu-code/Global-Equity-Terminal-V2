@@ -313,7 +313,7 @@ function EmptyWatchlist() {
     <div className="panel p-10 text-center mt-4">
       <div className="font-mono text-xs text-muted-foreground uppercase tracking-wider">Watchlist is empty</div>
       <p className="text-xs text-muted-foreground mt-2">
-        Add tickers from the <Link to="/" className="text-primary underline">Screener</Link> or <Link to="/terminal" className="text-primary underline">Terminal</Link> to track their events.
+        Add tickers from the <Link to="/app" className="text-primary underline">Screener</Link> or <Link to="/terminal" className="text-primary underline">Terminal</Link> to track their events.
       </p>
     </div>
   );

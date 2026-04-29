@@ -52,12 +52,12 @@ type Filters = z.infer<typeof searchSchema>;
 export const Route = createFileRoute("/app")({
   head: () => ({
     meta: [
-      { title: "Global Equity Terminal v2 — Stock Screener & Discovery" },
-      { name: "description", content: "Discover global stocks across US, India, Europe, Japan, Hong Kong, Korea, Taiwan, Singapore and Australia. Run value, momentum, and quality screens with transparent scoring." },
-      { property: "og:title", content: "Global Equity Terminal v2 — Stock Screener" },
-      { property: "og:description", content: "A professional stock discovery and analysis platform. Screen, score, and analyse global equities with evidence-based research." },
+      { title: "Screener — Global Equity Terminal" },
+      { name: "description", content: "Screen, score and analyse stocks across US, India, Europe, Japan, Hong Kong, Korea, Taiwan, Singapore and Australia with transparent Value / Momentum / Quality / Risk scoring." },
+      { property: "og:title", content: "Screener — Global Equity Terminal" },
+      { property: "og:description", content: "Run value, momentum, quality and breakout screens on a curated global universe." },
     ],
-    links: [{ rel: "canonical", href: "https://rankaisolutions.tech/" }],
+    links: [{ rel: "canonical", href: "https://rankaisolutions.tech/app" }],
   }),
   validateSearch: zodValidator(searchSchema),
   loader: ({ context }) => {
@@ -262,7 +262,7 @@ function ScreenerPage() {
     <div className="min-h-screen flex flex-col">
       <SiteNav right={<button onClick={() => refetch()} disabled={isFetching} className="bg-primary text-primary-foreground px-3 py-1.5 rounded hover:opacity-90 disabled:opacity-50">{isFetching ? "Refreshing…" : "Refresh"}</button>} />
       <main className="flex-1">
-        <ScreenerHeader meta={data?.meta} isLoading={isLoading} />
+        <ScreenerIntro meta={data?.meta} isLoading={isLoading} />
         <PresetBar current={filters.preset} onPick={onPickPreset} />
         <FilterBar filters={filters} setFilters={setFilters} sectors={sectors} onReset={() => replaceFilters(DEFAULT_FILTERS)} />
 

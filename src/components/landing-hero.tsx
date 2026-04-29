@@ -110,6 +110,12 @@ export function LandingHero({
               Try a Preset
             </button>
             <Link
+              to="/portfolio"
+              className="px-5 py-2.5 text-muted-foreground font-mono text-xs uppercase tracking-widest hover:text-foreground transition-colors"
+            >
+              Portfolio →
+            </Link>
+            <Link
               to="/sources"
               className="px-5 py-2.5 text-muted-foreground font-mono text-xs uppercase tracking-widest hover:text-foreground transition-colors"
             >

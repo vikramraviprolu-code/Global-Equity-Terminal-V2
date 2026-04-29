@@ -1,5 +1,5 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { GLOSSARY, type GlossaryKey } from "@/lib/glossary";
+import { glossaryEntry, type GlossaryKey } from "@/lib/glossary";
 
 /**
  * Drop-in wrapper for any jargon term, metric label, or score badge.

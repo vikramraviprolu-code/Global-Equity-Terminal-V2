@@ -11,6 +11,7 @@ import { useWatchlist } from "@/hooks/use-watchlist";
 import { SiteNav } from "@/components/site-nav";
 import { SectorHeatmap } from "@/components/sector-heatmap";
 import { LandingHero } from "@/components/landing-hero";
+import { LandingAbout } from "@/components/landing-about";
 import { exportRowsCsv, exportNodeAsPng } from "@/lib/export";
 import { Sparkline as SparkLineShared } from "@/components/sparkline";
 import { onAction } from "@/lib/action-bus";
@@ -264,6 +265,7 @@ function ScreenerPage() {
       <SiteNav right={<button onClick={() => refetch()} disabled={isFetching} className="bg-primary text-primary-foreground px-3 py-1.5 rounded hover:opacity-90 disabled:opacity-50">{isFetching ? "Refreshing…" : "Refresh"}</button>} />
       <main className="flex-1">
         <LandingHero meta={data?.meta} rows={scored} isLoading={isLoading} onPickPreset={(id) => { onPickPreset(id); document.getElementById("screener")?.scrollIntoView({ behavior: "smooth" }); }} />
+        <LandingAbout />
         <div id="screener" />
         <PresetBar current={filters.preset} onPick={onPickPreset} />
         <FilterBar filters={filters} setFilters={setFilters} sectors={sectors} onReset={() => replaceFilters(DEFAULT_FILTERS)} />

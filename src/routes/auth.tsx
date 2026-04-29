@@ -110,7 +110,7 @@ function GoogleButton() {
   const [busy, setBusy] = useState(false);
   const onClick = async () => {
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/portfolio" });
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/app" });
     if (result.error) { toast.error("Google sign-in failed"); setBusy(false); return; }
     if (result.redirected) return;
   };

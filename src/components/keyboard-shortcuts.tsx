@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { fireAction } from "@/lib/action-bus";
-import { GLOSSARY } from "@/lib/glossary";
+import { glossaryEntries, type GlossaryEntry } from "@/lib/glossary";
 
 type Shortcut = { keys: string; label: string };
 const SHORTCUTS: { group: string; items: Shortcut[] }[] = [
@@ -117,8 +117,8 @@ export function KeyboardShortcuts() {
 
   const grouped = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const out: Record<string, Array<{ key: string; entry: typeof GLOSSARY[string] }>> = {};
-    Object.entries(GLOSSARY).forEach(([key, entry]) => {
+    const out: Record<string, Array<{ key: string; entry: GlossaryEntry }>> = {};
+    glossaryEntries().forEach(([key, entry]) => {
       if (q) {
         const hay = `${entry.term} ${entry.full ?? ""} ${entry.definition}`.toLowerCase();
         if (!hay.includes(q)) return;

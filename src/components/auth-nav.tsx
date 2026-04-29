@@ -2,7 +2,38 @@ import { useAuth } from "@/hooks/use-auth";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { AlertBell } from "@/components/alert-bell";
-import { openAuthPopup } from "@/lib/auth-popup";
+import { supabase } from "@/integrations/supabase/client";
+
+/**
+ * Open /auth in a new tab. After successful auth, the popup tab posts
+ * `get-auth-success` and closes itself; this tab refreshes its session.
+ *
+ * If the popup is blocked, save the current URL to sessionStorage and
+ * navigate /auth in the same tab — the auth page reads that value and
+ * offers a "Back to where you were" button after success.
+ */
+function openAuthPopup() {
+  if (typeof window === "undefined") return;
+
+  const onMessage = (e: MessageEvent) => {
+    if (e.origin !== window.location.origin) return;
+    const data = e?.data;
+    if (data && typeof data === "object" && data.type === "get-auth-success") {
+      void supabase.auth.getSession();
+    }
+  };
+  window.addEventListener("message", onMessage);
+  setTimeout(() => window.removeEventListener("message", onMessage), 10 * 60 * 1000);
+
+  const w = window.open("/auth?popup=1", "_blank", "noopener=no,noreferrer=no");
+  if (!w || w.closed || typeof w.closed === "undefined") {
+    try {
+      const here = window.location.pathname + window.location.search + window.location.hash;
+      sessionStorage.setItem("auth:return-to", here);
+    } catch {}
+    window.location.href = "/auth";
+  }
+}
 
 export function AuthNav() {
   const { user, signOut, loading } = useAuth();

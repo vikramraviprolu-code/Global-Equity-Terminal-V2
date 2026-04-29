@@ -11,10 +11,10 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test:unit": "vitest run",
+    "test:unit": "vitest run --config vitest.config.ts",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install --with-deps chromium",
-    "test:regression": "vitest run && playwright test"
+    "test:regression": "vitest run --config vitest.config.ts && playwright test"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",

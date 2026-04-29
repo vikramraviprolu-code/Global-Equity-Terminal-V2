@@ -8,33 +8,33 @@ import { supabase } from "@/integrations/supabase/client";
  * message and refresh the local Supabase session so the original tab updates
  * its UI without a full reload.
  *
- * Falls back gracefully:
- *  - If the browser blocks the popup, we navigate the current tab to /auth.
- *  - If postMessage doesn't fire (e.g. cross-origin), the next supabase
- *    `onAuthStateChange` will still pick up the session via shared storage.
+ * Fallback: if the browser blocks the popup, we save the current URL to
+ * sessionStorage as `auth:return-to` and navigate the current tab to /auth
+ * (without the popup flag). After successful auth, the auth page reads that
+ * value and offers the user a "Back to where you were" button so they can
+ * return to their original screen without losing their session.
  */
 export function openAuthPopup() {
-  let listenerAttached = false;
-
   const onMessage = (e: MessageEvent) => {
     if (e.origin !== window.location.origin) return;
     const data = e?.data;
     if (data && typeof data === "object" && data.type === "get-auth-success") {
-      // Refresh session in this tab so AuthProvider picks it up immediately.
       void supabase.auth.getSession();
     }
   };
 
-  if (typeof window !== "undefined" && !listenerAttached) {
+  if (typeof window !== "undefined") {
     window.addEventListener("message", onMessage);
-    listenerAttached = true;
-    // Auto-cleanup after a few minutes.
     setTimeout(() => window.removeEventListener("message", onMessage), 10 * 60 * 1000);
   }
 
   const w = window.open("/auth?popup=1", "_blank", "noopener=no,noreferrer=no");
-  if (!w) {
-    // Popup blocked — fall back to in-tab navigation (no popup flag).
+  // Detect blocked popup: w is null, undefined, or closed immediately.
+  if (!w || w.closed || typeof w.closed === "undefined") {
+    try {
+      const here = window.location.pathname + window.location.search + window.location.hash;
+      sessionStorage.setItem("auth:return-to", here);
+    } catch {}
     window.location.href = "/auth";
   }
 }

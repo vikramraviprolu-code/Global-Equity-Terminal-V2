@@ -24,13 +24,13 @@ export function SiteNav({ right }: { right?: React.ReactNode }) {
         <Link to="/" className="flex items-center gap-2 hover:opacity-90">
           <div className="w-2 h-2 bg-primary rounded-sm" />
           <span className="font-mono text-sm tracking-widest text-primary">GLOBAL&nbsp;EQUITY&nbsp;TERMINAL</span>
-          <Link
-            to="/changelog"
-            title={`Version ${APP_VERSION} — view changelog`}
-            className="font-mono text-[10px] text-muted-foreground hover:text-foreground tracking-widest"
-          >
-            v{APP_VERSION}
-          </Link>
+        </Link>
+        <Link
+          to="/changelog"
+          title={`Version ${APP_VERSION} — view changelog`}
+          className="font-mono text-[10px] text-muted-foreground hover:text-foreground tracking-widest -ml-2"
+        >
+          v{APP_VERSION}
         </Link>
         <nav className="ml-auto flex items-center gap-0.5 text-xs font-mono uppercase tracking-wider flex-wrap">
           {NAV.map((n) => (

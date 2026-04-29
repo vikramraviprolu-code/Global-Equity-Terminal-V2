@@ -132,11 +132,12 @@ function EmailForm({ mode }: { mode: "signin" | "signup" }) {
   );
 }
 
-function GoogleButton() {
+function GoogleButton({ popup }: { popup?: boolean }) {
   const [busy, setBusy] = useState(false);
   const onClick = async () => {
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/app" });
+    const redirectPath = popup ? "/auth?popup=1" : "/app";
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + redirectPath });
     if (result.error) { toast.error("Google sign-in failed"); setBusy(false); return; }
     if (result.redirected) return;
   };

@@ -1,6 +1,6 @@
 # Global Equity Terminal
 
-> **v1.2.0 — "Compass"** · A keyboard-driven, AI-augmented research terminal for global equities.
+> **v1.3.0 — "Console"** · A keyboard-driven, AI-augmented research terminal for global equities.
 
 Global Equity Terminal blends Bloomberg-style data density with an AI co-pilot
 layer. It's built for retail and prosumer investors who want fast research,
@@ -46,6 +46,13 @@ Hong Kong, Korea, Taiwan, Singapore, and Australia**.
   `/events`, `/data-quality`, `/sources`, `/settings`, `/changelog`, `/auth`.
 
 ## Getting around
+
+The top nav is grouped into 4 dropdown menus:
+
+- **Research** — Screener · Analysis · Compare
+- **Workspace** — Watchlists · Portfolio · Alerts
+- **Market** — Events
+- **System** — Data Quality · Sources · Settings
 
 | Shortcut | Action               |
 | -------- | -------------------- |

@@ -1,38 +1,15 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { TerminalPage } from "@/components/terminal/terminal-page";
-import { analyzeTicker } from "@/server/analyze";
-import { fmtPrice, fmtMcapUsd, fmtPct } from "@/lib/format";
 
 export const Route = createFileRoute("/terminal/$symbol")({
-  loader: async ({ params }) => {
-    const sym = params.symbol.toUpperCase();
-    const result = await analyzeTicker({ data: { ticker: sym } });
-    if ("error" in result) throw notFound();
-    const t = result.target;
-    return {
-      symbol: sym,
-      companyName: t.companyName,
-      sector: t.sector,
-      industry: t.industry,
-      exchange: t.fullExchange ?? t.exchange ?? null,
-      country: t.country,
-      currency: t.currency,
-      price: t.price,
-      marketCapUsd: t.marketCapUsd,
-      perf5d: t.perf5d,
-      rec: t.recommendation.rec,
-    };
-  },
-  head: ({ loaderData }) => {
-    if (!loaderData) {
-      return { meta: [{ title: "Stock Analysis — Global Equity Terminal" }] };
-    }
-    const d = loaderData;
-    const priceStr = fmtPrice(d.price, d.currency);
-    const mcapStr = fmtMcapUsd(d.marketCapUsd);
-    const perfStr = fmtPct(d.perf5d);
-    const title = `${d.symbol} · ${d.companyName} — Stock Analysis · ${d.rec}`;
-    const description = `${d.companyName} (${d.symbol}) on ${d.exchange ?? d.country ?? "global markets"}. Price ${priceStr}, market cap ${mcapStr}, 5D ${perfStr}. Sector: ${d.sector ?? "—"}. Evidence-based Buy/Hold/Avoid recommendation: ${d.rec}.`;
+  head: ({ params }) => {
+    const sym = (params?.symbol ?? "").toUpperCase();
+    const title = sym
+      ? `${sym} — Stock Analysis · Global Equity Terminal`
+      : "Stock Analysis — Global Equity Terminal";
+    const description = sym
+      ? `Evidence-based Buy/Hold/Avoid analysis for ${sym}: valuation, momentum, fundamentals, and catalysts.`
+      : "Data-driven equity research for any US or international stock ticker.";
     return {
       meta: [
         { title },
@@ -44,30 +21,31 @@ export const Route = createFileRoute("/terminal/$symbol")({
         { name: "twitter:title", content: title },
         { name: "twitter:description", content: description },
       ],
-      links: [
-        { rel: "canonical", href: `https://rankaisolutions.tech/terminal/${d.symbol}` },
-      ],
-      scripts: [
-        {
-          type: "application/ld+json",
-          children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FinancialProduct",
-            name: `${d.companyName} (${d.symbol})`,
-            url: `https://rankaisolutions.tech/terminal/${d.symbol}`,
-            category: d.sector ?? undefined,
-            description,
-          }),
-        },
-      ],
+      links: sym
+        ? [{ rel: "canonical", href: `https://rankaisolutions.tech/terminal/${sym}` }]
+        : [],
     };
   },
   component: SymbolTerminalPage,
-  errorComponent: ({ error }) => (
-    <div className="p-10 text-center font-mono text-sm text-destructive">
-      Failed to analyze: {error.message}
-    </div>
-  ),
+  errorComponent: ({ error, reset }) => {
+    const router = useRouter();
+    return (
+      <div className="p-10 text-center font-mono text-sm text-destructive">
+        Failed to load terminal: {error.message}
+        <div className="mt-4">
+          <button
+            className="rounded-md bg-primary px-3 py-1.5 text-primary-foreground"
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  },
   notFoundComponent: () => (
     <div className="p-10 text-center font-mono text-sm text-muted-foreground">
       Symbol not found. Try a different ticker (e.g. AAPL, RELIANCE.NS, 7203.T).
@@ -77,7 +55,5 @@ export const Route = createFileRoute("/terminal/$symbol")({
 
 function SymbolTerminalPage() {
   const { symbol } = Route.useParams();
-  // Reuse the existing terminal UI — pass the symbol via a stable key so it
-  // remounts and auto-analyzes when the URL ticker changes.
   return <TerminalPage key={symbol} initialTicker={symbol} />;
 }

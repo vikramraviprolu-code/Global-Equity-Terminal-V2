@@ -36,12 +36,8 @@ function LandingPage() {
   const navigate = useNavigate();
   const { session, loading } = useAuth();
 
-  // Auto-redirect signed-in users into the app
-  useEffect(() => {
-    if (!loading && session) {
-      navigate({ to: "/app", search: { preset: "all" } as any, replace: true });
-    }
-  }, [loading, session, navigate]);
+  // Note: signed-in users can still view the landing page.
+  // Use the "Launch Screener" CTA or nav to enter the workspace.
 
   const { data, isLoading } = useQuery({
     queryKey: ["universe"],

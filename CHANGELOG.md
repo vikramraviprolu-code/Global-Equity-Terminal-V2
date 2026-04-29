@@ -20,7 +20,8 @@ to scan, no more wrapping at narrow widths.
   below `md` to keep the header single-row.
 
 ### Docs
-- README and changelog updated for v1.3.0 "Console".
+- README, in-app glossary (new "Nav Groups" entry), and nav tooltips updated
+  alongside changelog for v1.3.0 "Console".
 
 ## [1.2.0] — 2026-04-29 — "Compass"
 

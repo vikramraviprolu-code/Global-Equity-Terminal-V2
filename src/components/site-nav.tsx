@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { CurrencyToggle } from "@/components/currency-toggle";
 import { AuthNav } from "@/components/auth-nav";
+import { APP_VERSION } from "@/lib/version";
 
 type NavItem = { to: string; label: string; exact?: boolean };
 const NAV: NavItem[] = [
@@ -23,7 +24,13 @@ export function SiteNav({ right }: { right?: React.ReactNode }) {
         <Link to="/" className="flex items-center gap-2 hover:opacity-90">
           <div className="w-2 h-2 bg-primary rounded-sm" />
           <span className="font-mono text-sm tracking-widest text-primary">GLOBAL&nbsp;EQUITY&nbsp;TERMINAL</span>
-          <span className="font-mono text-[10px] text-muted-foreground tracking-widest">v2</span>
+          <Link
+            to="/changelog"
+            title={`Version ${APP_VERSION} — view changelog`}
+            className="font-mono text-[10px] text-muted-foreground hover:text-foreground tracking-widest"
+          >
+            v{APP_VERSION}
+          </Link>
         </Link>
         <nav className="ml-auto flex items-center gap-0.5 text-xs font-mono uppercase tracking-wider flex-wrap">
           {NAV.map((n) => (

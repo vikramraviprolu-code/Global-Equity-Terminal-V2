@@ -3,6 +3,31 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.4.0] — 2026-04-29 — "Console" (minor)
+
+Automated regression test suite, gated on every build.
+
+### Added
+- **Vitest** unit suite covering `lib/format`, `lib/scores`, and `lib/backtest`
+  (13 tests). Run with `bun run test:unit`.
+- **Playwright** headless E2E suite covering:
+  - Public route render + console-error budget for `/`, `/app`, `/compare`,
+    `/watchlist`, `/events`, `/data-quality`, `/sources`, `/changelog`,
+    `/settings`.
+  - `/terminal/AAPL` deep-link mounts and surfaces ticker (validates v1.3.5).
+  - `/portfolio` and `/alerts` auth-gating; `/auth` form presence.
+  - `/app` screener row render + filter; `/watchlist` controls visible.
+- **GitHub Actions workflow** (`.github/workflows/regression.yml`) runs unit
+  then E2E on every push and pull request, blocking deploys on failure.
+- `bun run test:regression` runs the full suite locally.
+- `tests/README.md` documents structure, how to add tests, and the auth-mock
+  follow-up.
+
+### Notes
+- Authenticated user CRUD flows (alerts/portfolio writes) are covered as
+  gating checks; full-session E2E with a mocked Supabase token is the next
+  iteration.
+
 ## [1.3.5] — 2026-04-29 — "Console" (patch)
 
 Deep-link reliability for `/terminal/$symbol`.

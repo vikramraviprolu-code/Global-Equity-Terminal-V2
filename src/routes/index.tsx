@@ -6,6 +6,7 @@ import { scoreAll } from "@/lib/scores";
 import { SiteNav } from "@/components/site-nav";
 import { LandingHero } from "@/components/landing-hero";
 import { LandingAbout } from "@/components/landing-about";
+import { LandingAboutStory } from "@/components/landing-about-story";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/")({
@@ -56,6 +57,7 @@ function LandingPage() {
       <SiteNav />
       <main className="flex-1">
         <LandingHero meta={data?.meta} rows={scored} isLoading={isLoading} onPickPreset={goToScreener} />
+        <LandingAboutStory />
         <LandingAbout />
         <section className="bg-card/30">
           <div className="max-w-[1400px] mx-auto px-4 py-16 text-center">

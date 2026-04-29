@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { MetricLabel } from "@/components/metric-label";
+import { openAuthPopup } from "@/lib/auth-popup";
 
 type Meta = { retrievedAt: string; total: number; mockCount: number; liveCount: number };
 
@@ -95,9 +96,15 @@ export function LandingHero({
 
           <p className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground mt-5">
             Already a member?{" "}
-            <Link to="/auth" className="text-foreground hover:text-primary underline-offset-4 hover:underline">
+            <a
+              href="/auth?popup=1"
+              target="_blank"
+              rel="noopener"
+              onClick={(e) => { e.preventDefault(); openAuthPopup(); }}
+              className="text-foreground hover:text-primary underline-offset-4 hover:underline cursor-pointer"
+            >
               Sign in
-            </Link>
+            </a>
           </p>
         </div>
 

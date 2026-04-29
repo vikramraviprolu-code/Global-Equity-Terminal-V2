@@ -9,6 +9,7 @@ import { LandingAbout } from "@/components/landing-about";
 import { LandingAboutStory } from "@/components/landing-about-story";
 import { LandingHowItWorks } from "@/components/landing-how-it-works";
 import { LandingPersonas } from "@/components/landing-personas";
+import { openAuthPopup } from "@/lib/auth-popup";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -74,12 +75,15 @@ function LandingPage() {
               >
                 Launch Screener →
               </Link>
-              <Link
-                to="/auth"
-                className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
+              <a
+                href="/auth?popup=1"
+                target="_blank"
+                rel="noopener"
+                onClick={(e) => { e.preventDefault(); openAuthPopup(); }}
+                className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 Sign in / Sign up →
-              </Link>
+              </a>
             </div>
           </div>
         </section>

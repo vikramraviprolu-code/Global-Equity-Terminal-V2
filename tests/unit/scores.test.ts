@@ -30,6 +30,8 @@ function row(overrides: Partial<ScreenerRow> = {}): ScreenerRow {
     rsi: 55,
     volume: 1_000_000,
     avgVolume: 1_000_000,
+    closes: Array.from({ length: 60 }, (_, i) => 80 + i * 0.3),
+    isMock: false,
     ...(overrides as object),
   } as ScreenerRow;
 }

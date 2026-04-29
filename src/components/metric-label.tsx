@@ -1,5 +1,5 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { GLOSSARY, type GlossaryKey } from "@/lib/glossary";
+import { glossaryEntry, type GlossaryKey } from "@/lib/glossary";
 
 /**
  * Drop-in wrapper for any jargon term, metric label, or score badge.
@@ -22,7 +22,7 @@ export function MetricLabel({
   /** When true, render the trigger inline without the dotted underline affordance. */
   asChild?: boolean;
 }) {
-  const entry = GLOSSARY[term];
+  const entry = glossaryEntry(term);
   if (!entry) return <>{children ?? term}</>;
 
   return (

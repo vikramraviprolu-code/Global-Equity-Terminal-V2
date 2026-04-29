@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { CurrencyToggle } from "@/components/currency-toggle";
+import { AuthNav } from "@/components/auth-nav";
 
 type NavItem = { to: string; label: string; exact?: boolean };
 const NAV: NavItem[] = [
@@ -47,7 +48,7 @@ export function SiteNav({ right }: { right?: React.ReactNode }) {
             >
               ?
             </button>
-            {right}
+            {right ?? <AuthNav />}
           </div>
         </nav>
       </div>

@@ -9,7 +9,6 @@ import { LandingAbout } from "@/components/landing-about";
 import { LandingAboutStory } from "@/components/landing-about-story";
 import { LandingHowItWorks } from "@/components/landing-how-it-works";
 import { LandingPersonas } from "@/components/landing-personas";
-import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/")({
   head: () => ({

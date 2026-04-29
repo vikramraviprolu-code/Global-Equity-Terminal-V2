@@ -814,6 +814,32 @@ function Disclaimer() {
     </div>
   );
 }
+
+function ScreenerIntro({ meta, isLoading }: { meta?: { total: number; mockCount: number; liveCount: number; retrievedAt: string }; isLoading: boolean }) {
+  const refreshTime = meta ? new Date(meta.retrievedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—";
+  return (
+    <section className="border-b border-border bg-card/30">
+      <div className="max-w-[1400px] mx-auto px-4 py-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Workspace · Screener</div>
+          <h1 className="text-xl font-medium tracking-tight">Global Equity Screener</h1>
+          <p className="text-xs text-muted-foreground mt-1 max-w-[60ch]">
+            Filter, sort and score the curated global universe. Press <kbd className="font-mono text-[10px] border border-border rounded px-1.5 py-0.5">⌘K</kbd> to ask in plain English, or <kbd className="font-mono text-[10px] border border-border rounded px-1.5 py-0.5">?</kbd> for shortcuts.
+          </p>
+        </div>
+        <div className="flex items-center gap-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          <span>Universe: <span className="text-foreground">{meta?.total ?? "—"}</span></span>
+          <span>Live: <span className="text-[color:var(--bull)]">{meta?.liveCount ?? 0}</span></span>
+          <span>Mock: <span className="text-primary">{meta?.mockCount ?? 0}</span></span>
+          <span className="flex items-center gap-1.5">
+            <span className={`size-1.5 rounded-full ${isLoading ? "bg-primary animate-pulse" : "bg-[color:var(--bull)]"}`} />
+            <span>{isLoading ? "Syncing" : refreshTime}</span>
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
 function Footer() {
   return (
     <footer className="border-t border-border">

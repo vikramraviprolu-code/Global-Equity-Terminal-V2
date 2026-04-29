@@ -1,6 +1,6 @@
 # Global Equity Terminal
 
-> **v1.3.0 — "Console"** · A keyboard-driven, AI-augmented research terminal for global equities.
+> **v1.3.3 — "Console"** · A keyboard-driven, AI-augmented research terminal for global equities.
 
 Global Equity Terminal blends Bloomberg-style data density with an AI co-pilot
 layer. It's built for retail and prosumer investors who want fast research,
@@ -32,6 +32,7 @@ Hong Kong, Korea, Taiwan, Singapore, and Australia**.
 
 - **Frontend**: TanStack Start v1 + React 19, Vite 7, Tailwind CSS v4
 - **Backend**: Lovable Cloud (Postgres + Auth + RLS) via server functions
+- **Auth transport**: protected server calls attach the active session token explicitly and degrade to empty states on transient auth failures.
 - **AI**: Lovable AI Gateway (Gemini / GPT models) for narrative & catalysts
 - **Deploy**: Cloudflare Workers (edge SSR)
 

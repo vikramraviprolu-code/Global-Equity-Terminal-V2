@@ -423,7 +423,11 @@ export const GLOSSARY = {
     definition: "Replay of how a strategy or screener preset would have performed over historical data.",
     group: "navigation",
   },
-} satisfies Record<string, GlossaryEntry>;
+} as const satisfies Record<string, GlossaryEntry>;
 
 export type GlossaryKey = keyof typeof GLOSSARY;
+// Indexed accessor returning the broad GlossaryEntry shape (so `full`/`hint` stay optional).
+export const glossaryEntry = (k: GlossaryKey): GlossaryEntry => GLOSSARY[k] as GlossaryEntry;
+export const glossaryEntries = (): Array<[GlossaryKey, GlossaryEntry]> =>
+  (Object.entries(GLOSSARY) as Array<[GlossaryKey, GlossaryEntry]>);
 export const isGlossaryKey = (k: string): k is GlossaryKey => k in GLOSSARY;

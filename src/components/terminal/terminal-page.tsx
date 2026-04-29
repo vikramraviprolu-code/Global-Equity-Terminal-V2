@@ -15,6 +15,7 @@ import { downloadTerminalPdf } from "@/lib/pdf-report";
 import { onAction } from "@/lib/action-bus";
 import { AiNarrative } from "@/components/ai-narrative";
 import { NewsCatalysts } from "@/components/news-catalysts";
+import { MetricLabel } from "@/components/metric-label";
 
 const routeApi = getRouteApi("/terminal");
 

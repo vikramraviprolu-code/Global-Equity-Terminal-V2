@@ -22,7 +22,7 @@ export function MetricLabel({
   /** When true, render the trigger inline without the dotted underline affordance. */
   asChild?: boolean;
 }) {
-  const entry = GLOSSARY[term];
+  const entry = glossaryEntry(term);
   if (!entry) return <>{children ?? term}</>;
 
   return (

@@ -3,6 +3,32 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.3.1] — 2026-04-29 — "Console" (patch)
+
+Auth flow polish: signed-in users can now return to the landing page, and
+the Sign-in / Sign-up flow opens in a separate tab that auto-closes on
+success — keeping the original tab in place.
+
+### Added
+- **Home link** in the top nav for signed-in users — clear path back to the
+  landing page (the brand logo also continues to link home).
+- **Pop-up auth tab** — Sign-in / Sign-up CTAs now open `/auth?popup=1` in a
+  new browser tab. After successful auth, the tab posts an
+  `get-auth-success` message to the opener and closes itself; the original
+  tab refreshes its session in place.
+- New helper `src/lib/auth-popup.ts` to centralise the popup + opener
+  message handshake (with graceful fallback if popups are blocked).
+
+### Changed
+- `/auth` accepts a `popup` search param. When set, the page hides the
+  "← Back to home" link, shows a "Close this tab" affordance, and skips the
+  in-tab redirect to `/app` after success.
+- Removed the previous forced auto-redirect from `/` to `/app` for signed-in
+  users — the landing page is now reachable at any time.
+- Hardened Portfolio totals reads against `undefined` (`data?.totals?.cost`)
+  to prevent the router-level crash that blocked navigation back to the
+  landing page after sign-in.
+
 ## [1.3.0] — 2026-04-29 — "Console"
 
 Top navigation restructured from a flat 10-link bar into 4 grouped dropdowns,

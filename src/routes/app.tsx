@@ -10,8 +10,6 @@ import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { SiteNav } from "@/components/site-nav";
 import { SectorHeatmap } from "@/components/sector-heatmap";
-import { LandingHero } from "@/components/landing-hero";
-import { LandingAbout } from "@/components/landing-about";
 import { exportRowsCsv, exportNodeAsPng } from "@/lib/export";
 import { Sparkline as SparkLineShared } from "@/components/sparkline";
 import { onAction } from "@/lib/action-bus";
@@ -51,7 +49,7 @@ const searchSchema = z.object({
 
 type Filters = z.infer<typeof searchSchema>;
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/app")({
   head: () => ({
     meta: [
       { title: "Global Equity Terminal v2 — Stock Screener & Discovery" },
@@ -188,9 +186,9 @@ function ScreenerPage() {
   const { items: watchlist, add: addWatch, remove: removeWatch } = useWatchlist();
 
   const setFilters = (next: Partial<Filters>) =>
-    navigate({ to: "/", search: ((prev: Filters) => ({ ...prev, ...next, page: next.page ?? 1 })) as any });
+    navigate({ to: "/app", search: ((prev: Filters) => ({ ...prev, ...next, page: next.page ?? 1 })) as any });
   const replaceFilters = (next: Filters) =>
-    navigate({ to: "/", search: { ...next, page: 1 } });
+    navigate({ to: "/app", search: { ...next, page: 1 } });
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -264,9 +262,7 @@ function ScreenerPage() {
     <div className="min-h-screen flex flex-col">
       <SiteNav right={<button onClick={() => refetch()} disabled={isFetching} className="bg-primary text-primary-foreground px-3 py-1.5 rounded hover:opacity-90 disabled:opacity-50">{isFetching ? "Refreshing…" : "Refresh"}</button>} />
       <main className="flex-1">
-        <LandingHero meta={data?.meta} rows={scored} isLoading={isLoading} onPickPreset={(id) => { onPickPreset(id); document.getElementById("screener")?.scrollIntoView({ behavior: "smooth" }); }} />
-        <LandingAbout />
-        <div id="screener" />
+        <ScreenerHeader meta={data?.meta} isLoading={isLoading} />
         <PresetBar current={filters.preset} onPick={onPickPreset} />
         <FilterBar filters={filters} setFilters={setFilters} sectors={sectors} onReset={() => replaceFilters(DEFAULT_FILTERS)} />
 

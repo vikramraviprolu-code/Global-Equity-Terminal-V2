@@ -150,7 +150,7 @@ function AlertRow({ a, headers }: { a: any; headers?: HeadersInit }) {
   );
 }
 
-function NewAlertForm({ onCreated }: { onCreated: () => void }) {
+function NewAlertForm({ headers, onCreated }: { headers?: HeadersInit; onCreated: () => void }) {
   const [symbol, setSymbol] = useState("");
   const [type, setType] = useState<AlertType>("price_above");
   const [threshold, setThreshold] = useState("");
@@ -161,7 +161,7 @@ function NewAlertForm({ onCreated }: { onCreated: () => void }) {
     e.preventDefault();
     setBusy(true);
     try {
-      await addAlert({ data: { symbol: symbol.trim().toUpperCase(), alertType: type, threshold: Number(threshold) } });
+      await addAlert({ data: { symbol: symbol.trim().toUpperCase(), alertType: type, threshold: Number(threshold) }, headers });
       toast.success(`Alert created for ${symbol.toUpperCase()}`);
       setSymbol(""); setThreshold("");
       onCreated();

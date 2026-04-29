@@ -19,6 +19,7 @@ import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DataQualityRouteImport } from './routes/data-quality'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as IndexRouteImport } from './routes/index'
@@ -74,6 +75,11 @@ const CompareRoute = CompareRouteImport.update({
   path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alerts': typeof AlertsRoute
   '/auth': typeof AuthRoute
+  '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
   '/data-quality': typeof DataQualityRoute
   '/events': typeof EventsRoute
@@ -115,6 +122,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alerts': typeof AlertsRoute
   '/auth': typeof AuthRoute
+  '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
   '/data-quality': typeof DataQualityRoute
   '/events': typeof EventsRoute
@@ -132,6 +140,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/alerts': typeof AlertsRoute
   '/auth': typeof AuthRoute
+  '/changelog': typeof ChangelogRoute
   '/compare': typeof CompareRoute
   '/data-quality': typeof DataQualityRoute
   '/events': typeof EventsRoute
@@ -150,6 +159,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alerts'
     | '/auth'
+    | '/changelog'
     | '/compare'
     | '/data-quality'
     | '/events'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alerts'
     | '/auth'
+    | '/changelog'
     | '/compare'
     | '/data-quality'
     | '/events'
@@ -182,6 +193,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alerts'
     | '/auth'
+    | '/changelog'
     | '/compare'
     | '/data-quality'
     | '/events'
@@ -199,6 +211,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlertsRoute: typeof AlertsRoute
   AuthRoute: typeof AuthRoute
+  ChangelogRoute: typeof ChangelogRoute
   CompareRoute: typeof CompareRoute
   DataQualityRoute: typeof DataQualityRoute
   EventsRoute: typeof EventsRoute
@@ -283,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -330,6 +350,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlertsRoute: AlertsRoute,
   AuthRoute: AuthRoute,
+  ChangelogRoute: ChangelogRoute,
   CompareRoute: CompareRoute,
   DataQualityRoute: DataQualityRoute,
   EventsRoute: EventsRoute,

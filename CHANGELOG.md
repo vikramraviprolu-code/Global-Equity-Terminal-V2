@@ -3,6 +3,22 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.4.1] — 2026-04-29 — "Console" (patch)
+
+App-wide error boundary so render errors never produce a blank screen.
+
+### Added
+- `<AppErrorBoundary>` wraps `<Outlet />` in `__root.tsx`. Catches any uncaught
+  render error in any route or descendant component and shows a recoverable
+  card (error message + Try again / Home) instead of the white screen of death.
+- Errors are logged to console with component stack for ops visibility
+  (Sentry-ready hook point in `componentDidCatch`).
+
+### Notes
+- Router-level `defaultErrorComponent` already covered loader throws; this
+  closes the gap for render-time and hook-time errors (e.g. unexpected
+  `useQuery` data shapes, missing fields, third-party widget failures).
+
 ## [1.4.0] — 2026-04-29 — "Console" (minor)
 
 Automated regression test suite, gated on every build.

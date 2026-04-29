@@ -5,6 +5,7 @@ import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import { CommandBar } from "@/components/command-bar";
 import { AuthProvider } from "@/hooks/use-auth";
+import { AppErrorBoundary } from "@/components/error-boundary";
 import { Toaster } from "sonner";
 
 function NotFoundComponent() {
@@ -73,9 +74,11 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Outlet />
-        <KeyboardShortcuts />
-        <CommandBar />
+        <AppErrorBoundary>
+          <Outlet />
+          <KeyboardShortcuts />
+          <CommandBar />
+        </AppErrorBoundary>
         <Toaster theme="dark" position="top-right" richColors closeButton />
       </AuthProvider>
     </QueryClientProvider>

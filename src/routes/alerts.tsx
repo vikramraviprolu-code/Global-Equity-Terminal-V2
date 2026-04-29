@@ -45,13 +45,25 @@ function AlertsPage() {
 
 function AlertsContent() {
   const qc = useQueryClient();
+  const { session } = useAuth();
+  const token = session?.access_token;
+  const authHeaders = token ? { Authorization: `Bearer ${token}` } : undefined;
   const { data, isLoading } = useQuery({
     queryKey: ["alerts"],
-    queryFn: () => listAlerts(),
+    queryFn: async () => {
+      if (!authHeaders) return { alerts: [] } as any;
+      try {
+        return await listAlerts({ headers: authHeaders });
+      } catch {
+        return { alerts: [] } as any;
+      }
+    },
+    enabled: !!token,
+    retry: false,
   });
 
   const evalMut = useMutation({
-    mutationFn: () => evaluateMyAlerts({ data: undefined as any }),
+    mutationFn: () => authHeaders ? evaluateMyAlerts({ data: undefined as any, headers: authHeaders }) : Promise.resolve({ fired: 0 }),
     onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: ["alert-events"] });
       toast.success(r.fired === 0 ? "Checked — nothing triggered" : `${r.fired} alert${r.fired === 1 ? "" : "s"} triggered`);
@@ -77,7 +89,7 @@ function AlertsContent() {
 
         <Card className="mb-5">
           <CardHeader><CardTitle className="text-sm font-mono uppercase tracking-widest">New alert</CardTitle></CardHeader>
-          <CardContent><NewAlertForm onCreated={() => qc.invalidateQueries({ queryKey: ["alerts"] })} /></CardContent>
+          <CardContent><NewAlertForm headers={authHeaders} onCreated={() => qc.invalidateQueries({ queryKey: ["alerts"] })} /></CardContent>
         </Card>
 
         <Card>
@@ -96,7 +108,7 @@ function AlertsContent() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.alerts.map((a: any) => <AlertRow key={a.id} a={a} />)}
+                    {data.alerts.map((a: any) => <AlertRow key={a.id} a={a} headers={authHeaders} />)}
                   </tbody>
                 </table>
               </div>
@@ -109,14 +121,14 @@ function AlertsContent() {
   );
 }
 
-function AlertRow({ a }: { a: any }) {
+function AlertRow({ a, headers }: { a: any; headers?: HeadersInit }) {
   const qc = useQueryClient();
   const tog = useMutation({
-    mutationFn: (active: boolean) => toggleAlert({ data: { id: a.id, active } }),
+    mutationFn: (active: boolean) => toggleAlert({ data: { id: a.id, active }, headers }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["alerts"] }),
   });
   const del = useMutation({
-    mutationFn: () => deleteAlert({ data: { id: a.id } }),
+    mutationFn: () => deleteAlert({ data: { id: a.id }, headers }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["alerts"] }); toast.success("Alert removed"); },
   });
   const typeMeta = TYPES.find((t) => t.v === a.alert_type);

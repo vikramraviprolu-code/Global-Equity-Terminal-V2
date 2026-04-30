@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { fetchUniverse } from "@/server/screen.functions";
 import { scoreAll } from "@/lib/scores";
 import { SiteNav, Disclaimer } from "@/components/site-nav";
+import { StatGridSkeleton, TableSkeleton } from "@/components/feedback-states";
 
 export const Route = createFileRoute("/data-quality")({
   head: () => ({

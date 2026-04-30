@@ -121,6 +121,39 @@ export type Database = {
         }
         Relationships: []
       }
+      brief_schedules: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          hour_utc: number
+          id: string
+          last_run_at: string | null
+          symbols: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          hour_utc?: number
+          id?: string
+          last_run_at?: string | null
+          symbols?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          hour_utc?: number
+          id?: string
+          last_run_at?: string | null
+          symbols?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       error_logs: {
         Row: {
           app_version: string | null
@@ -246,6 +279,7 @@ export type Database = {
         | "near_52w_low"
         | "pct_change_above"
         | "pct_change_below"
+        | "thesis_break"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -382,6 +416,7 @@ export const Constants = {
         "near_52w_low",
         "pct_change_above",
         "pct_change_below",
+        "thesis_break",
       ],
     },
   },

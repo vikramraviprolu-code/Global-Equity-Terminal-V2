@@ -80,3 +80,35 @@
   .panel-header::before { content: ""; width: 6px; height: 6px; background: var(--color-amber); border-radius: 1px; }
   .ticker-tag { display: inline-block; padding: 2px 6px; border: 1px solid var(--color-border); border-radius: 2px; font-family: var(--font-mono); font-size: 11px; }
 }
+
+@layer base {
+  /* Global keyboard focus indicator. Mouse/touch users don't see it
+     (focus-visible only fires on keyboard navigation). */
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  /* sr-only utility used by the skip-link. */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+  .focus\:not-sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+}

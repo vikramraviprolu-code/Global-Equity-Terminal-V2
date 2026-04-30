@@ -443,6 +443,27 @@ export const GLOSSARY = {
     definition: "Vitest unit + Playwright E2E tests run on every build to block regressions to routes, screener, terminal deep-links, and auth gating.",
     group: "navigation",
   },
+  newsCatalysts: {
+    term: "News & Catalysts",
+    definition: "AI-paraphrased summary of what is moving a stock right now, with citations linking back to original publishers.",
+    hint: "Powered by Perplexity. Verify with cited sources.",
+    group: "navigation",
+  },
+  legal: {
+    term: "Legal",
+    definition: "Disclaimer page covering not-investment-advice, data attribution, AI-content caveat, third-party trademarks, and limitation of liability.",
+    group: "navigation",
+  },
+  dataRights: {
+    term: "Data rights",
+    definition: "Market data, fundamentals, and news content remain the property of their original publishers and exchanges; the terminal displays them under each upstream provider's terms of service.",
+    group: "data",
+  },
+  errorLogs: {
+    term: "Error logs",
+    definition: "Production error pipeline: client errors are reported to a backend table for visibility, deduped within 60s, never blocking the user.",
+    group: "data",
+  },
 } as const satisfies Record<string, GlossaryEntry>;
 
 export type GlossaryKey = keyof typeof GLOSSARY;

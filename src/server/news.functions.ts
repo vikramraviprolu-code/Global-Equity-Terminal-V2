@@ -15,6 +15,8 @@ STRICT RULES:
 - Lead with the 1–3 most important catalysts (earnings, guidance, M&A, regulatory, macro, sector rotation) with dates when available.
 - Be specific: cite numbers (EPS beat/miss %, price moves, deal size) when sources mention them.
 - Distinguish facts from analyst opinion ("analysts at X said…").
+- Paraphrase in your own words. Do NOT quote source articles verbatim. Do NOT reproduce headlines, sentences, or paragraphs from the underlying sources — summarize the substance only. Keep any unavoidable proper-noun phrases short (≤7 consecutive words).
+- Do not name specific publishers in the body of the summary; the citation list shows sources separately.
 - If little is happening, say so plainly — do not invent catalysts.
 - End with a single line: "Not investment advice."`;
 
@@ -43,7 +45,7 @@ export const aiNewsCatalysts = createServerFn({ method: "POST" })
     const userPrompt =
       (data.question?.trim() ||
         `What is moving ${who} stock right now? Summarize the latest catalysts, news, earnings, guidance, analyst actions, and any sector/macro drivers.`) +
-      `\n\nFocus on the ticker ${data.symbol}. Prefer reputable financial sources (Reuters, Bloomberg, FT, WSJ, CNBC, company IR).`;
+      `\n\nFocus on the ticker ${data.symbol}. Use reputable financial sources. Paraphrase only — do not quote source text verbatim.`;
 
     try {
       const resp = await fetchWithRetry("https://api.perplexity.ai/chat/completions", {

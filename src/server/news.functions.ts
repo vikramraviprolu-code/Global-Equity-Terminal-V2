@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { fetchWithRetry } from "./http.server";
 
 /**
  * News & Catalysts via Perplexity — answers "what's moving this stock?"
@@ -45,7 +46,7 @@ export const aiNewsCatalysts = createServerFn({ method: "POST" })
       `\n\nFocus on the ticker ${data.symbol}. Prefer reputable financial sources (Reuters, Bloomberg, FT, WSJ, CNBC, company IR).`;
 
     try {
-      const resp = await fetch("https://api.perplexity.ai/chat/completions", {
+      const resp = await fetchWithRetry("https://api.perplexity.ai/chat/completions", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
@@ -60,6 +61,8 @@ export const aiNewsCatalysts = createServerFn({ method: "POST" })
           temperature: 0.2,
           search_recency_filter: data.recency ?? "week",
         }),
+        timeoutMs: 30_000,
+        label: "perplexity-news",
       });
 
       if (!resp.ok) {

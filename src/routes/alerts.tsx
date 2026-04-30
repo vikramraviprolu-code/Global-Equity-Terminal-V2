@@ -26,6 +26,8 @@ const TYPES: { v: AlertType; label: string; hint: string }[] = [
   { v: "pct_change_below", label: "5d perf ≤ %", hint: "5-day performance drops below threshold." },
 ];
 
+// thesis_break alerts are auto-fired by Thesis Tracker — not user-creatable, so excluded from TYPES.
+
 export const Route = createFileRoute("/alerts")({
   head: () => ({
     meta: [

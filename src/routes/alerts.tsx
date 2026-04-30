@@ -11,8 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, BellRing } from "lucide-react";
 import { toast } from "sonner";
+import { EmptyState, TableSkeleton } from "@/components/feedback-states";
 
 const TYPES: { v: AlertType; label: string; hint: string }[] = [
   { v: "price_above", label: "Price ≥", hint: "Triggers when last price crosses above the threshold." },

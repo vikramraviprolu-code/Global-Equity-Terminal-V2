@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from "react";
+import { logClientError } from "@/lib/error-log";
 
 interface Props {
   children: ReactNode;

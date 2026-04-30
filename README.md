@@ -1,6 +1,6 @@
 # Global Equity Terminal
 
-> **v1.5.2 — "Console"** · A keyboard-driven, AI-augmented research terminal for global equities.
+> **v1.6.0 — "Differentiator"** · A keyboard-driven, AI-augmented research terminal for global equities.
 
 Global Equity Terminal blends terminal-style data density with an AI co-pilot
 layer. It's built for retail and prosumer investors who want fast research,
@@ -14,8 +14,15 @@ Hong Kong, Korea, Taiwan, Singapore, and Australia**.
   proximity to 52-week range. Visualize as table, cards, or sector heatmap.
 - **Terminal page** — per-ticker deep dive: price chart, technicals,
   fundamentals, transparent **Value / Momentum / Quality / Risk / Confidence**
-  scores, AI narrative, news catalysts with cited sources, and **diff mode** to
-  compare snapshots over time.
+  scores, AI narrative, **Ask the Terminal** chat, news catalysts with cited
+  sources, and **diff mode** to compare snapshots over time.
+- **Ask the Terminal** *(new in v1.6)* — conversational Q&A docked to every
+  ticker page, grounded strictly in the metrics already on screen.
+- **AI Morning Brief** *(new in v1.6)* — one-paragraph digest of overnight
+  moves across your watchlist, with chips for the biggest movers.
+- **Thesis Tracker** *(new in v1.6)* — write a one-paragraph thesis per
+  ticker; the terminal re-evaluates it against live metrics and flags when
+  it's `intact` / `monitor` / `breaking` / `broken`.
 - **Compare & Watchlists** — side-by-side ticker comparison and persistent
   watchlists synced to your account.
 - **Portfolio** — holdings with live valuation, unrealized P&L, and allocation
@@ -43,15 +50,15 @@ Hong Kong, Korea, Taiwan, Singapore, and Australia**.
   Personas, and final CTA. Signed-in users are auto-redirected to `/app`.
 - `/app` — the workspace: screener, filters, presets, table / cards / heatmap.
   All URL search state is preserved, so deep links still work.
-- `/terminal/$symbol`, `/compare`, `/watchlist`, `/portfolio`, `/alerts`,
-  `/events`, `/data-quality`, `/sources`, `/settings`, `/changelog`, `/auth`.
+- `/terminal/$symbol`, `/compare`, `/watchlist`, `/portfolio`, `/theses`, `/alerts`,
+  `/events`, `/data-quality`, `/sources`, `/settings`, `/changelog`, `/auth`, `/legal`.
 
 ## Getting around
 
 The top nav is grouped into 4 dropdown menus:
 
 - **Research** — Screener · Analysis · Compare
-- **Workspace** — Watchlists · Portfolio · Alerts
+- **Workspace** — Watchlists · Portfolio · Theses · Alerts
 - **Market** — Events
 - **System** — Data Quality · Sources · Settings
 

@@ -29,6 +29,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/watchlist", label: "Watchlists" },
       { to: "/portfolio", label: "Portfolio" },
+      { to: "/theses", label: "Theses" },
       { to: "/alerts", label: "Alerts" },
     ],
   },

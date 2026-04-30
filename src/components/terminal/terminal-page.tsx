@@ -14,6 +14,7 @@ import { provenanceFor } from "@/lib/sourced";
 import { downloadTerminalPdf } from "@/lib/pdf-report";
 import { onAction } from "@/lib/action-bus";
 import { AiNarrative } from "@/components/ai-narrative";
+import { AskTerminal } from "@/components/ask-terminal";
 import { NewsCatalysts } from "@/components/news-catalysts";
 import { MetricLabel } from "@/components/metric-label";
 
@@ -457,6 +458,7 @@ function OverviewSection({ r }: { r: Success }) {
         </div>
       </div>
       <AiNarrative symbol={t.symbol} facts={facts} />
+      <AskTerminal symbol={t.symbol} facts={facts} />
       <NewsCatalysts symbol={t.symbol} name={(t as any).companyName ?? undefined} />
     </div>
   );

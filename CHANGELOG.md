@@ -3,6 +3,21 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.6.0] — 2026-04-30 — "Differentiator" (minor)
+
+USP release — three AI-native features competitors don't bundle today.
+
+### Added
+- **Ask the Terminal** (`src/components/ask-terminal.tsx`, `src/server/v16.functions.ts → askTerminal`) — conversational Q&A docked to every ticker page. The chat is grounded in the same `facts` block used by the AI Narrative (price, valuation, momentum, recommendation), so the model never invents numbers. 4 starter prompts, 500-char input cap, 20-turn history window. Non-streaming for parity with existing AI helpers.
+- **AI Morning Brief** (`src/components/morning-brief.tsx`, `generateBrief`) — one-paragraph digest of overnight moves over the active watchlist (up to 30 tickers). Highlights the 5 largest |5D %| movers as colored chips. Persists each run to `brief_runs` (RLS-scoped) for history. On-demand generation only — no auto-burn of AI credits.
+- **Thesis Tracker** (`src/routes/theses.tsx`, `upsertThesis` / `listTheses` / `evaluateThesis` / `deleteThesis`) — write a one-paragraph thesis per ticker; AI re-evaluates against live metrics on demand and tags it `intact` / `monitor` / `breaking` / `broken` with 2–4 sentence rationale. Tool-calling enforces structured verdicts. Unique per `(user_id, symbol)`.
+- **Schema** — new `theses` and `brief_runs` tables. Both RLS-scoped to `auth.uid()`. `theses.updated_at` is auto-maintained by the existing `set_updated_at()` trigger.
+- **Nav** — `/theses` added to the Workspace group.
+
+### Notes
+- All three features go through the existing `chat()` helper → Lovable AI Gateway. No new secrets, no new providers, no new redistribution risk.
+- Prompts inherit the v1.5.2 hardening: never quote articles verbatim, never name publishers, never invent numbers.
+
 ## [1.5.2] — 2026-04-30 — "Console" (patch)
 
 Data-rights hygiene — tighten news prompt, attribute upstream sources, propagate disclaimer to PDF exports.

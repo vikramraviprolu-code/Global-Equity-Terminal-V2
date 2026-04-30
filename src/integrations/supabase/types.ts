@@ -94,6 +94,33 @@ export type Database = {
         }
         Relationships: []
       }
+      brief_runs: {
+        Row: {
+          created_at: string
+          highlights: Json | null
+          id: string
+          summary: string
+          symbols: string[]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          highlights?: Json | null
+          id?: string
+          summary: string
+          symbols: string[]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          highlights?: Json | null
+          id?: string
+          summary?: string
+          symbols?: string[]
+          user_id?: string
+        }
+        Relationships: []
+      }
       error_logs: {
         Row: {
           app_version: string | null
@@ -161,6 +188,42 @@ export type Database = {
           notes?: string | null
           shares?: number
           symbol?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      theses: {
+        Row: {
+          created_at: string
+          evaluated_at: string | null
+          id: string
+          rationale: string | null
+          status: string
+          symbol: string
+          thesis: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          evaluated_at?: string | null
+          id?: string
+          rationale?: string | null
+          status?: string
+          symbol: string
+          thesis: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          evaluated_at?: string | null
+          id?: string
+          rationale?: string | null
+          status?: string
+          symbol?: string
+          thesis?: string
           updated_at?: string
           user_id?: string
         }

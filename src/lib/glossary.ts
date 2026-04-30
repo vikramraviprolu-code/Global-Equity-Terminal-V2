@@ -464,6 +464,24 @@ export const GLOSSARY = {
     definition: "Production error pipeline: client errors are reported to a backend table for visibility, deduped within 60s, never blocking the user.",
     group: "data",
   },
+  askTerminal: {
+    term: "Ask the Terminal",
+    definition: "Conversational AI panel docked to a ticker page. Answers grounded in the metrics on screen — never invents prices, news, or forecasts.",
+    hint: "Powered by Lovable AI. Not investment advice.",
+    group: "navigation",
+  },
+  morningBrief: {
+    term: "AI Morning Brief",
+    definition: "One-paragraph AI digest of overnight moves across your watchlist, with chips for the biggest movers.",
+    hint: "On-demand only. Persists each run for history.",
+    group: "navigation",
+  },
+  thesisTracker: {
+    term: "Thesis Tracker",
+    definition: "Write a one-paragraph thesis per ticker; the terminal re-evaluates it against live metrics on demand.",
+    hint: "Verdicts: intact / monitor / breaking / broken.",
+    group: "navigation",
+  },
 } as const satisfies Record<string, GlossaryEntry>;
 
 export type GlossaryKey = keyof typeof GLOSSARY;

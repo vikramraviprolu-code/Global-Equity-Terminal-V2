@@ -3,6 +3,20 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.4.4] — 2026-04-30 — "Console" (patch)
+
+UX polish — skeleton loaders and friendlier empty states across data-heavy panels.
+
+### Added
+- **Shared feedback primitives** in `src/components/feedback-states.tsx` — `EmptyState`, `EmptyStateLink`, `TableSkeleton`, `StatGridSkeleton`, `ParagraphSkeleton`. Single source of truth for loading and zero-data UX.
+- **Skeleton loaders** replacing plain `LOADING…` placeholders on Screener, Watchlist, Compare, Portfolio, Alerts, Events, Data Quality, AI Narrative and News & Catalysts. Shimmering rows preserve layout and reduce perceived wait, especially after the retry/timeout behaviour added in v1.4.2.
+- **Friendlier empty states** with explanatory copy and a clear next action (e.g. "Open Screener", "Add your first holding"). Replaces terse one-liners like "No holdings yet." or "is empty.".
+
+### Changed
+- Screener, Watchlist, Compare, Events, Data Quality now render a layout-preserving skeleton table on first load instead of a single centered `LOADING UNIVERSE…` line.
+- Portfolio "No holdings" empty state now shows an icon, descriptive copy, and a primary "Add your first holding" CTA.
+- Events "Watchlist is empty" and "No events in this window" use shared empty-state styling for consistency.
+
 ## [1.4.3] — 2026-04-29 — "Console" (patch)
 
 Accessibility pass and server-input audit.

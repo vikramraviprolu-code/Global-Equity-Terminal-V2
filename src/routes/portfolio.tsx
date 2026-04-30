@@ -102,12 +102,18 @@ function PortfolioContent() {
           <CardHeader><CardTitle className="text-sm font-mono uppercase tracking-widest">Positions</CardTitle></CardHeader>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="p-6 text-center text-xs text-muted-foreground">Loading…</div>
+              <TableSkeleton columns={8} rows={6} />
             ) : !data || data.positions.length === 0 ? (
-              <div className="p-8 text-center">
-                <p className="text-sm text-muted-foreground mb-3">No holdings yet.</p>
-                <Button size="sm" onClick={() => setOpen(true)}><Plus className="w-3.5 h-3.5 mr-1" /> Add your first holding</Button>
-              </div>
+              <EmptyState
+                icon={<Briefcase className="w-8 h-8" />}
+                title="No holdings yet"
+                description="Add your first position to see live valuation, P&L, and allocation by sector and region."
+                action={
+                  <Button size="sm" onClick={() => setOpen(true)}>
+                    <Plus className="w-3.5 h-3.5 mr-1" /> Add your first holding
+                  </Button>
+                }
+              />
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">

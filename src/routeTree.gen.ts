@@ -16,6 +16,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
+import { Route as LegalRouteImport } from './routes/legal'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DataQualityRouteImport } from './routes/data-quality'
 import { Route as CompareRouteImport } from './routes/compare'
@@ -59,6 +60,11 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
 const PortfolioRoute = PortfolioRouteImport.update({
   id: '/portfolio',
   path: '/portfolio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalRoute = LegalRouteImport.update({
+  id: '/legal',
+  path: '/legal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsRoute = EventsRouteImport.update({
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/compare': typeof CompareRoute
   '/data-quality': typeof DataQualityRoute
   '/events': typeof EventsRoute
+  '/legal': typeof LegalRoute
   '/portfolio': typeof PortfolioRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/settings': typeof SettingsRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/compare': typeof CompareRoute
   '/data-quality': typeof DataQualityRoute
   '/events': typeof EventsRoute
+  '/legal': typeof LegalRoute
   '/portfolio': typeof PortfolioRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/settings': typeof SettingsRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/compare': typeof CompareRoute
   '/data-quality': typeof DataQualityRoute
   '/events': typeof EventsRoute
+  '/legal': typeof LegalRoute
   '/portfolio': typeof PortfolioRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/settings': typeof SettingsRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/data-quality'
     | '/events'
+    | '/legal'
     | '/portfolio'
     | '/robots.txt'
     | '/settings'
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/data-quality'
     | '/events'
+    | '/legal'
     | '/portfolio'
     | '/robots.txt'
     | '/settings'
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/data-quality'
     | '/events'
+    | '/legal'
     | '/portfolio'
     | '/robots.txt'
     | '/settings'
@@ -228,6 +240,7 @@ export interface RootRouteChildren {
   CompareRoute: typeof CompareRoute
   DataQualityRoute: typeof DataQualityRoute
   EventsRoute: typeof EventsRoute
+  LegalRoute: typeof LegalRoute
   PortfolioRoute: typeof PortfolioRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SettingsRoute: typeof SettingsRoute
@@ -286,6 +299,13 @@ declare module '@tanstack/react-router' {
       path: '/portfolio'
       fullPath: '/portfolio'
       preLoaderRoute: typeof PortfolioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal': {
+      id: '/legal'
+      path: '/legal'
+      fullPath: '/legal'
+      preLoaderRoute: typeof LegalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events': {
@@ -375,6 +395,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompareRoute: CompareRoute,
   DataQualityRoute: DataQualityRoute,
   EventsRoute: EventsRoute,
+  LegalRoute: LegalRoute,
   PortfolioRoute: PortfolioRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SettingsRoute: SettingsRoute,

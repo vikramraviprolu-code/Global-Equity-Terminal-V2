@@ -133,10 +133,9 @@ function LegalPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-8">
-      <h2
-        className="text-sm font-mono uppercase tracking-widest text-primary mb-3"
-        dangerouslySetInnerHTML={{ __html: title }}
-      />
+      <h2 className="text-sm font-mono uppercase tracking-widest text-primary mb-3">
+        {title}
+      </h2>
       <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">{children}</div>
     </section>
   );

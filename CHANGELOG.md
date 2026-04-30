@@ -3,6 +3,16 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.5.1] — 2026-04-30 — "Console" (patch)
+
+IP & disclaimer hygiene — reduce trademark/legal risk surface.
+
+### Added
+- **`/legal` route** — formal "not investment advice" disclaimer, data-source attribution language, AI-content caveat, third-party trademark notice, copyright statement, and limitation-of-liability boilerplate. Linked from the landing-page footer.
+
+### Changed
+- README: replaced "Bloomberg-style data density" with "terminal-style data density" to avoid implying affiliation with the Bloomberg trademark.
+
 ## [1.5.0] — 2026-04-30 — "Console" (minor)
 
 Production hardening — error visibility, query defaults, mobile pass.

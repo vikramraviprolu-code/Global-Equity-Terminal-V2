@@ -309,11 +309,12 @@ function DayGroup({ date, events, watchlist, onAdd, onRemove, onOpen }: {
 
 function EmptyWatchlist() {
   return (
-    <div className="panel p-10 text-center mt-4">
-      <div className="font-mono text-xs text-muted-foreground uppercase tracking-wider">Watchlist is empty</div>
-      <p className="text-xs text-muted-foreground mt-2">
-        Add tickers from the <Link to="/app" className="text-primary underline">Screener</Link> or <Link to="/terminal" className="text-primary underline">Terminal</Link> to track their events.
-      </p>
+    <div className="panel mt-4">
+      <EmptyState
+        title="Your watchlist is empty"
+        description="Add tickers from the Screener or any Terminal page to track upcoming earnings, ex-dividend dates, and splits."
+        action={<EmptyStateLink to="/app">Open Screener</EmptyStateLink>}
+      />
     </div>
   );
 }

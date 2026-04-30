@@ -3,6 +3,29 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.4.2] — 2026-04-29 — "Console" (patch)
+
+Hardened all outbound HTTP calls with retry + per-attempt timeout.
+
+### Added
+- `src/server/http.server.ts` exposes `fetchWithRetry`: shared helper with
+  exponential backoff (250ms → 1s → 4s, 3 attempts), 12s default per-attempt
+  timeout (30s for AI/news), and an explicit retry whitelist (network errors,
+  408, 425, 429, 5xx). 4xx responses bypass retry — they're deterministic.
+
+### Changed
+- Finimpulse client (`finimpulse.server.ts`, `analyze.ts`) now uses
+  `fetchWithRetry`. Transient 502/503/504s no longer surface as failed
+  analysis; the universe + ticker analyze pipelines self-heal.
+- Lovable AI gateway (`ai.server.ts`) wrapped with retry. AI narrative and
+  ⌘K co-pilot survive transient gateway blips.
+- Perplexity news (`news.functions.ts`) wrapped with retry. Recovers from
+  upstream rate limits (429) and transient 5xx without user-visible errors.
+
+### Notes
+- Logs every retry with status/error so transient upstream issues are
+  observable without surfacing to the user.
+
 ## [1.4.1] — 2026-04-29 — "Console" (patch)
 
 App-wide error boundary so render errors never produce a blank screen.

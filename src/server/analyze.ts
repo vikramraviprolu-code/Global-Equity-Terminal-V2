@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { fetchWithRetry } from "./http.server";
 
 const FI_BASE = "https://api.finimpulse.com/v1";
 
@@ -11,10 +12,11 @@ function key() {
 
 async function fi<T = any>(path: string, body: Record<string, unknown>): Promise<T | null> {
   try {
-    const res = await fetch(`${FI_BASE}${path}`, {
+    const res = await fetchWithRetry(`${FI_BASE}${path}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key()}` },
       body: JSON.stringify(body),
+      label: `finimpulse${path}`,
     });
     if (!res.ok) return null;
     const json = (await res.json()) as any;
@@ -24,6 +26,7 @@ async function fi<T = any>(path: string, body: Record<string, unknown>): Promise
     return null;
   }
 }
+
 
 // ---------- indicators ----------
 function sma(vals: number[], period: number): number | null {

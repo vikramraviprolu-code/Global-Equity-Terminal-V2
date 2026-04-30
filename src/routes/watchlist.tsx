@@ -9,6 +9,7 @@ import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import { useWatchlistNamed, WATCHLIST_NAMES, readAllWatchlists, type WatchlistName } from "@/hooks/use-watchlist";
 import { SiteNav, Disclaimer } from "@/components/site-nav";
 import { Sparkline } from "@/components/sparkline";
+import { MorningBrief } from "@/components/morning-brief";
 import { EmptyState, EmptyStateLink, TableSkeleton } from "@/components/feedback-states";
 
 export const Route = createFileRoute("/watchlist")({

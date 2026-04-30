@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WatchlistRouteImport } from './routes/watchlist'
+import { Route as ThesesRouteImport } from './routes/theses'
 import { Route as TerminalRouteImport } from './routes/terminal'
 import { Route as SourcesRouteImport } from './routes/sources'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -30,6 +31,11 @@ import { Route as TerminalSymbolRouteImport } from './routes/terminal.$symbol'
 const WatchlistRoute = WatchlistRouteImport.update({
   id: '/watchlist',
   path: '/watchlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ThesesRoute = ThesesRouteImport.update({
+  id: '/theses',
+  path: '/theses',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TerminalRoute = TerminalRouteImport.update({
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sources': typeof SourcesRoute
   '/terminal': typeof TerminalRouteWithChildren
+  '/theses': typeof ThesesRoute
   '/watchlist': typeof WatchlistRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
 }
@@ -148,6 +155,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sources': typeof SourcesRoute
   '/terminal': typeof TerminalRouteWithChildren
+  '/theses': typeof ThesesRoute
   '/watchlist': typeof WatchlistRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
 }
@@ -168,6 +176,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sources': typeof SourcesRoute
   '/terminal': typeof TerminalRouteWithChildren
+  '/theses': typeof ThesesRoute
   '/watchlist': typeof WatchlistRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
 }
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sources'
     | '/terminal'
+    | '/theses'
     | '/watchlist'
     | '/terminal/$symbol'
   fileRoutesByTo: FileRoutesByTo
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sources'
     | '/terminal'
+    | '/theses'
     | '/watchlist'
     | '/terminal/$symbol'
   id:
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sources'
     | '/terminal'
+    | '/theses'
     | '/watchlist'
     | '/terminal/$symbol'
   fileRoutesById: FileRoutesById
@@ -247,6 +259,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SourcesRoute: typeof SourcesRoute
   TerminalRoute: typeof TerminalRouteWithChildren
+  ThesesRoute: typeof ThesesRoute
   WatchlistRoute: typeof WatchlistRoute
 }
 
@@ -257,6 +270,13 @@ declare module '@tanstack/react-router' {
       path: '/watchlist'
       fullPath: '/watchlist'
       preLoaderRoute: typeof WatchlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/theses': {
+      id: '/theses'
+      path: '/theses'
+      fullPath: '/theses'
+      preLoaderRoute: typeof ThesesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terminal': {
@@ -402,6 +422,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SourcesRoute: SourcesRoute,
   TerminalRoute: TerminalRouteWithChildren,
+  ThesesRoute: ThesesRoute,
   WatchlistRoute: WatchlistRoute,
 }
 export const routeTree = rootRouteImport

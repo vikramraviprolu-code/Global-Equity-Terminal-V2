@@ -11,9 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { fmtPrice, fmtPct, colorFor } from "@/lib/format";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Briefcase } from "lucide-react";
 import { toast } from "sonner";
 import { MetricLabel } from "@/components/metric-label";
+import { EmptyState, TableSkeleton } from "@/components/feedback-states";
 
 export const Route = createFileRoute("/portfolio")({
   head: () => ({

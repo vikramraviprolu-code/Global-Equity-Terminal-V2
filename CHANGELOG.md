@@ -3,6 +3,20 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.7.0] — 2026-04-30 — "Compounding" (minor)
+
+Compounds the v1.6 USP — make the differentiator features work for the user even when they're not looking.
+
+### Added
+- **Alerts × Theses integration** (`src/server/v16.functions.ts → evaluateThesis`) — when a thesis evaluation flips from a non-broken state into `breaking` or `broken`, the system auto-inserts an `alert_event` (type `thesis_break`) so the bell badge lights up and the in-app toast surfaces it. Only fires on transition; re-evaluating a still-broken thesis does NOT spam. Re-uses the existing alert event pipeline — no new UI surface.
+- **Scheduled Morning Brief** (`src/components/schedule-brief.tsx`, `src/server/v17.functions.ts`, `src/routes/api/public/hooks/run-scheduled-briefs.ts`) — opt-in daily AI-generated brief over the active watchlist. User picks a UTC hour; an hourly `pg_cron` job hits the public hook route, which finds due users (matching hour, not yet processed today) and generates briefs via the AI Gateway, persisting each to `brief_runs` for in-app reading. Idempotent per-user-per-day via `last_run_at`.
+- **Schema** — new `brief_schedules` table (RLS-scoped to `auth.uid()`, one row per user, `hour_utc` 0–23). New enum value `thesis_break` on `alert_type`.
+- **Extensions** — `pg_cron` and `pg_net` enabled; `run-scheduled-briefs-hourly` cron job scheduled at minute 5 of every hour.
+
+### Notes
+- In-app delivery only for v1.7. Email delivery deferred to a future minor.
+- Thesis-break alerts can't be created manually — they're auto-generated and surface alongside regular alerts in the bell.
+
 ## [1.6.0] — 2026-04-30 — "Differentiator" (minor)
 
 USP release — three AI-native features competitors don't bundle today.

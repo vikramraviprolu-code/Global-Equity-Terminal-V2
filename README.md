@@ -1,6 +1,6 @@
 # Global Equity Terminal
 
-> **v1.6.0 — "Differentiator"** · A keyboard-driven, AI-augmented research terminal for global equities.
+> **v1.7.0 — "Compounding"** · A keyboard-driven, AI-augmented research terminal for global equities.
 
 Global Equity Terminal blends terminal-style data density with an AI co-pilot
 layer. It's built for retail and prosumer investors who want fast research,
@@ -16,21 +16,27 @@ Hong Kong, Korea, Taiwan, Singapore, and Australia**.
   fundamentals, transparent **Value / Momentum / Quality / Risk / Confidence**
   scores, AI narrative, **Ask the Terminal** chat, news catalysts with cited
   sources, and **diff mode** to compare snapshots over time.
-- **Ask the Terminal** *(new in v1.6)* — conversational Q&A docked to every
+- **Ask the Terminal** *(v1.6)* — conversational Q&A docked to every
   ticker page, grounded strictly in the metrics already on screen.
-- **AI Morning Brief** *(new in v1.6)* — one-paragraph digest of overnight
+- **AI Morning Brief** *(v1.6)* — one-paragraph digest of overnight
   moves across your watchlist, with chips for the biggest movers.
-- **Thesis Tracker** *(new in v1.6)* — write a one-paragraph thesis per
+- **Scheduled Morning Brief** *(new in v1.7)* — opt-in daily generation:
+  pick a UTC hour and an hourly `pg_cron` job produces a fresh brief over
+  your watchlist, stored in your brief history for in-app reading.
+- **Thesis Tracker** *(v1.6)* — write a one-paragraph thesis per
   ticker; the terminal re-evaluates it against live metrics and flags when
   it's `intact` / `monitor` / `breaking` / `broken`.
+- **Thesis-break alerts** *(new in v1.7)* — when a thesis flips into
+  `breaking` or `broken`, the system auto-fires an alert event so the bell
+  badge lights up — no manual rule needed.
 - **Compare & Watchlists** — side-by-side ticker comparison and persistent
   watchlists synced to your account.
 - **Portfolio** — holdings with live valuation, unrealized P&L, and allocation
   breakdown by sector and region. Auth-gated and protected by row-level
   security.
 - **Alerts** — rule-based alerts on price, RSI, 52-week range proximity, and
-  5-day momentum. Evaluated server-side with in-app notifications and a 12h
-  cooldown per rule.
+  5-day momentum, plus thesis-break notifications. Evaluated server-side with
+  in-app notifications and a 12h cooldown per rule.
 - **Research toolkit** — events calendar, data quality view, sources panel,
   PDF export, currency toggle, command palette, keyboard shortcuts, and a full
   in-app glossary covering every metric.

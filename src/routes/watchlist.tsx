@@ -150,6 +150,7 @@ function WatchlistPage() {
             </div>
           </>
         )}
+        {items.length > 0 && <MorningBrief symbols={items} />}
         <Disclaimer />
       </main>
     </div>

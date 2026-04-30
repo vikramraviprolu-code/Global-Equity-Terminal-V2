@@ -1,9 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { fetchEvents, type CalendarEvent, type EventKind } from "@/server/events.functions";
 import { SiteNav, Disclaimer } from "@/components/site-nav";
 import { useWatchlist } from "@/hooks/use-watchlist";
+import { EmptyState, EmptyStateLink, TableSkeleton } from "@/components/feedback-states";
 
 export const Route = createFileRoute("/events")({
   head: () => ({
@@ -168,9 +169,7 @@ function EventsPage() {
 
         {/* States */}
         {isLoading && (
-          <div className="panel p-10 text-center mt-4 font-mono text-sm text-primary animate-pulse">
-            Loading events for the universe…
-          </div>
+          <div className="panel mt-4"><TableSkeleton columns={5} rows={6} /></div>
         )}
         {isError && (
           <div className="panel p-6 mt-4 text-center text-xs">
@@ -184,11 +183,11 @@ function EventsPage() {
           <EmptyWatchlist />
         )}
         {!isLoading && !isError && groups.length === 0 && !(wlActive && watchlist.length === 0) && (
-          <div className="panel p-10 text-center mt-4 text-sm text-muted-foreground">
-            No events in the selected window.
-            <div className="text-[10px] mt-1 text-muted-foreground/60 font-mono">
-              Try widening the date range or enabling more event types.
-            </div>
+          <div className="panel mt-4">
+            <EmptyState
+              title="No events in this window"
+              description="Try widening the date range or enabling more event types (earnings, ex-dividend, splits)."
+            />
           </div>
         )}
 
@@ -310,11 +309,12 @@ function DayGroup({ date, events, watchlist, onAdd, onRemove, onOpen }: {
 
 function EmptyWatchlist() {
   return (
-    <div className="panel p-10 text-center mt-4">
-      <div className="font-mono text-xs text-muted-foreground uppercase tracking-wider">Watchlist is empty</div>
-      <p className="text-xs text-muted-foreground mt-2">
-        Add tickers from the <Link to="/app" className="text-primary underline">Screener</Link> or <Link to="/terminal" className="text-primary underline">Terminal</Link> to track their events.
-      </p>
+    <div className="panel mt-4">
+      <EmptyState
+        title="Your watchlist is empty"
+        description="Add tickers from the Screener or any Terminal page to track upcoming earnings, ex-dividend dates, and splits."
+        action={<EmptyStateLink to="/app">Open Screener</EmptyStateLink>}
+      />
     </div>
   );
 }

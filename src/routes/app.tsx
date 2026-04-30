@@ -12,6 +12,7 @@ import { SiteNav } from "@/components/site-nav";
 import { SectorHeatmap } from "@/components/sector-heatmap";
 import { exportRowsCsv, exportNodeAsPng } from "@/lib/export";
 import { Sparkline as SparkLineShared } from "@/components/sparkline";
+import { TableSkeleton, EmptyState as SharedEmptyState } from "@/components/feedback-states";
 import { onAction } from "@/lib/action-bus";
 import { useRef } from "react";
 
@@ -549,9 +550,11 @@ function ViewToggle({ view, setView }: { view: "table" | "chart" | "heatmap"; se
 
 function LoadingState() {
   return (
-    <div className="panel p-10 text-center">
-      <div className="font-mono text-sm text-primary animate-pulse">LOADING UNIVERSE…</div>
-      <div className="text-xs text-muted-foreground mt-2">Fetching ~150 tickers across global markets. This can take 15–30s on first load.</div>
+    <div className="panel">
+      <div className="px-4 pt-4 text-[10px] font-mono uppercase tracking-wider text-primary animate-pulse">
+        Syncing universe… ~150 tickers across global markets, can take 15–30s on first load.
+      </div>
+      <TableSkeleton columns={9} rows={10} />
     </div>
   );
 }
@@ -565,11 +568,16 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
 }
 function EmptyState({ onReset }: { onReset: () => void }) {
   return (
-    <div className="panel p-10 text-center">
-      <div className="font-mono text-sm text-muted-foreground">No stocks match your filters.</div>
-      <button onClick={onReset} className="mt-4 font-mono text-[10px] uppercase tracking-wider border border-primary/50 text-primary px-4 py-2 rounded hover:bg-primary/10">
-        Reset filters
-      </button>
+    <div className="panel">
+      <SharedEmptyState
+        title="No stocks match your filters"
+        description="Your current combination of region, sector, market-cap, valuation and momentum filters returned zero results. Loosen any of them to see more matches."
+        action={
+          <button onClick={onReset} className="font-mono text-[10px] uppercase tracking-wider border border-primary/50 text-primary px-4 py-2 rounded hover:bg-primary/10">
+            Reset filters
+          </button>
+        }
+      />
     </div>
   );
 }

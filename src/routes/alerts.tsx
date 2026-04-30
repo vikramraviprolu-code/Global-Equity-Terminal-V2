@@ -11,8 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, BellRing } from "lucide-react";
 import { toast } from "sonner";
+import { EmptyState, TableSkeleton } from "@/components/feedback-states";
 
 const TYPES: { v: AlertType; label: string; hint: string }[] = [
   { v: "price_above", label: "Price ≥", hint: "Triggers when last price crosses above the threshold." },
@@ -96,9 +97,13 @@ function AlertsContent() {
           <CardHeader><CardTitle className="text-sm font-mono uppercase tracking-widest">Active alerts</CardTitle></CardHeader>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="p-6 text-center text-xs text-muted-foreground">Loading…</div>
+              <TableSkeleton columns={6} rows={4} />
             ) : !data?.alerts.length ? (
-              <div className="p-8 text-center text-sm text-muted-foreground">No alerts yet. Create one above.</div>
+              <EmptyState
+                icon={<BellRing className="w-8 h-8" />}
+                title="No alerts yet"
+                description="Use the form above to set price, RSI, 52-week proximity, or 5-day performance alerts. We check them every few minutes."
+              />
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">

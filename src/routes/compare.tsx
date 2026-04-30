@@ -9,6 +9,7 @@ import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import { SiteNav, Disclaimer } from "@/components/site-nav";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip as RTooltip } from "recharts";
 import { Sparkline } from "@/components/sparkline";
+import { EmptyState, EmptyStateLink, TableSkeleton } from "@/components/feedback-states";
 
 export const Route = createFileRoute("/compare")({
   validateSearch: (s: Record<string, unknown>) => z.object({ s: z.string().optional() }).parse(s),
@@ -125,14 +126,17 @@ function ComparePage() {
           )}
         </div>
 
-        {isLoading && <div className="panel p-10 text-center mt-4 font-mono text-sm text-primary animate-pulse">LOADING UNIVERSE…</div>}
+        {isLoading && (
+          <div className="panel mt-4"><TableSkeleton columns={6} rows={8} /></div>
+        )}
 
         {!isLoading && rows.length === 0 && (
-          <div className="panel p-10 text-center mt-4">
-            <div className="font-mono text-sm text-muted-foreground">Pick stocks from the screener or watchlists to compare.</div>
-            <Link to="/app" className="inline-block mt-4 font-mono text-[10px] uppercase tracking-wider border border-primary/50 text-primary px-4 py-2 rounded hover:bg-primary/10">
-              Open Screener
-            </Link>
+          <div className="panel mt-4">
+            <EmptyState
+              title="Nothing to compare yet"
+              description="Pick 2–6 stocks from the screener or your watchlists. We'll show their valuation, momentum, quality, risk and data confidence side-by-side."
+              action={<EmptyStateLink to="/app">Open Screener</EmptyStateLink>}
+            />
           </div>
         )}
 

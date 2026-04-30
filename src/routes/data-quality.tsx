@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { fetchUniverse } from "@/server/screen.functions";
 import { scoreAll } from "@/lib/scores";
 import { SiteNav, Disclaimer } from "@/components/site-nav";
+import { StatGridSkeleton, TableSkeleton } from "@/components/feedback-states";
 
 export const Route = createFileRoute("/data-quality")({
   head: () => ({
@@ -49,7 +50,10 @@ function DataQualityPage() {
         <p className="text-xs text-muted-foreground mt-1">Per-ticker source freshness, missing-metric warnings, and confidence scoring.</p>
 
         {isLoading || !stats ? (
-          <div className="panel p-10 text-center mt-4 font-mono text-sm text-primary animate-pulse">LOADING…</div>
+          <div className="mt-4 space-y-3">
+            <StatGridSkeleton count={4} />
+            <div className="panel"><TableSkeleton columns={6} rows={8} /></div>
+          </div>
         ) : (
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">

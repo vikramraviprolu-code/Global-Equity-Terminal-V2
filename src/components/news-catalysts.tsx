@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { aiNewsCatalysts } from "@/server/news.functions";
+import { ParagraphSkeleton } from "@/components/feedback-states";
 
 type Recency = "day" | "week" | "month";
 
@@ -114,9 +115,12 @@ export function NewsCatalysts({
         )}
 
         {gen.isPending && (
-          <p className="text-primary font-mono text-xs animate-pulse">
-            Searching the web for catalysts…
-          </p>
+          <div className="space-y-3">
+            <p className="text-primary font-mono text-[10px] uppercase tracking-wider animate-pulse">
+              Searching the web for catalysts…
+            </p>
+            <ParagraphSkeleton lines={6} />
+          </div>
         )}
 
         {error && (

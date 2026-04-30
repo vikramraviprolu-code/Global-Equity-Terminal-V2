@@ -69,6 +69,8 @@
 @layer base {
   * { border-color: var(--color-border); }
   html, body { background-color: var(--color-background); color: var(--color-foreground); }
+  /* Defense-in-depth: never let stray content create page-level horizontal scroll on mobile. */
+  body { overflow-x: hidden; }
   body { font-family: var(--font-sans); font-size: 14px; }
   .font-mono, code, pre, td.num, .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
   table.term { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12.5px; }

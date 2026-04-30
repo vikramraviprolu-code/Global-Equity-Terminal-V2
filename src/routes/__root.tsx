@@ -1,11 +1,13 @@
 import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
 import appCss from "../styles.css?url";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import { CommandBar } from "@/components/command-bar";
 import { AuthProvider } from "@/hooks/use-auth";
 import { AppErrorBoundary } from "@/components/error-boundary";
+import { logClientError } from "@/lib/error-log";
 import { Toaster } from "sonner";
 
 function NotFoundComponent() {
@@ -71,6 +73,27 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  // Capture uncaught async errors that don't bubble to React's boundary
+  // (unhandled promises, setTimeout exceptions, etc.) and log them.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onRejection = (e: PromiseRejectionEvent) => {
+      const reason = e.reason;
+      const err = reason instanceof Error ? reason : new Error(String(reason));
+      logClientError(err, { route: window.location.pathname });
+    };
+    const onError = (e: ErrorEvent) => {
+      logClientError(e.error ?? new Error(e.message), { route: window.location.pathname });
+    };
+    window.addEventListener("unhandledrejection", onRejection);
+    window.addEventListener("error", onError);
+    return () => {
+      window.removeEventListener("unhandledrejection", onRejection);
+      window.removeEventListener("error", onError);
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

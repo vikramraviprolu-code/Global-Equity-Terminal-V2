@@ -3,6 +3,18 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.5.0] — 2026-04-30 — "Console" (minor)
+
+Production hardening — error visibility, query defaults, mobile pass.
+
+### Added
+- **Error logging pipeline** — new `error_logs` table + `reportError` server function + `logClientError` client helper. Captures errors from `AppErrorBoundary`, router `defaultErrorComponent`, and global `unhandledrejection`/`error` listeners. Server attributes to `auth.uid()` via verified bearer token; never trusts client-supplied `user_id`. Dedupes identical messages within 60s, swallows its own failures, truncates payloads.
+- **Centralised React Query defaults** in `src/router.tsx` — `staleTime` 60s, `gcTime` 5min, `refetchOnWindowFocus` off, `refetchOnReconnect` on, `networkMode` online, smart retry that skips 4xx (auth/validation) and retries transient once. Mutations never auto-retry.
+- **Mobile defense-in-depth** — `body { overflow-x: hidden }` to prevent stray elements from breaking layout on <768px.
+
+### Audited (no changes needed)
+- Wide tables on Screener, Watchlist, Compare, Portfolio, Alerts, Events already wrap in `overflow-x-auto`. Verified at 375×812: hero, screener, terminal, compare, data-quality, landing all render cleanly.
+
 ## [1.4.4] — 2026-04-30 — "Console" (patch)
 
 UX polish — skeleton loaders and friendlier empty states across data-heavy panels.

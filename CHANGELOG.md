@@ -3,6 +3,29 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.4.3] — 2026-04-29 — "Console" (patch)
+
+Accessibility pass and server-input audit.
+
+### Added
+- **Skip-to-main-content link** in `__root.tsx` — visible on keyboard focus,
+  jumps past the nav. Lets screen-reader and keyboard-only users bypass the
+  header on every route.
+- **Global `:focus-visible`** ring in `src/styles.css` — every keyboard-focused
+  element now shows a 2px ring in the amber accent color. Mouse users
+  unaffected (focus-visible suppresses on click).
+
+### Audited (no changes needed)
+- All `createServerFn` mutations (`addAlert`, `toggleAlert`, `deleteAlert`,
+  `addHolding`, `deleteHolding`, `searchTickers`, `analyzeTicker`,
+  `aiParseQuery`, `aiTickerNarrative`, `aiNewsCatalysts`, `fetchEvents`,
+  `fetchUniverse`, `markAlertEventsRead`, `evaluateMyAlerts`) already use
+  Zod `.inputValidator()` with min/max/regex/uuid where appropriate. No
+  unvalidated server entry points.
+- Icon-only buttons (alert bell, currency toggle, ⌘K, "?", AI co-pilot)
+  already carry `aria-label`, `aria-pressed`, or `role="dialog"` +
+  `aria-modal`. `<main>` landmark present on every route.
+
 ## [1.4.2] — 2026-04-29 — "Console" (patch)
 
 Hardened all outbound HTTP calls with retry + per-attempt timeout.

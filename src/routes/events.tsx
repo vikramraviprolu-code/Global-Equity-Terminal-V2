@@ -169,9 +169,7 @@ function EventsPage() {
 
         {/* States */}
         {isLoading && (
-          <div className="panel p-10 text-center mt-4 font-mono text-sm text-primary animate-pulse">
-            Loading events for the universe…
-          </div>
+          <div className="panel mt-4"><TableSkeleton columns={5} rows={6} /></div>
         )}
         {isError && (
           <div className="panel p-6 mt-4 text-center text-xs">
@@ -185,11 +183,11 @@ function EventsPage() {
           <EmptyWatchlist />
         )}
         {!isLoading && !isError && groups.length === 0 && !(wlActive && watchlist.length === 0) && (
-          <div className="panel p-10 text-center mt-4 text-sm text-muted-foreground">
-            No events in the selected window.
-            <div className="text-[10px] mt-1 text-muted-foreground/60 font-mono">
-              Try widening the date range or enabling more event types.
-            </div>
+          <div className="panel mt-4">
+            <EmptyState
+              title="No events in this window"
+              description="Try widening the date range or enabling more event types (earnings, ex-dividend, splits)."
+            />
           </div>
         )}
 

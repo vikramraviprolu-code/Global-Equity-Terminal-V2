@@ -26,8 +26,9 @@ export class AppErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    // Surface to console for ops visibility. Replace with Sentry hook later.
     console.error("[AppErrorBoundary]", error, info.componentStack);
+    // Fire-and-forget — never blocks UI
+    logClientError(error, { componentStack: info.componentStack ?? undefined });
   }
 
   reset = () => this.setState({ error: null });

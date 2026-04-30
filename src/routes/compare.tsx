@@ -9,6 +9,7 @@ import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import { SiteNav, Disclaimer } from "@/components/site-nav";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip as RTooltip } from "recharts";
 import { Sparkline } from "@/components/sparkline";
+import { EmptyState, EmptyStateLink, TableSkeleton } from "@/components/feedback-states";
 
 export const Route = createFileRoute("/compare")({
   validateSearch: (s: Record<string, unknown>) => z.object({ s: z.string().optional() }).parse(s),

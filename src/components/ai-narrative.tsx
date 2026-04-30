@@ -57,7 +57,10 @@ export function AiNarrative({
           </p>
         )}
         {gen.isPending && (
-          <p className="text-primary font-mono text-xs animate-pulse">Composing narrative…</p>
+          <div className="space-y-3">
+            <p className="text-primary font-mono text-[10px] uppercase tracking-wider animate-pulse">Composing narrative…</p>
+            <ParagraphSkeleton lines={6} />
+          </div>
         )}
         {error && <p className="text-[color:var(--bear)] font-mono text-xs">{error}</p>}
         {text && (

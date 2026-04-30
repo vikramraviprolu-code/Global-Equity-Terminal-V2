@@ -94,7 +94,12 @@ function LandingPage() {
             <div className="w-1.5 h-1.5 bg-primary rounded-sm" />
             <span>GLOBAL EQUITY TERMINAL</span>
           </div>
-          <div>For research and educational use only.</div>
+          <div className="flex items-center gap-4">
+            <span>For research and educational use only.</span>
+            <Link to="/legal" className="hover:text-foreground uppercase tracking-widest">
+              Legal
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

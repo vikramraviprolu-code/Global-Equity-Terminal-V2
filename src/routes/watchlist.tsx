@@ -10,6 +10,7 @@ import { useWatchlistNamed, WATCHLIST_NAMES, readAllWatchlists, type WatchlistNa
 import { SiteNav, Disclaimer } from "@/components/site-nav";
 import { Sparkline } from "@/components/sparkline";
 import { MorningBrief } from "@/components/morning-brief";
+import { ScheduleBrief } from "@/components/schedule-brief";
 import { EmptyState, EmptyStateLink, TableSkeleton } from "@/components/feedback-states";
 
 export const Route = createFileRoute("/watchlist")({
@@ -151,6 +152,7 @@ function WatchlistPage() {
           </>
         )}
         {items.length > 0 && <MorningBrief symbols={items} />}
+        {items.length > 0 && <ScheduleBrief symbols={items} />}
         <Disclaimer />
       </main>
     </div>

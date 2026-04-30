@@ -1,7 +1,7 @@
 // Single source of truth for app version + feature flags.
 // Bump on every shipped change: minor for features, patch for fixes.
 
-export const APP_VERSION = "1.5.1";
+export const APP_VERSION = "1.5.2";
 export const APP_RELEASE_DATE = "2026-04-30";
 export const APP_CODENAME = "Console";
 

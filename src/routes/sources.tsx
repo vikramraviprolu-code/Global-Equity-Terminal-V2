@@ -95,6 +95,11 @@ function SourcesPage() {
                 </div>
               </div>
               <p className="mt-3 text-xs text-muted-foreground leading-relaxed">{s.notes}</p>
+              {"rights" in s && s.rights && (
+                <p className="mt-2 text-[11px] text-muted-foreground/80 leading-relaxed border-l-2 border-border pl-2 italic">
+                  {s.rights}
+                </p>
+              )}
               {"url" in s && s.url && (
                 <a href={s.url} target="_blank" rel="noreferrer" className="mt-3 inline-block text-[10px] font-mono text-primary hover:underline">
                   {s.url} ↗
@@ -113,6 +118,18 @@ function SourcesPage() {
             <li>Major finance websites</li>
             <li>Public knowledge sources for basic metadata</li>
           </ol>
+        </div>
+
+        <div className="panel mt-3 p-5 text-xs text-muted-foreground leading-relaxed">
+          <div className="font-mono text-primary uppercase tracking-widest mb-2">Data rights & attribution</div>
+          <p>
+            Market data, fundamentals, and news content are provided by third-party sources and remain
+            the property of their original publishers and exchanges. The terminal displays this data to
+            you under the terms of service of each upstream provider. We do not redistribute, resell,
+            cache, or expose bulk market data via public APIs. News snippets are AI-paraphrased with
+            citations linking back to the original publishers — please follow citations to read source
+            articles in full. See <a href="/legal" className="text-primary hover:underline">Legal &amp; Disclaimers</a> for the complete notice.
+          </p>
         </div>
 
         <Disclaimer />

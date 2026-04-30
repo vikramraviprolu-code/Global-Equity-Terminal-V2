@@ -3,6 +3,15 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.5.2] — 2026-04-30 — "Console" (patch)
+
+Data-rights hygiene — tighten news prompt, attribute upstream sources, propagate disclaimer to PDF exports.
+
+### Changed
+- **News prompt (`src/server/news.functions.ts`)**: explicitly forbids verbatim quoting of source articles, drops named publishers (Bloomberg/FT/WSJ/Reuters/CNBC) from the system prompt, requires paraphrase only. Reduces risk of re-publishing copyrighted text.
+- **`/sources` page**: removed unused Stooq entry; added Perplexity (News) and Lovable AI Gateway entries to accurately reflect what is actually called. Each source card now carries a per-source `rights` line. New "Data rights & attribution" panel + cross-link to `/legal`.
+- **PDF report footer (`src/lib/pdf-report.ts`)**: expanded the single-line disclaimer into a full attribution block — third-party data ownership, AI-content caveat, trademark notice — so exported PDFs remain compliant when shared outside the app.
+
 ## [1.5.1] — 2026-04-30 — "Console" (patch)
 
 IP & disclaimer hygiene — reduce trademark/legal risk surface.

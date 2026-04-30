@@ -170,17 +170,16 @@ export function downloadTerminalPdf(result: AnyResult): void {
     y = (doc as any).lastAutoTable.finalY + 16;
   }
 
-  // Footer
+  // Footer — disclaimer + attribution
   const pageH = doc.internal.pageSize.getHeight();
   doc.setTextColor(148, 163, 184);
   doc.setFontSize(7);
-  doc.text(
-    "This report is for informational purposes only and is not financial advice. Free-source market data may be delayed, incomplete, or stale.",
-    margin,
-    pageH - 24,
-    { maxWidth: pageW - margin * 2 },
-  );
-  doc.text(`rankaisolutions.tech/terminal/${t.symbol}`, pageW - margin, pageH - 24, { align: "right" });
+  const footerText =
+    "Informational only — not financial advice. Market data is provided by third-party sources (primarily Finimpulse) and remains the property of the originating exchanges and providers; it may be delayed, incomplete, or stale. AI-generated commentary, where included, is paraphrased and may contain errors — verify with cited sources. Trademarks belong to their respective owners.";
+  const wrappedFooter = doc.splitTextToSize(footerText, pageW - margin * 2);
+  doc.text(wrappedFooter, margin, pageH - 38);
+  doc.text(`rankaisolutions.tech/terminal/${t.symbol}`, pageW - margin, pageH - 12, { align: "right" });
+  doc.text(`Generated ${new Date().toUTCString()}`, margin, pageH - 12);
 
   doc.save(`${t.symbol}-equity-report.pdf`);
 }

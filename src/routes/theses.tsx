@@ -1,10 +1,9 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SiteNav, Disclaimer } from "@/components/site-nav";
 import { listTheses, upsertThesis, evaluateThesis, deleteThesis } from "@/server/v16.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
 
 export const Route = createFileRoute("/theses")({
   head: () => ({

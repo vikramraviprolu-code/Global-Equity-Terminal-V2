@@ -27,6 +27,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TerminalSymbolRouteImport } from './routes/terminal.$symbol'
+import { Route as ApiPublicHooksRunScheduledBriefsRouteImport } from './routes/api/public/hooks/run-scheduled-briefs'
 
 const WatchlistRoute = WatchlistRouteImport.update({
   id: '/watchlist',
@@ -118,6 +119,12 @@ const TerminalSymbolRoute = TerminalSymbolRouteImport.update({
   path: '/$symbol',
   getParentRoute: () => TerminalRoute,
 } as any)
+const ApiPublicHooksRunScheduledBriefsRoute =
+  ApiPublicHooksRunScheduledBriefsRouteImport.update({
+    id: '/api/public/hooks/run-scheduled-briefs',
+    path: '/api/public/hooks/run-scheduled-briefs',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/theses': typeof ThesesRoute
   '/watchlist': typeof WatchlistRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
+  '/api/public/hooks/run-scheduled-briefs': typeof ApiPublicHooksRunScheduledBriefsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -158,6 +166,7 @@ export interface FileRoutesByTo {
   '/theses': typeof ThesesRoute
   '/watchlist': typeof WatchlistRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
+  '/api/public/hooks/run-scheduled-briefs': typeof ApiPublicHooksRunScheduledBriefsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -179,6 +188,7 @@ export interface FileRoutesById {
   '/theses': typeof ThesesRoute
   '/watchlist': typeof WatchlistRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
+  '/api/public/hooks/run-scheduled-briefs': typeof ApiPublicHooksRunScheduledBriefsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/theses'
     | '/watchlist'
     | '/terminal/$symbol'
+    | '/api/public/hooks/run-scheduled-briefs'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/theses'
     | '/watchlist'
     | '/terminal/$symbol'
+    | '/api/public/hooks/run-scheduled-briefs'
   id:
     | '__root__'
     | '/'
@@ -241,6 +253,7 @@ export interface FileRouteTypes {
     | '/theses'
     | '/watchlist'
     | '/terminal/$symbol'
+    | '/api/public/hooks/run-scheduled-briefs'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -261,6 +274,7 @@ export interface RootRouteChildren {
   TerminalRoute: typeof TerminalRouteWithChildren
   ThesesRoute: typeof ThesesRoute
   WatchlistRoute: typeof WatchlistRoute
+  ApiPublicHooksRunScheduledBriefsRoute: typeof ApiPublicHooksRunScheduledBriefsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -391,6 +405,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TerminalSymbolRouteImport
       parentRoute: typeof TerminalRoute
     }
+    '/api/public/hooks/run-scheduled-briefs': {
+      id: '/api/public/hooks/run-scheduled-briefs'
+      path: '/api/public/hooks/run-scheduled-briefs'
+      fullPath: '/api/public/hooks/run-scheduled-briefs'
+      preLoaderRoute: typeof ApiPublicHooksRunScheduledBriefsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -424,6 +445,7 @@ const rootRouteChildren: RootRouteChildren = {
   TerminalRoute: TerminalRouteWithChildren,
   ThesesRoute: ThesesRoute,
   WatchlistRoute: WatchlistRoute,
+  ApiPublicHooksRunScheduledBriefsRoute: ApiPublicHooksRunScheduledBriefsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

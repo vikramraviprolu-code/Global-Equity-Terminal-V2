@@ -3,6 +3,8 @@
  * Used for the ⌘K co-pilot (NL → screener filters / navigation) and
  * the narrative thesis on the terminal page.
  */
+import { fetchWithRetry } from "./http.server";
+
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const DEFAULT_MODEL = "google/gemini-3-flash-preview";
 
@@ -22,7 +24,7 @@ export async function chat(opts: {
   tool_choice?: any;
   response_format?: any;
 }): Promise<any> {
-  const res = await fetch(GATEWAY_URL, {
+  const res = await fetchWithRetry(GATEWAY_URL, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${key()}`,
@@ -36,6 +38,9 @@ export async function chat(opts: {
       ...(opts.tool_choice ? { tool_choice: opts.tool_choice } : {}),
       ...(opts.response_format ? { response_format: opts.response_format } : {}),
     }),
+    // AI calls are slower — give them more headroom per attempt.
+    timeoutMs: 30_000,
+    label: "ai-gateway",
   });
   if (!res.ok) {
     const txt = await res.text().catch(() => "");

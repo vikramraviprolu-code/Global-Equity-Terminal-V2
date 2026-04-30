@@ -1,11 +1,13 @@
 import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
 import appCss from "../styles.css?url";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
 import { CommandBar } from "@/components/command-bar";
 import { AuthProvider } from "@/hooks/use-auth";
 import { AppErrorBoundary } from "@/components/error-boundary";
+import { logClientError } from "@/lib/error-log";
 import { Toaster } from "sonner";
 
 function NotFoundComponent() {

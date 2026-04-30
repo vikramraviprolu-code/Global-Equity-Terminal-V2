@@ -287,6 +287,24 @@ export const evaluateThesis = createServerFn({ method: "POST" })
         .update({ status, rationale, evaluated_at: new Date().toISOString() })
         .eq("id", t.id);
 
+      // v1.7: Alerts × Theses — auto-fire an alert event when a thesis flips
+      // to a breaking/broken state (only on transition from a non-broken
+      // prior status, so re-evaluating a still-broken thesis doesn't spam).
+      const wasBroken = t.status === "breaking" || t.status === "broken";
+      const isBroken = status === "breaking" || status === "broken";
+      if (isBroken && !wasBroken) {
+        const message = `Thesis on ${t.symbol} is ${status} — ${rationale.slice(0, 200)}`;
+        await context.supabase.from("alert_events").insert({
+          user_id: context.userId,
+          alert_id: t.id, // thesis id (no FK on alert_events.alert_id)
+          symbol: t.symbol,
+          alert_type: "thesis_break" as any,
+          threshold: 0,
+          value_at_trigger: 0,
+          message,
+        });
+      }
+
       return { status, rationale, error: null as string | null };
     } catch (e: any) {
       const msg: string = e?.message ?? "AI request failed";

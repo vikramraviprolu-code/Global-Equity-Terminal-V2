@@ -300,6 +300,18 @@ export const GLOSSARY = {
     definition: "Minimum interval between consecutive fires of the same alert rule (currently 12 hours).",
     group: "alert",
   },
+  thesis_break: {
+    term: "Thesis break",
+    definition: "Auto-fired alert when a saved thesis flips from intact/monitor into breaking or broken on re-evaluation.",
+    hint: "Created automatically by Thesis Tracker — not user-creatable.",
+    group: "alert",
+  },
+  scheduledBrief: {
+    term: "Scheduled Morning Brief",
+    definition: "Opt-in daily AI brief over your watchlist. You pick a UTC hour; the server generates a fresh brief once per day at that hour.",
+    hint: "Idempotent — runs at most once per user per UTC day.",
+    group: "navigation",
+  },
   alertEvent: {
     term: "Alert Event",
     definition: "A single recorded firing of an alert rule, with the value at trigger and a timestamp.",

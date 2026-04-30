@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { aiNewsCatalysts } from "@/server/news.functions";
+import { ParagraphSkeleton } from "@/components/feedback-states";
 
 type Recency = "day" | "week" | "month";
 

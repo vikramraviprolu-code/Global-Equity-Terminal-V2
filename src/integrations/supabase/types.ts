@@ -124,6 +124,8 @@ export type Database = {
       brief_schedules: {
         Row: {
           created_at: string
+          email_enabled: boolean
+          email_to: string | null
           enabled: boolean
           hour_utc: number
           id: string
@@ -134,6 +136,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email_enabled?: boolean
+          email_to?: string | null
           enabled?: boolean
           hour_utc?: number
           id?: string
@@ -144,6 +148,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email_enabled?: boolean
+          email_to?: string | null
           enabled?: boolean
           hour_utc?: number
           id?: string

@@ -24,8 +24,12 @@ export type ChangelogEntry = {
 
 // Match: ## [1.8.1] — 2026-05-01 — "Delivery" (patch)
 // Em-dash, en-dash, or hyphen separators all accepted.
-const HEADER_RE =
-  /^##\s*\[([\d.x]+)\]\s*[—–-]\s*([^\s—–-][^—–-]*?)(?:\s*[—–-]\s*"([^"]+)")?(?:\s*\(([^)]+)\))?\s*$/;
+// Match header in two steps for reliability across dash variants:
+//   1) "## [VERSION] — REST"
+//   2) parse REST as: DATE [— "CODENAME"] [(KIND)]
+const HEADER_RE = /^##\s*\[([\d.x]+)\]\s*[—–-]\s*(\S.*)$/;
+const HEADER_REST_RE =
+  /^(\S+)(?:\s*[—–-]\s*"([^"]+)")?(?:\s*\(([^)]+)\))?\s*$/;
 
 const SECTION_RE = /^###\s+(.+?)\s*$/;
 const LIST_ITEM_RE = /^[-*]\s+(.+)$/;
@@ -54,11 +58,12 @@ function parseChangelog(md: string): ChangelogEntry[] {
         flushSummary();
         entries.push(current);
       }
+      const restMatch = headerMatch[2].match(HEADER_REST_RE);
       current = {
         version: headerMatch[1],
-        date: headerMatch[2].trim(),
-        codename: headerMatch[3]?.trim(),
-        kind: headerMatch[4]?.trim(),
+        date: restMatch?.[1].trim() ?? headerMatch[2].trim(),
+        codename: restMatch?.[2]?.trim(),
+        kind: restMatch?.[3]?.trim(),
         sections: [],
       };
       currentSection = null;

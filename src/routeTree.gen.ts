@@ -27,6 +27,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WTokenRouteImport } from './routes/w.$token'
 import { Route as TerminalSymbolRouteImport } from './routes/terminal.$symbol'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -127,6 +128,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WTokenRoute = WTokenRouteImport.update({
+  id: '/w/$token',
+  path: '/w/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TerminalSymbolRoute = TerminalSymbolRouteImport.update({
   id: '/$symbol',
   path: '/$symbol',
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/watchlist': typeof WatchlistRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
+  '/w/$token': typeof WTokenRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/run-scheduled-briefs': typeof ApiPublicHooksRunScheduledBriefsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -227,6 +234,7 @@ export interface FileRoutesByTo {
   '/watchlist': typeof WatchlistRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
+  '/w/$token': typeof WTokenRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/run-scheduled-briefs': typeof ApiPublicHooksRunScheduledBriefsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -257,6 +265,7 @@ export interface FileRoutesById {
   '/watchlist': typeof WatchlistRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
+  '/w/$token': typeof WTokenRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/run-scheduled-briefs': typeof ApiPublicHooksRunScheduledBriefsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -288,6 +297,7 @@ export interface FileRouteTypes {
     | '/watchlist'
     | '/email/unsubscribe'
     | '/terminal/$symbol'
+    | '/w/$token'
     | '/lovable/email/suppression'
     | '/api/public/hooks/run-scheduled-briefs'
     | '/lovable/email/auth/preview'
@@ -317,6 +327,7 @@ export interface FileRouteTypes {
     | '/watchlist'
     | '/email/unsubscribe'
     | '/terminal/$symbol'
+    | '/w/$token'
     | '/lovable/email/suppression'
     | '/api/public/hooks/run-scheduled-briefs'
     | '/lovable/email/auth/preview'
@@ -346,6 +357,7 @@ export interface FileRouteTypes {
     | '/watchlist'
     | '/email/unsubscribe'
     | '/terminal/$symbol'
+    | '/w/$token'
     | '/lovable/email/suppression'
     | '/api/public/hooks/run-scheduled-briefs'
     | '/lovable/email/auth/preview'
@@ -375,6 +387,7 @@ export interface RootRouteChildren {
   UnsubscribeRoute: typeof UnsubscribeRoute
   WatchlistRoute: typeof WatchlistRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  WTokenRoute: typeof WTokenRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksRunScheduledBriefsRoute: typeof ApiPublicHooksRunScheduledBriefsRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -512,6 +525,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/w/$token': {
+      id: '/w/$token'
+      path: '/w/$token'
+      fullPath: '/w/$token'
+      preLoaderRoute: typeof WTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terminal/$symbol': {
       id: '/terminal/$symbol'
       path: '/$symbol'
@@ -610,6 +630,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeRoute: UnsubscribeRoute,
   WatchlistRoute: WatchlistRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  WTokenRoute: WTokenRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksRunScheduledBriefsRoute: ApiPublicHooksRunScheduledBriefsRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,

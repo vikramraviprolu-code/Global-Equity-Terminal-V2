@@ -12,6 +12,7 @@ import { Sparkline } from "@/components/sparkline";
 import { MorningBrief } from "@/components/morning-brief";
 import { ScheduleBrief } from "@/components/schedule-brief";
 import { EmptyState, EmptyStateLink, TableSkeleton } from "@/components/feedback-states";
+import { ShareWatchlistDialog } from "@/components/share-watchlist-dialog";
 
 export const Route = createFileRoute("/watchlist")({
   validateSearch: (s: Record<string, unknown>) => z.object({ list: z.string().optional() }).parse(s),
@@ -35,6 +36,7 @@ function WatchlistPage() {
   const active: WatchlistName = isValidName(list) ? list : "My Watchlist";
   const { items, remove, clear } = useWatchlistNamed(active);
   const [ccyMode] = useDisplayCurrency();
+  const [shareOpen, setShareOpen] = useState(false);
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["universe"],
@@ -63,6 +65,15 @@ function WatchlistPage() {
             <button onClick={() => refetch()} disabled={isFetching} className="font-mono text-[10px] uppercase tracking-wider border border-border px-3 py-1.5 rounded hover:border-primary disabled:opacity-50">
               {isFetching ? "Refreshing…" : "Refresh all"}
             </button>
+            {items.length > 0 && (
+              <button
+                onClick={() => setShareOpen(true)}
+                className="font-mono text-[10px] uppercase tracking-wider border border-primary/50 text-primary px-3 py-1.5 rounded hover:bg-primary/10"
+                title="Create a read-only public link for this watchlist"
+              >
+                Share
+              </button>
+            )}
             {compareUrl && (
               <Link {...compareUrl} className="font-mono text-[10px] uppercase tracking-wider bg-primary text-primary-foreground px-3 py-1.5 rounded hover:opacity-90">
                 Compare {items.length}
@@ -155,6 +166,12 @@ function WatchlistPage() {
         {items.length > 0 && <ScheduleBrief symbols={items} />}
         <Disclaimer />
       </main>
+      <ShareWatchlistDialog
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        listName={active}
+        symbols={items}
+      />
     </div>
   );
 }

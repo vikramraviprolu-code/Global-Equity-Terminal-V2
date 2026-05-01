@@ -3,6 +3,14 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.8.1] — 2026-05-01 — "Delivery" (patch)
+
+Security hardening for the email queue infrastructure shipped in 1.8.0. No user-facing changes.
+
+### Security
+- **Locked down email queue RPC functions** — pinned `search_path` on `enqueue_email`, `delete_email`, `read_email_batch`, and `move_to_dlq` to prevent search-path hijacking on these `SECURITY DEFINER` wrappers.
+- **Revoked execute access** from `anon` and `authenticated` roles on the same four functions; only the `service_role` (used by trusted server code) can invoke the email queue. Closes the three Supabase linter findings (`function_search_path_mutable`, `anon_security_definer_function_executable`, `authenticated_security_definer_function_executable`).
+
 ## [1.8.0] — 2026-05-01 — "Delivery" (minor)
 
 Take the v1.7 scheduled brief out of the app and into the user's inbox. Wires up Lovable Emails on a verified sender subdomain and reuses the existing per-user schedule + cron pipeline.

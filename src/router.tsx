@@ -32,7 +32,7 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
  *   thrashing the universe API on focus changes.
  * - gcTime 5min: free memory for routes the user no longer visits.
  * - retry: skip 401 (auth) and 4xx (validation), retry transient errors once.
- *   Server-side fetches already retry inside fetchWithRetry (v1.4.2).
+ *   Server-side fetches already retry inside fetchWithRetry.
  * - refetchOnWindowFocus disabled by default: financial data already polls
  *   on its own schedule; refocus thrash is annoying not helpful.
  * - networkMode "online": don't fire requests when the browser reports

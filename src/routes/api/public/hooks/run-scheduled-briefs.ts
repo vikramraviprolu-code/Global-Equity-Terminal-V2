@@ -67,7 +67,7 @@ async function generateOne(symbols: string[]) {
 export const Route = createFileRoute("/api/public/hooks/run-scheduled-briefs")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
         const now = new Date();
         const hourUtc = now.getUTCHours();
         const todayUtcStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString();
@@ -118,7 +118,7 @@ export const Route = createFileRoute("/api/public/hooks/run-scheduled-briefs")({
                 }
                 if (recipient) {
                   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
-                  const origin = new URL(req?.url ?? "http://localhost").origin;
+                  const origin = new URL(request.url).origin;
                   const sendUrl = `${origin}/lovable/email/transactional/send`;
                   const dateStr = new Date(now).toISOString().slice(0, 10);
                   const r = await fetch(sendUrl, {

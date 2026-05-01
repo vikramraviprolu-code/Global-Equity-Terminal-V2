@@ -319,6 +319,45 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_watchlists: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          name: string
+          revoked_at: string | null
+          symbols: string[]
+          token: string
+          updated_at: string
+          user_id: string
+          view_count: number
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          name: string
+          revoked_at?: string | null
+          symbols?: string[]
+          token: string
+          updated_at?: string
+          user_id: string
+          view_count?: number
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          name?: string
+          revoked_at?: string | null
+          symbols?: string[]
+          token?: string
+          updated_at?: string
+          user_id?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -384,6 +423,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      bump_shared_watchlist_view: {
+        Args: { _token: string }
+        Returns: undefined
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean

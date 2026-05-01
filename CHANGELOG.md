@@ -3,6 +3,15 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.9.1] — 2026-05-01 — "Share" (patch)
+
+Security hardening following a GDPR / EU AI Act / vulnerability audit. No user-facing changes.
+
+### Security
+- **Authenticated the scheduled-brief cron endpoint** (`src/routes/api/public/hooks/run-scheduled-briefs.ts`) — endpoint now requires `CRON_SECRET` via `x-cron-secret` or `Authorization: Bearer`. Unauthenticated calls return `401`. Closes the denial-of-wallet vector on a previously open POST endpoint that triggered AI-gateway spend.
+- **Vault-stored cron secret** — pg_cron job rewritten to fetch `CRON_SECRET` from `vault.secrets` and inject it into the `http_post` headers, so the secret is never embedded in scheduler config.
+- **Sanitized error responses** — the cron endpoint no longer echoes raw database error messages to clients (`{ error: "Internal error" }` instead of `error.message`); full details remain in server logs only.
+
 ## [1.9.0] — 2026-05-01 — "Share" (minor)
 
 First outward-facing feature: turn any watchlist into a read-only public link. Each share is a fixed snapshot of tickers, rendered with live metrics on a public `/w/<token>` route — no sign-in required for viewers. Sets up a viral acquisition loop and gives the landing page a concrete public demo.

@@ -90,8 +90,9 @@ export const Route = createFileRoute("/api/public/hooks/run-scheduled-briefs")({
           .eq("hour_utc", hourUtc);
 
         if (error) {
+          // Log the full error server-side for ops, but never return it to the caller.
           console.error("[scheduled-briefs] load error", error);
-          return new Response(JSON.stringify({ ok: false, error: error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
+          return new Response(JSON.stringify({ ok: false, error: "Internal error" }), { status: 500, headers: { "Content-Type": "application/json" } });
         }
 
         const due = (schedules ?? []).filter((s: any) => !s.last_run_at || new Date(s.last_run_at).toISOString() < todayUtcStart);

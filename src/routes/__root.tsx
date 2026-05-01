@@ -9,6 +9,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { AppErrorBoundary } from "@/components/error-boundary";
 import { logClientError } from "@/lib/error-log";
 import { Toaster } from "sonner";
+import { WhatsNewToast } from "@/components/whats-new-toast";
 
 function NotFoundComponent() {
   return (
@@ -111,6 +112,7 @@ function RootComponent() {
           <CommandBar />
         </AppErrorBoundary>
         <Toaster theme="dark" position="top-right" richColors closeButton />
+        <WhatsNewToast />
       </AuthProvider>
     </QueryClientProvider>
   );

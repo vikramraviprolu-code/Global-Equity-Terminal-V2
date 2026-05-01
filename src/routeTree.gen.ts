@@ -27,6 +27,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TerminalSymbolRouteImport } from './routes/terminal.$symbol'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicHooksRunScheduledBriefsRouteImport } from './routes/api/public/hooks/run-scheduled-briefs'
 
 const WatchlistRoute = WatchlistRouteImport.update({
@@ -119,6 +120,12 @@ const TerminalSymbolRoute = TerminalSymbolRouteImport.update({
   path: '/$symbol',
   getParentRoute: () => TerminalRoute,
 } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksRunScheduledBriefsRoute =
   ApiPublicHooksRunScheduledBriefsRouteImport.update({
     id: '/api/public/hooks/run-scheduled-briefs',
@@ -146,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/watchlist': typeof WatchlistRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
   '/api/public/hooks/run-scheduled-briefs': typeof ApiPublicHooksRunScheduledBriefsRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -167,6 +175,7 @@ export interface FileRoutesByTo {
   '/watchlist': typeof WatchlistRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
   '/api/public/hooks/run-scheduled-briefs': typeof ApiPublicHooksRunScheduledBriefsRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -189,6 +198,7 @@ export interface FileRoutesById {
   '/watchlist': typeof WatchlistRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
   '/api/public/hooks/run-scheduled-briefs': typeof ApiPublicHooksRunScheduledBriefsRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/watchlist'
     | '/terminal/$symbol'
     | '/api/public/hooks/run-scheduled-briefs'
+    | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/watchlist'
     | '/terminal/$symbol'
     | '/api/public/hooks/run-scheduled-briefs'
+    | '/lovable/email/queue/process'
   id:
     | '__root__'
     | '/'
@@ -254,6 +266,7 @@ export interface FileRouteTypes {
     | '/watchlist'
     | '/terminal/$symbol'
     | '/api/public/hooks/run-scheduled-briefs'
+    | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -275,6 +288,7 @@ export interface RootRouteChildren {
   ThesesRoute: typeof ThesesRoute
   WatchlistRoute: typeof WatchlistRoute
   ApiPublicHooksRunScheduledBriefsRoute: typeof ApiPublicHooksRunScheduledBriefsRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -405,6 +419,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TerminalSymbolRouteImport
       parentRoute: typeof TerminalRoute
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/run-scheduled-briefs': {
       id: '/api/public/hooks/run-scheduled-briefs'
       path: '/api/public/hooks/run-scheduled-briefs'
@@ -446,6 +467,7 @@ const rootRouteChildren: RootRouteChildren = {
   ThesesRoute: ThesesRoute,
   WatchlistRoute: WatchlistRoute,
   ApiPublicHooksRunScheduledBriefsRoute: ApiPublicHooksRunScheduledBriefsRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

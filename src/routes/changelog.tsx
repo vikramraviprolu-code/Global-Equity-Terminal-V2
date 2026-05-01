@@ -4,6 +4,7 @@ import { z } from "zod";
 import { useMemo } from "react";
 import { SiteNav, Disclaimer } from "@/components/site-nav";
 import { APP_VERSION, APP_RELEASE_DATE, APP_CODENAME } from "@/lib/version";
+import { CHANGELOG_ENTRIES, type ChangelogEntry } from "@/lib/changelog";
 
 const searchSchema = z.object({
   v: fallback(z.string(), "all").default("all"),
@@ -21,53 +22,42 @@ export const Route = createFileRoute("/changelog")({
   }),
 });
 
-type Entry = {
-  version: string;
-  date: string;
-  codename?: string;
-  summary?: string;
-  sections: { title: string; items: string[] }[];
-};
+// Render minimal inline markdown (`code`, **bold**) inside list items.
+// We deliberately keep this tiny — the changelog is the only consumer.
+function renderInline(text: string, q: string): React.ReactNode {
+  // Tokenize into [code | bold | text] segments first, then highlight q within each text segment.
+  const tokens: { kind: "code" | "bold" | "text"; value: string }[] = [];
+  const re = /(`[^`]+`|\*\*[^*]+\*\*)/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) tokens.push({ kind: "text", value: text.slice(last, m.index) });
+    if (m[0].startsWith("`")) tokens.push({ kind: "code", value: m[0].slice(1, -1) });
+    else tokens.push({ kind: "bold", value: m[0].slice(2, -2) });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) tokens.push({ kind: "text", value: text.slice(last) });
 
-const ENTRIES: Entry[] = [
-  {
-    version: "1.0.0",
-    date: "2026-04-29",
-    codename: "Atlas",
-    summary:
-      "First stable release. Research, monitoring, and personal portfolio tracking covered end-to-end.",
-    sections: [
-      {
-        title: "Added",
-        items: [
-          "Portfolio mode — holdings, live valuation, unrealized P&L, allocation by sector and region.",
-          "Alerts engine — price, RSI, 52w range, 5d momentum rules with server-side evaluation.",
-          "In-app notifications — AlertBell with unread badge and toast delivery.",
-          "Authentication — Email/password + Google OAuth via Lovable Cloud.",
-          "News & Catalysts — AI-curated catalysts per ticker with cited sources.",
-          "Landing refresh — 6-capability Intelligence Layer grid + Portfolio CTA.",
-          "Versioning — version.ts source of truth, CHANGELOG, footer build tag, semver.",
-        ],
-      },
-      {
-        title: "Infrastructure",
-        items: [
-          "Lovable Cloud enabled with holdings, alerts, alert_events tables and RLS.",
-          "Server functions: portfolio, alerts, news.",
-        ],
-      },
-    ],
-  },
-  {
-    version: "0.x",
-    date: "Pre-release",
-    summary:
-      "Screener, terminal analysis, compare, watchlists, events, AI narrative, diff mode, sector heatmap, data quality, sources, currency toggle, command palette, PDF export.",
-    sections: [],
-  },
-];
+  return tokens.map((t, i) => {
+    if (t.kind === "code") {
+      return (
+        <code key={i} className="font-mono text-[0.85em] bg-muted/60 px-1 py-0.5 rounded text-foreground/90">
+          {highlightPlain(t.value, q)}
+        </code>
+      );
+    }
+    if (t.kind === "bold") {
+      return (
+        <strong key={i} className="font-semibold text-foreground">
+          {highlightPlain(t.value, q)}
+        </strong>
+      );
+    }
+    return <span key={i}>{highlightPlain(t.value, q)}</span>;
+  });
+}
 
-function highlight(text: string, q: string) {
+function highlightPlain(text: string, q: string): React.ReactNode {
   if (!q) return text;
   const i = text.toLowerCase().indexOf(q.toLowerCase());
   if (i < 0) return text;
@@ -80,28 +70,42 @@ function highlight(text: string, q: string) {
   );
 }
 
+function entryMatches(e: ChangelogEntry, needle: string): boolean {
+  if (!needle) return true;
+  if (e.version.toLowerCase().includes(needle)) return true;
+  if (e.codename?.toLowerCase().includes(needle)) return true;
+  if (e.summary?.toLowerCase().includes(needle)) return true;
+  return e.sections.some((s) => s.items.some((it) => it.toLowerCase().includes(needle)));
+}
+
 function ChangelogPage() {
   const { v, q } = Route.useSearch();
   const navigate = useNavigate({ from: "/changelog" });
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return ENTRIES
+    return CHANGELOG_ENTRIES
       .filter((e) => v === "all" || e.version === v)
-      .map((e) => {
-        if (!needle) return e;
-        const matchHeader =
-          e.version.toLowerCase().includes(needle) ||
-          e.codename?.toLowerCase().includes(needle) ||
-          e.summary?.toLowerCase().includes(needle);
-        const sections = e.sections
-          .map((s) => ({ ...s, items: s.items.filter((it) => it.toLowerCase().includes(needle)) }))
-          .filter((s) => s.items.length > 0);
-        if (!matchHeader && sections.length === 0) return null;
-        return { ...e, sections: matchHeader && sections.length === 0 ? e.sections : sections };
-      })
-      .filter((e): e is Entry => e !== null);
+      .filter((e) => entryMatches(e, needle));
   }, [v, q]);
+
+  // Top-level filter chips: just the major.minor groups + a few latest patches.
+  // Keep it short — full history is still searchable via the keyword input.
+  const versionChips = useMemo(() => {
+    const seenMinor = new Set<string>();
+    const chips: { key: string; label: string }[] = [{ key: "all", label: "All" }];
+    for (const e of CHANGELOG_ENTRIES) {
+      // Always include the current version
+      const isCurrent = e.version === APP_VERSION;
+      const minor = e.version.split(".").slice(0, 2).join(".");
+      if (isCurrent || !seenMinor.has(minor)) {
+        chips.push({ key: e.version, label: `v${e.version}` });
+        seenMinor.add(minor);
+      }
+      if (chips.length > 8) break;
+    }
+    return chips;
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -114,13 +118,16 @@ function ChangelogPage() {
             Currently running <span className="font-mono text-foreground">v{APP_VERSION}</span>
             {APP_CODENAME ? <> · "{APP_CODENAME}"</> : null} · released {APP_RELEASE_DATE}.
           </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {CHANGELOG_ENTRIES.length} releases · sourced from <span className="font-mono">CHANGELOG.md</span>.
+          </p>
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2 mb-8 pb-4 border-b border-border">
-          <div className="flex items-center gap-1 font-mono text-[11px] uppercase tracking-wider">
+          <div className="flex items-center gap-1 font-mono text-[11px] uppercase tracking-wider flex-wrap">
             <span className="text-muted-foreground mr-1">Version:</span>
-            {[{ key: "all", label: "All" }, ...ENTRIES.map((e) => ({ key: e.version, label: `v${e.version}` }))].map((opt) => {
+            {versionChips.map((opt) => {
               const active = v === opt.key;
               return (
                 <button
@@ -173,8 +180,15 @@ function ChangelogPage() {
                   {e.codename ? (
                     <span className="text-xs font-mono text-muted-foreground">"{e.codename}"</span>
                   ) : null}
+                  {e.kind ? (
+                    <span className="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border border-border text-muted-foreground">
+                      {e.kind}
+                    </span>
+                  ) : null}
                 </header>
-                {e.summary ? <p className="text-sm text-muted-foreground mt-2">{highlight(e.summary, q)}</p> : null}
+                {e.summary ? (
+                  <p className="text-sm text-muted-foreground mt-2">{renderInline(e.summary, q)}</p>
+                ) : null}
                 {e.sections.map((s) => (
                   <section key={s.title} className="mt-4">
                     <h3 className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-2">
@@ -184,7 +198,7 @@ function ChangelogPage() {
                       {s.items.map((it, i) => (
                         <li key={i} className="flex gap-2">
                           <span className="text-primary mt-1.5 w-1 h-1 rounded-full bg-primary shrink-0" />
-                          <span>{highlight(it, q)}</span>
+                          <span>{renderInline(it, q)}</span>
                         </li>
                       ))}
                     </ul>

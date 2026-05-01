@@ -3,7 +3,22 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
-## [1.8.1] — 2026-05-01 — "Delivery" (patch)
+## [1.9.0] — 2026-05-01 — "Share" (minor)
+
+First outward-facing feature: turn any watchlist into a read-only public link. Each share is a fixed snapshot of tickers, rendered with live metrics on a public `/w/<token>` route — no sign-in required for viewers. Sets up a viral acquisition loop and gives the landing page a concrete public demo.
+
+### Added
+- **Shared watchlists** (`src/server/share.functions.ts`, `src/routes/w.$token.tsx`, `src/components/share-watchlist-dialog.tsx`) — `createShare` / `listShares` / `revokeShare` / `getSharedWatchlist`. Owners click **Share** on the watchlist page, optionally set an expiry (1/7/30/90 days or never), and copy a link. Recipients land on a branded read-only page with the full screener row data (price, mcap, P/E, RSI, 5D %, value/momentum/risk/confidence scores) and per-ticker drill-through to `/terminal/<symbol>`.
+- **Schema** — new `shared_watchlists` table with `token` (22-char base64url, ~132 bits entropy), `symbols[]` snapshot, `view_count`, `expires_at`, `revoked_at`. RLS scopes owner CRUD to `auth.uid()` and grants public read for active rows (non-revoked, non-expired). Token is the access gate.
+- **View counter** — `bump_shared_watchlist_view(token)` is `SECURITY DEFINER` with `EXECUTE` revoked from `anon` / `authenticated` / `public`. Only the SSR loader (service role) increments the counter, preventing client-side spam.
+- **SEO** — public route emits per-share `og:title` / `og:description` / `twitter:card` based on the watchlist name and ticker count, plus a canonical URL. Every shared link is its own indexable page.
+
+### Notes
+- Shares are **snapshots, not live mirrors** — adding/removing tickers from a watchlist after sharing does not affect existing links. Create a new share to publish an updated list.
+- Watchlists themselves remain client-side (localStorage); only the shared snapshot is persisted server-side. This keeps the no-account-required UX for read-only browsing.
+- A revoked or expired share returns the `notFoundComponent` ("Share unavailable") rather than leaking the existence of the link.
+
+
 
 Security hardening for the email queue infrastructure shipped in 1.8.0. No user-facing changes.
 

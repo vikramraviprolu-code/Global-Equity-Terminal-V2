@@ -1,6 +1,6 @@
 # Global Equity Terminal
 
-> **v1.8.1 — "Delivery"** · A keyboard-driven, AI-augmented research terminal for global equities.
+> **v1.9.0 — "Share"** · A keyboard-driven, AI-augmented research terminal for global equities.
 
 Global Equity Terminal blends terminal-style data density with an AI co-pilot
 layer. It's built for retail and prosumer investors who want fast research,
@@ -32,6 +32,10 @@ Hong Kong, Korea, Taiwan, Singapore, and Australia**.
   badge lights up — no manual rule needed.
 - **Compare & Watchlists** — side-by-side ticker comparison and persistent
   watchlists synced to your account.
+- **Shared watchlists** *(new in v1.9)* — generate a read-only public link for
+  any watchlist. Recipients see live metrics for the snapshot of tickers you
+  shared, without sign-in. Owners can revoke or set an expiry; view counts
+  are tracked per link. Public route: `/w/<token>`.
 - **Portfolio** — holdings with live valuation, unrealized P&L, and allocation
   breakdown by sector and region. Auth-gated and protected by row-level
   security.

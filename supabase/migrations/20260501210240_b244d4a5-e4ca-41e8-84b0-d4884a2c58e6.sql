@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.bump_shared_watchlist_view(text) FROM anon, authenticated, public;

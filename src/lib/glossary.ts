@@ -500,6 +500,13 @@ export const GLOSSARY = {
     hint: "Verdicts: intact / monitor / breaking / broken.",
     group: "navigation",
   },
+  sharedWatchlist: {
+    term: "Shared watchlist",
+    full: "Read-only public watchlist link",
+    definition: "A snapshot of a watchlist published to a public /w/<token> URL. Recipients see live metrics for the shared tickers without signing in.",
+    hint: "Snapshot — not a live mirror. Owners can revoke or set an expiry; view counts are tracked.",
+    group: "navigation",
+  },
 } as const satisfies Record<string, GlossaryEntry>;
 
 export type GlossaryKey = keyof typeof GLOSSARY;

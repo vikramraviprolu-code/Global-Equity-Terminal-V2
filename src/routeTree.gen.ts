@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WatchlistRouteImport } from './routes/watchlist'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as ThesesRouteImport } from './routes/theses'
 import { Route as TerminalRouteImport } from './routes/terminal'
 import { Route as SourcesRouteImport } from './routes/sources'
@@ -37,6 +38,11 @@ import { Route as ApiPublicHooksRunScheduledBriefsRouteImport } from './routes/a
 const WatchlistRoute = WatchlistRouteImport.update({
   id: '/watchlist',
   path: '/watchlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ThesesRoute = ThesesRouteImport.update({
@@ -176,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/sources': typeof SourcesRoute
   '/terminal': typeof TerminalRouteWithChildren
   '/theses': typeof ThesesRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/watchlist': typeof WatchlistRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
@@ -202,6 +209,7 @@ export interface FileRoutesByTo {
   '/sources': typeof SourcesRoute
   '/terminal': typeof TerminalRouteWithChildren
   '/theses': typeof ThesesRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/watchlist': typeof WatchlistRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/sources': typeof SourcesRoute
   '/terminal': typeof TerminalRouteWithChildren
   '/theses': typeof ThesesRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/watchlist': typeof WatchlistRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
@@ -257,6 +266,7 @@ export interface FileRouteTypes {
     | '/sources'
     | '/terminal'
     | '/theses'
+    | '/unsubscribe'
     | '/watchlist'
     | '/email/unsubscribe'
     | '/terminal/$symbol'
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
     | '/sources'
     | '/terminal'
     | '/theses'
+    | '/unsubscribe'
     | '/watchlist'
     | '/email/unsubscribe'
     | '/terminal/$symbol'
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/sources'
     | '/terminal'
     | '/theses'
+    | '/unsubscribe'
     | '/watchlist'
     | '/email/unsubscribe'
     | '/terminal/$symbol'
@@ -336,6 +348,7 @@ export interface RootRouteChildren {
   SourcesRoute: typeof SourcesRoute
   TerminalRoute: typeof TerminalRouteWithChildren
   ThesesRoute: typeof ThesesRoute
+  UnsubscribeRoute: typeof UnsubscribeRoute
   WatchlistRoute: typeof WatchlistRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -352,6 +365,13 @@ declare module '@tanstack/react-router' {
       path: '/watchlist'
       fullPath: '/watchlist'
       preLoaderRoute: typeof WatchlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/theses': {
@@ -547,6 +567,7 @@ const rootRouteChildren: RootRouteChildren = {
   SourcesRoute: SourcesRoute,
   TerminalRoute: TerminalRouteWithChildren,
   ThesesRoute: ThesesRoute,
+  UnsubscribeRoute: UnsubscribeRoute,
   WatchlistRoute: WatchlistRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
@@ -558,12 +579,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

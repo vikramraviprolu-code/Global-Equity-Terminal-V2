@@ -107,6 +107,46 @@ export const Route = createFileRoute("/api/public/hooks/run-scheduled-briefs")({
             });
             await supabaseAdmin.from("brief_schedules").update({ last_run_at: now.toISOString() }).eq("id", s.id);
             processed += 1;
+
+            // v1.8 — optional email delivery
+            if (s.email_enabled) {
+              try {
+                let recipient: string | null = s.email_to ?? null;
+                if (!recipient) {
+                  const { data: userResp } = await supabaseAdmin.auth.admin.getUserById(s.user_id);
+                  recipient = userResp?.user?.email ?? null;
+                }
+                if (recipient) {
+                  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+                  const origin = new URL(req?.url ?? "http://localhost").origin;
+                  const sendUrl = `${origin}/lovable/email/transactional/send`;
+                  const dateStr = new Date(now).toISOString().slice(0, 10);
+                  const r = await fetch(sendUrl, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${serviceKey}`,
+                    },
+                    body: JSON.stringify({
+                      templateName: "morning-brief",
+                      recipientEmail: recipient,
+                      idempotencyKey: `brief-${s.user_id}-${dateStr}`,
+                      templateData: {
+                        date: dateStr,
+                        symbols,
+                        summary: res.summary,
+                        highlights: res.highlights,
+                      },
+                    }),
+                  });
+                  if (!r.ok) {
+                    console.warn("[scheduled-briefs] email send failed", s.user_id, r.status, await r.text().catch(() => ""));
+                  }
+                }
+              } catch (mailErr: any) {
+                console.warn("[scheduled-briefs] email error", s.user_id, mailErr?.message ?? mailErr);
+              }
+            }
           } catch (e: any) {
             console.error("[scheduled-briefs] user error", s.user_id, e?.message ?? e);
             failed += 1;

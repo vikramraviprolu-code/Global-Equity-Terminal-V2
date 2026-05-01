@@ -1,6 +1,6 @@
 # Global Equity Terminal
 
-> **v1.7.0 — "Compounding"** · A keyboard-driven, AI-augmented research terminal for global equities.
+> **v1.8.0 — "Delivery"** · A keyboard-driven, AI-augmented research terminal for global equities.
 
 Global Equity Terminal blends terminal-style data density with an AI co-pilot
 layer. It's built for retail and prosumer investors who want fast research,
@@ -20,9 +20,10 @@ Hong Kong, Korea, Taiwan, Singapore, and Australia**.
   ticker page, grounded strictly in the metrics already on screen.
 - **AI Morning Brief** *(v1.6)* — one-paragraph digest of overnight
   moves across your watchlist, with chips for the biggest movers.
-- **Scheduled Morning Brief** *(new in v1.7)* — opt-in daily generation:
+- **Scheduled Morning Brief** *(v1.7, email delivery in v1.8)* — opt-in daily generation:
   pick a UTC hour and an hourly `pg_cron` job produces a fresh brief over
-  your watchlist, stored in your brief history for in-app reading.
+  your watchlist, stored in your brief history. v1.8 adds optional email delivery
+  from `notify.rankaisolutions.tech` (per-user opt-in, with override address).
 - **Thesis Tracker** *(v1.6)* — write a one-paragraph thesis per
   ticker; the terminal re-evaluates it against live metrics and flags when
   it's `intact` / `monitor` / `breaking` / `broken`.

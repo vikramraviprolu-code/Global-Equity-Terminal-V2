@@ -308,8 +308,14 @@ export const GLOSSARY = {
   },
   scheduledBrief: {
     term: "Scheduled Morning Brief",
-    definition: "Opt-in daily AI brief over your watchlist. You pick a UTC hour; the server generates a fresh brief once per day at that hour.",
+    definition: "Opt-in daily AI brief over your watchlist. You pick a UTC hour; the server generates a fresh brief once per day at that hour. v1.8 adds optional email delivery.",
     hint: "Idempotent — runs at most once per user per UTC day.",
+    group: "navigation",
+  },
+  briefEmail: {
+    term: "Brief Email",
+    definition: "When enabled, the daily Scheduled Morning Brief is also delivered to your inbox from notify.rankaisolutions.tech. Defaults to your account email; can be overridden.",
+    hint: "Add the sender to your contacts to keep deliverability high.",
     group: "navigation",
   },
   alertEvent: {

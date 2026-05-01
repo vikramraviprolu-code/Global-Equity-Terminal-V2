@@ -3,6 +3,25 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.8.0] — 2026-05-01 — "Delivery" (minor)
+
+Take the v1.7 scheduled brief out of the app and into the user's inbox. Wires up Lovable Emails on a verified sender subdomain and reuses the existing per-user schedule + cron pipeline.
+
+### Added
+- **Email delivery for the Scheduled Morning Brief** — `brief_schedules` gains `email_enabled` and optional `email_to` columns. When enabled, the hourly cron at `src/routes/api/public/hooks/run-scheduled-briefs.ts` renders the brief through the React Email template `morning-brief` and POSTs it to the local `send-transactional-email` route, authenticating with the service-role key. Recipients default to the user's auth email; an override is supported.
+- **Lovable Emails infrastructure** — verified sender subdomain `notify.rankaisolutions.tech` (DNS delegated to Lovable nameservers). Adds the standard email queue (`email_send_log`, `email_send_state`, `suppressed_emails`, `email_unsubscribe_tokens` + pgmq queues) and the queue dispatcher (`/lovable/email/queue/process`) running every 5s via pg_cron. Includes the public `/email/unsubscribe` page and `handle-email-suppression` hook.
+- **Morning Brief email template** (`src/lib/email-templates/morning-brief.tsx`) — branded React Email layout with date, ticker list, AI summary, top 5 moves with 5D % and RSI, and the standard system-managed unsubscribe footer (auto-appended).
+- **Schedule UI** (`src/components/schedule-brief.tsx`) — adds an "Also email it to me" toggle and an optional override address field next to the existing UTC hour picker.
+
+### Changed
+- **`send-transactional-email` route** — accepts the service-role key as an internal bearer for server-to-server calls in addition to the user JWT, so the cron can dispatch emails without forging a user session.
+- **`upsertBriefSchedule` / `getBriefSchedule`** (`src/server/v17.functions.ts`) — schema now includes `emailEnabled` and `emailTo`.
+
+### Notes
+- Sends activate as soon as DNS verification for `notify.rankaisolutions.tech` completes (visible in **Cloud → Emails**). Until then briefs continue to land in-app only.
+- New sender domain — deliverability improves over the first 2–4 weeks as inbox providers warm up. Add the sender to contacts to keep auth + brief mail in the inbox.
+- Marketing-style emails are intentionally NOT supported — this stream is transactional only.
+
 ## [1.7.0] — 2026-04-30 — "Compounding" (minor)
 
 Compounds the v1.6 USP — make the differentiator features work for the user even when they're not looking.

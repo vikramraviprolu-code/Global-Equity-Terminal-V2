@@ -11,9 +11,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  docs:
+    name: Docs consistency (pre-publish)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with: { bun-version: latest }
+      - run: bun install --frozen-lockfile
+      # PRD lives outside the repo (/mnt/documents). Skip PRD-specific checks
+      # in CI by unsetting the docs dir; version.ts/README/CHANGELOG/glossary
+      # are still validated and that's what we want to gate PRs on.
+      - name: Pre-publish checklist (repo-only)
+        run: bun run pre-publish
+        env:
+          SKIP_PRD_CHECK: "1"
+
   unit:
     name: Unit (Vitest)
     runs-on: ubuntu-latest
+    needs: docs
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2

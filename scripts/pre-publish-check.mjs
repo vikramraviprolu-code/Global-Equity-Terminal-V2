@@ -81,7 +81,9 @@ if (!entryLine) {
 }
 
 // ── 4. PRD .docx ─────────────────────────────────────────────────────────────
-if (!existsSync(DOCS_DIR)) {
+if (process.env.SKIP_PRD_CHECK === '1') {
+  warn('PRD', 'SKIP_PRD_CHECK=1 — skipping PRD check (CI mode)')
+} else if (!existsSync(DOCS_DIR)) {
   warn('PRD', `${DOCS_DIR} not mounted — skipping PRD check`)
 } else {
   const prds = readdirSync(DOCS_DIR)
@@ -130,18 +132,22 @@ if (!existsSync(DOCS_DIR)) {
         else fail(`PRD — ${c.label}`, `not found in ${latest.file}`)
       }
 
-      // Stale prior versions on the cover (look at first 1500 chars only)
-      const cover = text.slice(0, 1500)
-      const staleVersions = [...cover.matchAll(/\bv?(\d+\.\d+(?:\.\d+)?)\b/g)]
+      // Stale prior PATCH versions on the cover (first 400 chars = title block).
+      // We only flag full x.y.z versions that aren't the current release —
+      // partial x.y refs (e.g. "v1.8 introduced…") and the PRD doc version
+      // itself (matches filename) are legitimate context.
+      const titleBlock = text.slice(0, 400)
+      const docVer = latest.ver // e.g. "3.6" — PRD document version
+      const staleVersions = [...titleBlock.matchAll(/\bv?(\d+\.\d+\.\d+)\b/g)]
         .map((m) => m[1])
-        .filter((v) => v !== VERSION && cmpSemver(v, '1.0.0') >= 0)
+        .filter((v) => v !== VERSION && v !== docVer && cmpSemver(v, '1.0.0') >= 0)
       if (staleVersions.length) {
         warn(
-          'PRD — cover stale versions',
+          'PRD — title block stale versions',
           `found ${[...new Set(staleVersions)].join(', ')} alongside v${VERSION}`,
         )
       } else {
-        pass('PRD — cover has no stale versions')
+        pass('PRD — title block clean')
       }
     }
   }

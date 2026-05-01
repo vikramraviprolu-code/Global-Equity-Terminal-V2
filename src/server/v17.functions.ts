@@ -1,7 +1,9 @@
 /**
  * v1.7 server functions:
- *   - getBriefSchedule / upsertBriefSchedule / disableBriefSchedule:
+ *   - getBriefSchedule / upsertBriefSchedule:
  *     per-user opt-in to a daily AI Morning Brief generation.
+ *
+ * v1.8 adds optional email delivery (emailEnabled + emailTo).
  *
  * The actual generation runs on the server route at
  *   /api/public/hooks/run-scheduled-briefs
@@ -16,6 +18,8 @@ const ScheduleInput = z.object({
   enabled: z.boolean(),
   hourUtc: z.number().int().min(0).max(23),
   symbols: z.array(z.string().min(1).max(20)).max(30),
+  emailEnabled: z.boolean().optional(),
+  emailTo: z.string().email().max(200).optional().nullable(),
 });
 
 export const getBriefSchedule = createServerFn({ method: "GET" })
@@ -42,6 +46,8 @@ export const upsertBriefSchedule = createServerFn({ method: "POST" })
           enabled: data.enabled,
           hour_utc: data.hourUtc,
           symbols: data.symbols.map((s) => s.toUpperCase()),
+          email_enabled: data.emailEnabled ?? false,
+          email_to: data.emailTo ?? null,
         },
         { onConflict: "user_id" },
       )

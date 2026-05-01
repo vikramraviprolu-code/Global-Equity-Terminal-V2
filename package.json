@@ -14,7 +14,8 @@
     "test:unit": "vitest run --config vitest.config.ts",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install --with-deps chromium",
-    "test:regression": "vitest run --config vitest.config.ts && playwright test"
+    "test:regression": "vitest run --config vitest.config.ts && playwright test",
+    "pre-publish": "node scripts/pre-publish-check.mjs"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",

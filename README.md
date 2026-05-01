@@ -90,6 +90,12 @@ The top nav is grouped into 4 dropdown menus:
 - All documentation (this README, PRD, in-app glossary, tooltips, and
   CHANGELOG) is updated on every version bump. Features ship together with
   their docs — never separately.
+- **Pre-publish checklist** — run `bun run pre-publish` (or
+  `node scripts/pre-publish-check.mjs`) before every publish. It verifies
+  that `src/lib/version.ts`, the README header, the matching CHANGELOG
+  entry, the newest PRD `.docx` cover/version markers, the glossary, and
+  in-app help text are all consistent with the release version. Exit code
+  is non-zero if anything is out of sync.
 - Semantic design tokens live in `src/styles.css`; never hard-code colors in
   components.
 - Server-side logic lives under `src/server/` (`*.functions.ts` for typed RPC,

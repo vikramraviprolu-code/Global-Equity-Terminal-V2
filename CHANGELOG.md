@@ -17,8 +17,7 @@ First outward-facing feature: turn any watchlist into a read-only public link. E
 - Shares are **snapshots, not live mirrors** — adding/removing tickers from a watchlist after sharing does not affect existing links. Create a new share to publish an updated list.
 - Watchlists themselves remain client-side (localStorage); only the shared snapshot is persisted server-side. This keeps the no-account-required UX for read-only browsing.
 - A revoked or expired share returns the `notFoundComponent` ("Share unavailable") rather than leaking the existence of the link.
-
-
+## [1.8.1] — 2026-05-01 — "Delivery" (patch)
 
 Security hardening for the email queue infrastructure shipped in 1.8.0. No user-facing changes.
 

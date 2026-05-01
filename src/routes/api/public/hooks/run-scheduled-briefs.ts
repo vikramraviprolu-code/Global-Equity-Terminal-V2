@@ -68,6 +68,17 @@ export const Route = createFileRoute("/api/public/hooks/run-scheduled-briefs")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Gate: require CRON_SECRET to prevent denial-of-wallet abuse.
+        const cronSecret = process.env.CRON_SECRET;
+        if (!cronSecret) {
+          console.error("[scheduled-briefs] CRON_SECRET not configured");
+          return new Response(JSON.stringify({ ok: false, error: "Server misconfigured" }), { status: 500, headers: { "Content-Type": "application/json" } });
+        }
+        const provided = request.headers.get("x-cron-secret") ?? request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
+        if (provided !== cronSecret) {
+          return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+        }
+
         const now = new Date();
         const hourUtc = now.getUTCHours();
         const todayUtcStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString();

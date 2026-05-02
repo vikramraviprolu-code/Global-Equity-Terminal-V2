@@ -469,27 +469,52 @@ export const searchTickers = createServerFn({ method: "POST" })
   .inputValidator(z.object({ q: z.string().min(1).max(80) }))
   .handler(async ({ data }) => {
     const q = data.q.trim();
-    // Prefer exact symbol resolution if it looks like a ticker
-    const looksLikeSymbol = /^[A-Za-z0-9.\-]{1,15}$/.test(q);
-    const results: Listing[] = [];
+    return cachedSWR(`search:${q.toLowerCase()}`, 5 * 60_000, async () => {
+      const looksLikeSymbol = /^[A-Za-z0-9.\-]{1,15}$/.test(q);
+      const results: Listing[] = [];
 
-    if (looksLikeSymbol) {
-      // Try exact symbol fetch + name search in parallel
-      const [bySym, byName] = await Promise.all([
-        fetchListingsBySymbols([q.toUpperCase()]),
-        fi<any>("/search", { search_text: q, quote_types: ["stock"], sort_by: [{ selector: "amount_usd", desc: true }], limit: 12 }).then((r) => r?.items ?? []),
-      ]);
-      for (const it of bySym) results.push(listingFromItem(it));
-      const seen = new Set(results.map((r) => r.symbol));
-      for (const it of byName) {
-        if (!seen.has(it.symbol)) { seen.add(it.symbol); results.push(listingFromItem(it)); }
+      if (looksLikeSymbol) {
+        const [bySym, byName] = await Promise.all([
+          fetchListingsBySymbols([q.toUpperCase()]).catch(() => [] as any[]),
+          fi<any>("/search", { search_text: q, quote_types: ["stock"], sort_by: [{ selector: "amount_usd", desc: true }], limit: 12 }).then((r) => r?.items ?? []).catch(() => [] as any[]),
+        ]);
+        for (const it of bySym) results.push(listingFromItem(it));
+        const seen = new Set(results.map((r) => r.symbol));
+        for (const it of byName) {
+          if (!seen.has(it.symbol)) { seen.add(it.symbol); results.push(listingFromItem(it)); }
+        }
+      } else {
+        const r = await fi<any>("/search", { search_text: q, quote_types: ["stock"], sort_by: [{ selector: "amount_usd", desc: true }], limit: 15 }).catch(() => null);
+        for (const it of (r?.items ?? [])) results.push(listingFromItem(it));
       }
-    } else {
-      const r = await fi<any>("/search", { search_text: q, quote_types: ["stock"], sort_by: [{ selector: "amount_usd", desc: true }], limit: 15 });
-      for (const it of (r?.items ?? [])) results.push(listingFromItem(it));
-    }
 
-    return { matches: results.slice(0, 15) } as const;
+      // Yahoo Finance fallback if Finimpulse returned nothing
+      if (results.length === 0) {
+        const yahoo = await yahooSearch(q, 15).catch(() => []);
+        const seen = new Set<string>();
+        for (const it of yahoo) {
+          if (seen.has(it.symbol)) continue;
+          seen.add(it.symbol);
+          const fb = detectFromSymbol(it.symbol);
+          results.push({
+            symbol: it.symbol,
+            companyName: it.longname ?? it.shortname ?? it.symbol,
+            exchange: it.exchange ?? fb.exchange,
+            fullExchange: it.exchDisp ?? null,
+            country: fb.country,
+            region: fb.region,
+            currency: fb.currency,
+            sector: it.sector ?? null,
+            industry: it.industry ?? null,
+            marketCap: null,
+            marketCapUsd: null,
+            listingType: "stock",
+          });
+        }
+      }
+
+      return { matches: results.slice(0, 15) } as const;
+    });
   });
 
 // ============== ANALYZE ==============

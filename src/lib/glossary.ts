@@ -507,6 +507,26 @@ export const GLOSSARY = {
     hint: "Snapshot — not a live mirror. Owners can revoke or set an expiry; view counts are tracked.",
     group: "navigation",
   },
+  providerBadge: {
+    term: "Provider badge",
+    full: "Data source badge",
+    definition: "Small label on each row indicating which free upstream supplied the data: FIM (Finimpulse), YHO (Yahoo Finance), FMP (Financial Modeling Prep), or STQ (Stooq).",
+    hint: "Lower in the chain = more partial data. All providers are free; no user API key required.",
+    group: "data",
+  },
+  fallbackChain: {
+    term: "Fallback chain",
+    full: "Multi-provider data fallback",
+    definition: "Order in which the terminal tries upstream data providers per ticker: Finimpulse → Yahoo Finance → Financial Modeling Prep → Stooq.",
+    hint: "Indicators (RSI, ROC, MA cross) are recomputed locally from whichever provider returned price history.",
+    group: "data",
+  },
+  userGuide: {
+    term: "User Guide",
+    definition: "In-app manual at /system/guide covering the screener, terminal, scoring, data sources, shortcuts, and FAQs.",
+    hint: "Open from the System nav dropdown.",
+    group: "navigation",
+  },
 } as const satisfies Record<string, GlossaryEntry>;
 
 export type GlossaryKey = keyof typeof GLOSSARY;

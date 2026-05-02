@@ -1,9 +1,9 @@
 // Single source of truth for app version + feature flags.
 // Bump on every shipped change: minor for features, patch for fixes.
 
-export const APP_VERSION = "1.9.1";
-export const APP_RELEASE_DATE = "2026-05-01";
-export const APP_CODENAME = "Share";
+export const APP_VERSION = "1.10.0";
+export const APP_RELEASE_DATE = "2026-05-02";
+export const APP_CODENAME = "Resilience";
 
 export const FEATURE_FLAGS = {
   newsCatalysts: true,
@@ -18,6 +18,9 @@ export const FEATURE_FLAGS = {
   thesisAlerts: true,
   emailDelivery: true,
   watchlistSharing: true,
+  multiProviderFallbacks: true,
+  providerBadges: true,
+  userGuide: true,
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;

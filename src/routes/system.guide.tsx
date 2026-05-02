@@ -43,7 +43,7 @@ function GuidePage() {
         <Section id="screener" title="2. The Screener (Workspace → Screener)">
           <p>Start here. The screener loads ~143 curated global tickers and lets you filter, sort, and score them.</p>
           <Steps>
-            <li><strong>Presets</strong> at the top (e.g. <em>Value Near Lows</em>, <em>Momentum Leaders</em>) one-click apply common filter combinations.</li>
+            <li><strong>Presets</strong> sit just above the results list (e.g. <em>Value Near Lows</em>, <em>Momentum Leaders</em>) and one-click apply common filter combinations on top of your search.</li>
             <li><strong>Filters</strong> below — region, sector, market cap, P/E, P/B, dividend yield, RSI, ROC, MA-cross, % from 52W low, and minimum confidence.</li>
             <li>Switch between <strong>Table</strong>, <strong>Chart</strong>, and <strong>Heatmap</strong> views (top right).</li>
             <li>Click any row to open the full <strong>Terminal</strong> analysis for that stock.</li>

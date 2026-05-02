@@ -56,11 +56,18 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
         const token = authHeader.slice('Bearer '.length).trim()
         const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-        if (token !== supabaseServiceKey) {
+        // Authenticate caller. We track the authenticated user's email so that
+        // when a user JWT is presented, we can enforce that the recipient
+        // matches the caller's own email — preventing abuse of the sending
+        // domain to mail arbitrary third parties.
+        let authenticatedUserEmail: string | null = null
+        const isServiceRole = token === supabaseServiceKey
+        if (!isServiceRole) {
           const { data: { user }, error: authError } = await supabase.auth.getUser(token)
           if (authError || !user) {
             return Response.json({ error: 'Unauthorized' }, { status: 401 })
           }
+          authenticatedUserEmail = user.email?.toLowerCase() ?? null
         }
 
         // Parse request body
@@ -98,9 +105,7 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
         if (!template) {
           console.error('Template not found in registry', { templateName })
           return Response.json(
-            {
-              error: `Template '${templateName}' not found. Available: ${Object.keys(TEMPLATES).join(', ')}`,
-            },
+            { error: 'Template not found' },
             { status: 404 }
           )
         }
@@ -117,6 +122,21 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
             },
             { status: 400 }
           )
+        }
+
+        // When called with a user JWT (not service role), the recipient MUST
+        // match the authenticated user's own email. Templates with a fixed
+        // `to` (notification-to-owner pattern) are allowed for any user.
+        if (!isServiceRole && !template.to) {
+          if (
+            !authenticatedUserEmail ||
+            effectiveRecipient.toLowerCase() !== authenticatedUserEmail
+          ) {
+            return Response.json(
+              { error: 'Forbidden: can only send to your own email address' },
+              { status: 403 }
+            )
+          }
         }
 
         // 2. Check suppression list (fail-closed: if we can't verify, don't send)

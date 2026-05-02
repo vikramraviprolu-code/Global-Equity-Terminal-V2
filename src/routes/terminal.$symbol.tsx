@@ -31,7 +31,7 @@ export const Route = createFileRoute("/terminal/$symbol")({
     const router = useRouter();
     return (
       <div className="p-10 text-center font-mono text-sm text-destructive">
-        Failed to load terminal: {error.message}
+        An unexpected error occurred. Please try again.
         <div className="mt-4">
           <button
             className="rounded-md bg-primary px-3 py-1.5 text-primary-foreground"

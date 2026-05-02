@@ -34,10 +34,11 @@ export const aiNewsCatalysts = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const apiKey = process.env.PERPLEXITY_API_KEY;
     if (!apiKey) {
+      console.error("News service misconfigured: PERPLEXITY_API_KEY is not set");
       return {
         text: "",
         citations: [] as string[],
-        error: "News service is not configured (missing PERPLEXITY_API_KEY).",
+        error: "News service is not currently available.",
       };
     }
 

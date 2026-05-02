@@ -825,8 +825,15 @@ function Sparkline({ closes }: { closes: number[] }) {
 
 function Disclaimer() {
   return (
-    <div className="max-w-[1400px] mx-auto px-4 py-6 text-[11px] text-muted-foreground">
-      This analysis is for informational purposes only and is not financial advice. Free-source market data may be delayed, incomplete, adjusted, stale, or unavailable. Mock demo data is clearly labeled and is not live market data. Verify all data independently or consult a qualified financial advisor before making investment decisions.
+    <div className="max-w-[1400px] mx-auto px-4 py-6 text-[11px] text-muted-foreground space-y-2">
+      <p>
+        This analysis is for informational purposes only and is not financial advice. Free-source market data may be delayed, incomplete, adjusted, stale, or unavailable. Mock demo data is clearly labeled and is not live market data. Verify all data independently or consult a qualified financial advisor before making investment decisions.
+      </p>
+      <p className="text-[10px] text-muted-foreground/80">
+        Data sources: Finimpulse, Yahoo Finance, Financial Modeling Prep, Stooq. Each row is tagged with its provider badge.
+        Data is shown for individual research only and may be delayed by 15+ minutes; redistribution is not permitted.
+        All trademarks belong to their respective owners.
+      </p>
     </div>
   );
 }

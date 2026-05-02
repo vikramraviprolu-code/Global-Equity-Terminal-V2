@@ -140,10 +140,17 @@ export function SiteNav({ right }: { right?: React.ReactNode }) {
 
 export function Disclaimer() {
   return (
-    <p className="mt-8 mb-4 text-[11px] text-muted-foreground border-t border-border pt-4 max-w-3xl mx-auto text-center leading-relaxed px-4">
-      This analysis is for informational purposes only and is not financial advice. Free-source market data may be delayed,
-      incomplete, adjusted, stale, or unavailable. Investors should verify all data independently or consult a qualified
-      financial advisor before making investment decisions.
-    </p>
+    <div className="mt-8 mb-4 max-w-3xl mx-auto px-4 border-t border-border pt-4 space-y-2 text-center">
+      <p className="text-[11px] text-muted-foreground leading-relaxed">
+        This analysis is for informational purposes only and is not financial advice. Free-source market data may be delayed,
+        incomplete, adjusted, stale, or unavailable. Investors should verify all data independently or consult a qualified
+        financial advisor before making investment decisions.
+      </p>
+      <p className="text-[10px] text-muted-foreground/80 leading-relaxed">
+        Data sources: Finimpulse, Yahoo Finance, Financial Modeling Prep, Stooq. Each row is tagged with its provider badge.
+        Data is shown for individual research only and may be delayed by 15+ minutes; redistribution is not permitted.
+        All trademarks belong to their respective owners.
+      </p>
+    </div>
   );
 }

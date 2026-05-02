@@ -88,11 +88,11 @@ const DEFAULT_FILTERS: Filters = searchSchema.parse({});
 function applyPreset(p: PresetId): Filters {
   const base: Filters = { ...DEFAULT_FILTERS, preset: p };
   switch (p) {
-    case "valueLow": return { ...base, peMax: 10, near52wLowPct: 10, minMcap: 2e9, minConfidence: 60 };
-    case "momentum": return { ...base, rsiMin: 40, rsiMax: 70, rocMin: 0, maCross: "above50" };
-    case "quality":  return { ...base, minMcap: 10e9, minConfidence: 60 };
-    case "oversold": return { ...base, rsiMin: 0, rsiMax: 35, near52wLowPct: 20 };
-    case "breakout": return { ...base, rsiMin: 50, rsiMax: 75, maCross: "above50", rocMin: 0 };
+    case "valueLow": return { ...base, peMax: 15, near52wLowPct: 20, minMcap: 1e9, minConfidence: 50 };
+    case "momentum": return { ...base, rsiMin: 40, rsiMax: 75, rocMin: 0, maCross: "above50" };
+    case "quality":  return { ...base, minMcap: 5e9, minConfidence: 50 };
+    case "oversold": return { ...base, rsiMin: 0, rsiMax: 40, near52wLowPct: 25 };
+    case "breakout": return { ...base, rsiMin: 50, rsiMax: 80, maCross: "above50", rocMin: 0 };
     case "reliable": return { ...base, minConfidence: 85, excludeMock: true };
     default:         return base;
   }

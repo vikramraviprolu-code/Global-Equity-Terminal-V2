@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { fetchWithRetry } from "./http.server";
 import { yahooChart, yahooSummary, yahooSearch } from "./yahoo.server";
+import { stooqQuote } from "./stooq.server";
+import { fmpQuote, fmpSearch } from "./fmp.server";
 import { cachedSWR } from "./cache.server";
 
 const FI_BASE = "https://api.finimpulse.com/v1";
@@ -169,6 +171,7 @@ export type StockMetrics = Listing & {
   dataMissing: string[];
   filter: Filter;
   closes: number[];
+  source: string;
 };
 
 function isoDateBack(d: number) { const x = new Date(); x.setUTCDate(x.getUTCDate() - d); return x.toISOString().slice(0, 10); }

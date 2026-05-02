@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { z } from "zod";
 
 export const Route = createFileRoute("/terminal")({
@@ -10,4 +10,5 @@ export const Route = createFileRoute("/terminal")({
     ],
     links: [{ rel: "canonical", href: "https://rankaisolutions.tech/terminal" }],
   }),
+  component: () => <Outlet />,
 });

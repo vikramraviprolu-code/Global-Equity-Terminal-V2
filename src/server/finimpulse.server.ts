@@ -2,6 +2,8 @@
 // Kept server-only (.server.ts is import-protected from client bundles).
 
 import { fetchWithRetry } from "./http.server";
+import { yahooChart, yahooSummary } from "./yahoo.server";
+import { cachedSWR } from "./cache.server";
 
 const FI_BASE = "https://api.finimpulse.com/v1";
 
@@ -193,52 +195,120 @@ export async function fetchScreenerRow(u: {
   symbol: string; name: string; exchange: string; country: string; region: RegionKey;
   currency: string; sector: string; industry: string;
 }): Promise<ScreenerRow> {
+  // Cache rows for 5 min — universe is fairly static and rate-limit pressure
+  // comes from many concurrent visitors hitting the same symbols.
+  return cachedSWR(`screener:${u.symbol}`, 5 * 60_000, () => fetchScreenerRowUncached(u));
+}
+
+async function fetchScreenerRowUncached(u: {
+  symbol: string; name: string; exchange: string; country: string; region: RegionKey;
+  currency: string; sector: string; industry: string;
+}): Promise<ScreenerRow> {
   const sym = u.symbol;
+  // 1. Try Finimpulse
   try {
     const [searchItem, summary, closes] = await Promise.all([
       fetchSearchOne(sym).catch(() => null),
       fetchSummary(sym).catch(() => null),
       fetchHistoryCloses(sym).catch(() => [] as number[]),
     ]);
-    if (!searchItem && !summary && !closes.length) {
-      return buildMockRow(u);
-    }
-    const price: number | null = searchItem?.regular_market_price ?? summary?.current_price ?? summary?.regular_market_price ?? (closes.length ? closes[closes.length - 1] : null);
-    const high52: number | null = searchItem?.fifty_two_week_high ?? summary?.fifty_two_week_high ?? null;
-    const low52: number | null = searchItem?.fifty_two_week_low ?? summary?.fifty_two_week_low ?? null;
-    const pctFromLow = price && low52 ? ((price - low52) / low52) * 100 : null;
-    const pctFromHigh = price && high52 ? ((price - high52) / high52) * 100 : null;
-    const ma20 = sma(closes, 20);
-    const ma50 = searchItem?.fifty_day_average ?? summary?.fifty_day_average ?? sma(closes, 50);
-    const ma200 = searchItem?.two_hundred_day_average ?? summary?.two_hundred_day_average ?? sma(closes, 200);
+    if (searchItem || summary || closes.length) {
+      const price: number | null = searchItem?.regular_market_price ?? summary?.current_price ?? summary?.regular_market_price ?? (closes.length ? closes[closes.length - 1] : null);
+      const high52: number | null = searchItem?.fifty_two_week_high ?? summary?.fifty_two_week_high ?? null;
+      const low52: number | null = searchItem?.fifty_two_week_low ?? summary?.fifty_two_week_low ?? null;
+      const pctFromLow = price && low52 ? ((price - low52) / low52) * 100 : null;
+      const pctFromHigh = price && high52 ? ((price - high52) / high52) * 100 : null;
+      const ma20 = sma(closes, 20);
+      const ma50 = searchItem?.fifty_day_average ?? summary?.fifty_day_average ?? sma(closes, 50);
+      const ma200 = searchItem?.two_hundred_day_average ?? summary?.two_hundred_day_average ?? sma(closes, 200);
 
-    return {
-      symbol: sym, name: searchItem?.long_name ?? searchItem?.short_name ?? u.name,
-      exchange: searchItem?.full_exchange_name ?? searchItem?.exchange ?? u.exchange,
-      country: searchItem?.market_region ?? u.country, region: u.region,
-      currency: searchItem?.currency ?? u.currency,
-      sector: searchItem?.sector ?? u.sector, industry: searchItem?.industry ?? u.industry,
-      price,
-      marketCap: searchItem?.amount ?? summary?.market_cap ?? null,
-      marketCapUsd: searchItem?.amount_usd ?? null,
-      avgVolume: searchItem?.average_daily_volume_3_month ?? searchItem?.average_daily_volume_10_day ?? summary?.average_volume ?? null,
-      pe: summary?.trailing_pe ?? null,
-      pb: summary?.price_to_book ?? null,
-      dividendYield: summary?.dividend_yield != null ? +(Number(summary.dividend_yield) * 100).toFixed(2) : (summary?.trailing_annual_dividend_yield != null ? +(Number(summary.trailing_annual_dividend_yield) * 100).toFixed(2) : null),
-      high52, low52,
-      pctFromLow: pctFromLow != null ? +pctFromLow.toFixed(2) : null,
-      pctFromHigh: pctFromHigh != null ? +pctFromHigh.toFixed(2) : null,
-      perf5d: roc(closes, 5),
-      rsi14: rsi(closes, 14),
-      roc14: roc(closes, 14),
-      roc21: roc(closes, 21),
-      ma20, ma50, ma200,
-      closes: closes.slice(-30),
-      isMock: false,
-      source: "Finimpulse",
-      retrievedAt: new Date().toISOString(),
-    };
+      return {
+        symbol: sym, name: searchItem?.long_name ?? searchItem?.short_name ?? u.name,
+        exchange: searchItem?.full_exchange_name ?? searchItem?.exchange ?? u.exchange,
+        country: searchItem?.market_region ?? u.country, region: u.region,
+        currency: searchItem?.currency ?? u.currency,
+        sector: searchItem?.sector ?? u.sector, industry: searchItem?.industry ?? u.industry,
+        price,
+        marketCap: searchItem?.amount ?? summary?.market_cap ?? null,
+        marketCapUsd: searchItem?.amount_usd ?? null,
+        avgVolume: searchItem?.average_daily_volume_3_month ?? searchItem?.average_daily_volume_10_day ?? summary?.average_volume ?? null,
+        pe: summary?.trailing_pe ?? null,
+        pb: summary?.price_to_book ?? null,
+        dividendYield: summary?.dividend_yield != null ? +(Number(summary.dividend_yield) * 100).toFixed(2) : (summary?.trailing_annual_dividend_yield != null ? +(Number(summary.trailing_annual_dividend_yield) * 100).toFixed(2) : null),
+        high52, low52,
+        pctFromLow: pctFromLow != null ? +pctFromLow.toFixed(2) : null,
+        pctFromHigh: pctFromHigh != null ? +pctFromHigh.toFixed(2) : null,
+        perf5d: roc(closes, 5),
+        rsi14: rsi(closes, 14),
+        roc14: roc(closes, 14),
+        roc21: roc(closes, 21),
+        ma20, ma50, ma200,
+        closes: closes.slice(-30),
+        isMock: false,
+        source: "Finimpulse",
+        retrievedAt: new Date().toISOString(),
+      };
+    }
   } catch {
-    return buildMockRow(u);
+    // fall through to Yahoo
   }
+
+  // 2. Try Yahoo Finance
+  const yahoo = await fetchScreenerRowFromYahoo(u);
+  if (yahoo) return yahoo;
+
+  // 3. Last resort — deterministic mock so UI never breaks
+  return buildMockRow(u);
 }
+
+async function fetchScreenerRowFromYahoo(u: {
+  symbol: string; name: string; exchange: string; country: string; region: RegionKey;
+  currency: string; sector: string; industry: string;
+}): Promise<ScreenerRow | null> {
+  const sym = u.symbol;
+  const [chart, summary] = await Promise.all([
+    yahooChart(sym, "1y").catch(() => null),
+    yahooSummary(sym).catch(() => null),
+  ]);
+  if (!chart && !summary) return null;
+  const closes = chart?.closes ?? [];
+  const price = chart?.regularMarketPrice ?? (closes.length ? closes[closes.length - 1] : null);
+  const high52 = chart?.fiftyTwoWeekHigh ?? null;
+  const low52 = chart?.fiftyTwoWeekLow ?? null;
+  const pctFromLow = price && low52 ? ((price - low52) / low52) * 100 : null;
+  const pctFromHigh = price && high52 ? ((price - high52) / high52) * 100 : null;
+  const ma50 = chart?.fiftyDayAverage ?? sma(closes, 50);
+  const ma200 = chart?.twoHundredDayAverage ?? sma(closes, 200);
+  const ma20 = sma(closes, 20);
+
+  return {
+    symbol: sym,
+    name: summary?.longName ?? summary?.shortName ?? u.name,
+    exchange: chart?.fullExchangeName ?? chart?.exchangeName ?? summary?.fullExchangeName ?? summary?.exchange ?? u.exchange,
+    country: summary?.country ?? u.country,
+    region: u.region,
+    currency: chart?.currency ?? summary?.currency ?? u.currency,
+    sector: summary?.sector ?? u.sector,
+    industry: summary?.industry ?? u.industry,
+    price,
+    marketCap: summary?.marketCap ?? null,
+    marketCapUsd: null,
+    avgVolume: chart?.averageDailyVolume3Month ?? chart?.averageDailyVolume10Day ?? null,
+    pe: summary?.trailingPE ?? null,
+    pb: summary?.priceToBook ?? null,
+    dividendYield: summary?.dividendYield ?? null,
+    high52, low52,
+    pctFromLow: pctFromLow != null ? +pctFromLow.toFixed(2) : null,
+    pctFromHigh: pctFromHigh != null ? +pctFromHigh.toFixed(2) : null,
+    perf5d: roc(closes, 5),
+    rsi14: rsi(closes, 14),
+    roc14: roc(closes, 14),
+    roc21: roc(closes, 21),
+    ma20, ma50, ma200,
+    closes: closes.slice(-30),
+    isMock: false,
+    source: "Yahoo Finance",
+    retrievedAt: new Date().toISOString(),
+  };
+}
+

@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { fetchWithRetry } from "./http.server";
+import { yahooChart, yahooSummary, yahooSearch } from "./yahoo.server";
+import { cachedSWR } from "./cache.server";
 
 const FI_BASE = "https://api.finimpulse.com/v1";
 
@@ -216,47 +218,113 @@ function listingFromItem(it: any): Listing {
 
 async function fetchMetrics(symbol: string, prefetched?: any): Promise<StockMetrics | null> {
   const sym = symbol.trim();
+  // Cache analyze results for 2 min — same ticker is often re-analyzed during a session.
+  // Don't cache when prefetched is supplied (peer enrichment uses already-resolved data).
+  if (prefetched) return fetchMetricsUncached(sym, prefetched);
+  return cachedSWR(`analyze:${sym}`, 2 * 60_000, () => fetchMetricsUncached(sym));
+}
+
+async function fetchMetricsUncached(symbol: string, prefetched?: any): Promise<StockMetrics | null> {
+  const sym = symbol.trim();
+  // Try Finimpulse
   const [searchItem, summary, closes] = await Promise.all([
-    prefetched ? Promise.resolve(prefetched) : fetchListingsBySymbols([sym]).then((a) => a[0] ?? null),
-    fetchSummary(sym),
+    prefetched ? Promise.resolve(prefetched) : fetchListingsBySymbols([sym]).then((a) => a[0] ?? null).catch(() => null),
+    fetchSummary(sym).catch(() => null),
     fetchHistoryCloses(sym).catch(() => [] as number[]),
   ]);
-  if (!searchItem && !summary && !closes.length) return null;
 
-  const listing: Listing = searchItem
-    ? listingFromItem(searchItem)
-    : { ...listingFromItem({ symbol: sym }), companyName: summary?.long_name ?? summary?.short_name ?? sym, sector: summary?.sector ?? null, industry: summary?.industry ?? null, marketCap: summary?.market_cap ?? null, marketCapUsd: null };
+  if (searchItem || summary || closes.length) {
+    const listing: Listing = searchItem
+      ? listingFromItem(searchItem)
+      : { ...listingFromItem({ symbol: sym }), companyName: summary?.long_name ?? summary?.short_name ?? sym, sector: summary?.sector ?? null, industry: summary?.industry ?? null, marketCap: summary?.market_cap ?? null, marketCapUsd: null };
 
-  const filter = REGIONAL_FILTERS[listing.region] ?? REGIONAL_FILTERS.OTHER;
+    const filter = REGIONAL_FILTERS[listing.region] ?? REGIONAL_FILTERS.OTHER;
+    const price = searchItem?.regular_market_price ?? summary?.current_price ?? summary?.regular_market_price ?? (closes.length ? closes[closes.length - 1] : null);
+    const priceUsd = searchItem?.regular_market_price_usd ?? null;
+    const high52 = searchItem?.fifty_two_week_high ?? summary?.fifty_two_week_high ?? null;
+    const low52 = searchItem?.fifty_two_week_low ?? summary?.fifty_two_week_low ?? null;
+    const pctFromLow = price && low52 ? ((price - low52) / low52) * 100 : null;
+    const ma50 = searchItem?.fifty_day_average ?? summary?.fifty_day_average ?? sma(closes, 50);
+    const ma200 = searchItem?.two_hundred_day_average ?? summary?.two_hundred_day_average ?? sma(closes, 200);
+    const ma20 = sma(closes, 20);
 
-  const price = searchItem?.regular_market_price ?? summary?.current_price ?? summary?.regular_market_price ?? (closes.length ? closes[closes.length - 1] : null);
-  const priceUsd = searchItem?.regular_market_price_usd ?? null;
-  const high52 = searchItem?.fifty_two_week_high ?? summary?.fifty_two_week_high ?? null;
-  const low52 = searchItem?.fifty_two_week_low ?? summary?.fifty_two_week_low ?? null;
+    const missing: string[] = [];
+    if (!closes.length) missing.push("price history");
+    if (price == null) missing.push("price");
+    if (summary?.trailing_pe == null) missing.push("P/E");
+
+    return {
+      ...listing,
+      marketCap: listing.marketCap ?? summary?.market_cap ?? null,
+      price, priceUsd,
+      avgVolume: searchItem?.average_daily_volume_3_month ?? searchItem?.average_daily_volume_10_day ?? summary?.average_volume ?? summary?.average_daily_volume_10_day ?? null,
+      pe: summary?.trailing_pe ?? null,
+      high52, low52, pctFromLow,
+      perf5d: pctPerf(closes, 5),
+      rsi14: rsi(closes, 14),
+      roc14: roc(closes, 14),
+      roc21: roc(closes, 21),
+      ma20, ma50, ma200,
+      earningsDate: summary?.earnings_date ?? null,
+      dataMissing: missing,
+      filter,
+      closes: closes.slice(-260),
+    };
+  }
+
+  // Yahoo Finance fallback
+  return fetchMetricsFromYahoo(sym);
+}
+
+async function fetchMetricsFromYahoo(sym: string): Promise<StockMetrics | null> {
+  const [chart, summary] = await Promise.all([
+    yahooChart(sym, "2y").catch(() => null),
+    yahooSummary(sym).catch(() => null),
+  ]);
+  if (!chart && !summary) return null;
+  const closes = chart?.closes ?? [];
+  const fb = detectFromSymbol(sym);
+  const currency = chart?.currency ?? summary?.currency ?? fb.currency;
+  const region = regionFromMarketRegion(chart?.marketRegion ?? null, currency, fb.region);
+  const listing: Listing = {
+    symbol: sym,
+    companyName: summary?.longName ?? summary?.shortName ?? sym,
+    exchange: chart?.exchangeName ?? summary?.exchange ?? fb.exchange ?? null,
+    fullExchange: chart?.fullExchangeName ?? summary?.fullExchangeName ?? null,
+    country: summary?.country ?? fb.country,
+    region,
+    currency,
+    sector: summary?.sector ?? null,
+    industry: summary?.industry ?? null,
+    marketCap: summary?.marketCap ?? null,
+    marketCapUsd: null,
+    listingType: "stock",
+  };
+  const filter = REGIONAL_FILTERS[region] ?? REGIONAL_FILTERS.OTHER;
+  const price = chart?.regularMarketPrice ?? (closes.length ? closes[closes.length - 1] : null);
+  const high52 = chart?.fiftyTwoWeekHigh ?? null;
+  const low52 = chart?.fiftyTwoWeekLow ?? null;
   const pctFromLow = price && low52 ? ((price - low52) / low52) * 100 : null;
-  const ma50 = searchItem?.fifty_day_average ?? summary?.fifty_day_average ?? sma(closes, 50);
-  const ma200 = searchItem?.two_hundred_day_average ?? summary?.two_hundred_day_average ?? sma(closes, 200);
+  const ma50 = chart?.fiftyDayAverage ?? sma(closes, 50);
+  const ma200 = chart?.twoHundredDayAverage ?? sma(closes, 200);
   const ma20 = sma(closes, 20);
-
   const missing: string[] = [];
   if (!closes.length) missing.push("price history");
   if (price == null) missing.push("price");
-  if (summary?.trailing_pe == null) missing.push("P/E");
-
+  if (summary?.trailingPE == null) missing.push("P/E");
   return {
     ...listing,
-    marketCap: listing.marketCap ?? summary?.market_cap ?? null,
     price,
-    priceUsd,
-    avgVolume: searchItem?.average_daily_volume_3_month ?? searchItem?.average_daily_volume_10_day ?? summary?.average_volume ?? summary?.average_daily_volume_10_day ?? null,
-    pe: summary?.trailing_pe ?? null,
+    priceUsd: null,
+    avgVolume: chart?.averageDailyVolume3Month ?? chart?.averageDailyVolume10Day ?? null,
+    pe: summary?.trailingPE ?? null,
     high52, low52, pctFromLow,
     perf5d: pctPerf(closes, 5),
     rsi14: rsi(closes, 14),
     roc14: roc(closes, 14),
     roc21: roc(closes, 21),
     ma20, ma50, ma200,
-    earningsDate: summary?.earnings_date ?? null,
+    earningsDate: summary?.earningsDate ?? null,
     dataMissing: missing,
     filter,
     closes: closes.slice(-260),
@@ -401,27 +469,52 @@ export const searchTickers = createServerFn({ method: "POST" })
   .inputValidator(z.object({ q: z.string().min(1).max(80) }))
   .handler(async ({ data }) => {
     const q = data.q.trim();
-    // Prefer exact symbol resolution if it looks like a ticker
-    const looksLikeSymbol = /^[A-Za-z0-9.\-]{1,15}$/.test(q);
-    const results: Listing[] = [];
+    return cachedSWR(`search:${q.toLowerCase()}`, 5 * 60_000, async () => {
+      const looksLikeSymbol = /^[A-Za-z0-9.\-]{1,15}$/.test(q);
+      const results: Listing[] = [];
 
-    if (looksLikeSymbol) {
-      // Try exact symbol fetch + name search in parallel
-      const [bySym, byName] = await Promise.all([
-        fetchListingsBySymbols([q.toUpperCase()]),
-        fi<any>("/search", { search_text: q, quote_types: ["stock"], sort_by: [{ selector: "amount_usd", desc: true }], limit: 12 }).then((r) => r?.items ?? []),
-      ]);
-      for (const it of bySym) results.push(listingFromItem(it));
-      const seen = new Set(results.map((r) => r.symbol));
-      for (const it of byName) {
-        if (!seen.has(it.symbol)) { seen.add(it.symbol); results.push(listingFromItem(it)); }
+      if (looksLikeSymbol) {
+        const [bySym, byName] = await Promise.all([
+          fetchListingsBySymbols([q.toUpperCase()]).catch(() => [] as any[]),
+          fi<any>("/search", { search_text: q, quote_types: ["stock"], sort_by: [{ selector: "amount_usd", desc: true }], limit: 12 }).then((r) => r?.items ?? []).catch(() => [] as any[]),
+        ]);
+        for (const it of bySym) results.push(listingFromItem(it));
+        const seen = new Set(results.map((r) => r.symbol));
+        for (const it of byName) {
+          if (!seen.has(it.symbol)) { seen.add(it.symbol); results.push(listingFromItem(it)); }
+        }
+      } else {
+        const r = await fi<any>("/search", { search_text: q, quote_types: ["stock"], sort_by: [{ selector: "amount_usd", desc: true }], limit: 15 }).catch(() => null);
+        for (const it of (r?.items ?? [])) results.push(listingFromItem(it));
       }
-    } else {
-      const r = await fi<any>("/search", { search_text: q, quote_types: ["stock"], sort_by: [{ selector: "amount_usd", desc: true }], limit: 15 });
-      for (const it of (r?.items ?? [])) results.push(listingFromItem(it));
-    }
 
-    return { matches: results.slice(0, 15) } as const;
+      // Yahoo Finance fallback if Finimpulse returned nothing
+      if (results.length === 0) {
+        const yahoo = await yahooSearch(q, 15).catch(() => []);
+        const seen = new Set<string>();
+        for (const it of yahoo) {
+          if (seen.has(it.symbol)) continue;
+          seen.add(it.symbol);
+          const fb = detectFromSymbol(it.symbol);
+          results.push({
+            symbol: it.symbol,
+            companyName: it.longname ?? it.shortname ?? it.symbol,
+            exchange: it.exchange ?? fb.exchange,
+            fullExchange: it.exchDisp ?? null,
+            country: fb.country,
+            region: fb.region,
+            currency: fb.currency,
+            sector: it.sector ?? null,
+            industry: it.industry ?? null,
+            marketCap: null,
+            marketCapUsd: null,
+            listingType: "stock",
+          });
+        }
+      }
+
+      return { matches: results.slice(0, 15) } as const;
+    });
   });
 
 // ============== ANALYZE ==============

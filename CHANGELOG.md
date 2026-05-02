@@ -3,6 +3,24 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.10.0] — 2026-05-02 — "Resilience" (minor)
+
+Hardens the data layer so the terminal stays useful even when any single upstream provider is rate-limited, geo-blocked, or simply down. Adds a comprehensive in-app User Guide.
+
+### Added
+- **Multi-provider data fallbacks** (`src/server/yahoo.server.ts`, `src/server/fmp.server.ts`, `src/server/stooq.server.ts`, `src/server/indicators.server.ts`) — screener and terminal rows resolve through a chain: Finimpulse → Yahoo Finance → Financial Modeling Prep (free tier) → Stooq. All four are free, key-less, edge-runtime compatible. Indicators (RSI, ROC, MA cross, 5D %) are recomputed locally from whichever provider returned price history, so rows stay populated even when fundamentals are partial.
+- **Provider badges** (`src/components/provider-badge.tsx`) — every screener row and sourced metric shows a small badge (FIM / YHO / FMP / STQ) indicating which free upstream supplied the data. Hover reveals the full provider name.
+- **User Guide** (`src/routes/system.guide.tsx`) — 8-section in-app manual: Screener basics, Terminal page, Scoring vectors, Data fallback hierarchy, Watchlists & sharing, Alerts & theses, Keyboard shortcuts, FAQs. Linked from the **System** nav dropdown.
+- **Data attribution disclaimer** — footer + screener disclaimer now explicitly attributes Finimpulse, Yahoo Finance, Financial Modeling Prep, and Stooq, and clarifies the "individual research only, no redistribution, may be 15+ minutes delayed" terms-of-service stance.
+
+### Fixed
+- **Terminal analysis hang** (`src/components/terminal/terminal-page.tsx`) — `/terminal/$symbol` would stay stuck on "Analyzing..." on direct navigation due to a `useRef` boolean swallowing the second StrictMode mount. The auto-run guard now keys off the `initialTicker` value, so re-mounts and symbol switches both re-trigger analysis correctly.
+- **Landing page hydration mismatch** (`src/routes/index.tsx`) — universe stats flickered between "—" and the real ticker count on first load. Loader now `await`s the `prefetchQuery` so SSR and client hydrate with the same value.
+
+### Notes
+- All four data providers are free, but each has its own terms of service. The terminal displays data for individual research only; redistribution is not permitted. Quotes may be delayed 15+ minutes.
+- No API keys required from users — all upstream calls are server-side, key-less, and rate-limited gracefully via the existing in-memory cache (`src/server/cache.server.ts`).
+
 ## [1.9.1] — 2026-05-01 — "Share" (patch)
 
 Security hardening following a GDPR / EU AI Act / vulnerability audit. No user-facing changes.

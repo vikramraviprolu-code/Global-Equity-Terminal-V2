@@ -40,10 +40,10 @@ export function TerminalPage({ initialTicker: initialTickerProp }: { initialTick
   const search = useMutation({ mutationFn: (q: string) => searchTickers({ data: { q } }) });
   const analyze = useMutation({ mutationFn: (t: string) => analyzeTicker({ data: { ticker: t } }) });
 
-  const autoRan = useRef(false);
+  const lastAutoRan = useRef<string | null>(null);
   useEffect(() => {
-    if (initialTicker && !autoRan.current) {
-      autoRan.current = true;
+    if (initialTicker && lastAutoRan.current !== initialTicker) {
+      lastAutoRan.current = initialTicker;
       analyze.mutate(initialTicker);
     }
   }, [initialTicker, analyze]);

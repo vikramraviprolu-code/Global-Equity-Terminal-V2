@@ -30,6 +30,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as TerminalIndexRouteImport } from './routes/terminal.index'
 import { Route as WTokenRouteImport } from './routes/w.$token'
 import { Route as TerminalSymbolRouteImport } from './routes/terminal.$symbol'
+import { Route as SystemGuideRouteImport } from './routes/system.guide'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -144,6 +145,11 @@ const TerminalSymbolRoute = TerminalSymbolRouteImport.update({
   path: '/$symbol',
   getParentRoute: () => TerminalRoute,
 } as any)
+const SystemGuideRoute = SystemGuideRouteImport.update({
+  id: '/system/guide',
+  path: '/system/guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
@@ -209,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe': typeof UnsubscribeRoute
   '/watchlist': typeof WatchlistRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/system/guide': typeof SystemGuideRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
   '/w/$token': typeof WTokenRoute
   '/terminal/': typeof TerminalIndexRoute
@@ -239,6 +246,7 @@ export interface FileRoutesByTo {
   '/unsubscribe': typeof UnsubscribeRoute
   '/watchlist': typeof WatchlistRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/system/guide': typeof SystemGuideRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
   '/w/$token': typeof WTokenRoute
   '/terminal': typeof TerminalIndexRoute
@@ -271,6 +279,7 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/watchlist': typeof WatchlistRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/system/guide': typeof SystemGuideRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
   '/w/$token': typeof WTokenRoute
   '/terminal/': typeof TerminalIndexRoute
@@ -304,6 +313,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/watchlist'
     | '/email/unsubscribe'
+    | '/system/guide'
     | '/terminal/$symbol'
     | '/w/$token'
     | '/terminal/'
@@ -334,6 +344,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/watchlist'
     | '/email/unsubscribe'
+    | '/system/guide'
     | '/terminal/$symbol'
     | '/w/$token'
     | '/terminal'
@@ -365,6 +376,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/watchlist'
     | '/email/unsubscribe'
+    | '/system/guide'
     | '/terminal/$symbol'
     | '/w/$token'
     | '/terminal/'
@@ -397,6 +409,7 @@ export interface RootRouteChildren {
   UnsubscribeRoute: typeof UnsubscribeRoute
   WatchlistRoute: typeof WatchlistRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  SystemGuideRoute: typeof SystemGuideRoute
   WTokenRoute: typeof WTokenRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksRunScheduledBriefsRoute: typeof ApiPublicHooksRunScheduledBriefsRoute
@@ -556,6 +569,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TerminalSymbolRouteImport
       parentRoute: typeof TerminalRoute
     }
+    '/system/guide': {
+      id: '/system/guide'
+      path: '/system/guide'
+      fullPath: '/system/guide'
+      preLoaderRoute: typeof SystemGuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/email/unsubscribe': {
       id: '/email/unsubscribe'
       path: '/email/unsubscribe'
@@ -649,6 +669,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeRoute: UnsubscribeRoute,
   WatchlistRoute: WatchlistRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  SystemGuideRoute: SystemGuideRoute,
   WTokenRoute: WTokenRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksRunScheduledBriefsRoute: ApiPublicHooksRunScheduledBriefsRoute,

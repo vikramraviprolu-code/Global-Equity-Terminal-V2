@@ -27,6 +27,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TerminalIndexRouteImport } from './routes/terminal.index'
 import { Route as WTokenRouteImport } from './routes/w.$token'
 import { Route as TerminalSymbolRouteImport } from './routes/terminal.$symbol'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
@@ -128,6 +129,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TerminalIndexRoute = TerminalIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TerminalRoute,
+} as any)
 const WTokenRoute = WTokenRouteImport.update({
   id: '/w/$token',
   path: '/w/$token',
@@ -205,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
   '/w/$token': typeof WTokenRoute
+  '/terminal/': typeof TerminalIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/run-scheduled-briefs': typeof ApiPublicHooksRunScheduledBriefsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -228,13 +235,13 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sources': typeof SourcesRoute
-  '/terminal': typeof TerminalRouteWithChildren
   '/theses': typeof ThesesRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/watchlist': typeof WatchlistRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
   '/w/$token': typeof WTokenRoute
+  '/terminal': typeof TerminalIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/run-scheduled-briefs': typeof ApiPublicHooksRunScheduledBriefsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -266,6 +273,7 @@ export interface FileRoutesById {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
   '/w/$token': typeof WTokenRoute
+  '/terminal/': typeof TerminalIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/run-scheduled-briefs': typeof ApiPublicHooksRunScheduledBriefsRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -298,6 +306,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/terminal/$symbol'
     | '/w/$token'
+    | '/terminal/'
     | '/lovable/email/suppression'
     | '/api/public/hooks/run-scheduled-briefs'
     | '/lovable/email/auth/preview'
@@ -321,13 +330,13 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sitemap.xml'
     | '/sources'
-    | '/terminal'
     | '/theses'
     | '/unsubscribe'
     | '/watchlist'
     | '/email/unsubscribe'
     | '/terminal/$symbol'
     | '/w/$token'
+    | '/terminal'
     | '/lovable/email/suppression'
     | '/api/public/hooks/run-scheduled-briefs'
     | '/lovable/email/auth/preview'
@@ -358,6 +367,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/terminal/$symbol'
     | '/w/$token'
+    | '/terminal/'
     | '/lovable/email/suppression'
     | '/api/public/hooks/run-scheduled-briefs'
     | '/lovable/email/auth/preview'
@@ -525,6 +535,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/terminal/': {
+      id: '/terminal/'
+      path: '/'
+      fullPath: '/terminal/'
+      preLoaderRoute: typeof TerminalIndexRouteImport
+      parentRoute: typeof TerminalRoute
+    }
     '/w/$token': {
       id: '/w/$token'
       path: '/w/$token'
@@ -600,10 +617,12 @@ declare module '@tanstack/react-router' {
 
 interface TerminalRouteChildren {
   TerminalSymbolRoute: typeof TerminalSymbolRoute
+  TerminalIndexRoute: typeof TerminalIndexRoute
 }
 
 const TerminalRouteChildren: TerminalRouteChildren = {
   TerminalSymbolRoute: TerminalSymbolRoute,
+  TerminalIndexRoute: TerminalIndexRoute,
 }
 
 const TerminalRouteWithChildren = TerminalRoute._addFileChildren(

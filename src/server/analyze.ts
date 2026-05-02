@@ -218,47 +218,113 @@ function listingFromItem(it: any): Listing {
 
 async function fetchMetrics(symbol: string, prefetched?: any): Promise<StockMetrics | null> {
   const sym = symbol.trim();
+  // Cache analyze results for 2 min — same ticker is often re-analyzed during a session.
+  // Don't cache when prefetched is supplied (peer enrichment uses already-resolved data).
+  if (prefetched) return fetchMetricsUncached(sym, prefetched);
+  return cachedSWR(`analyze:${sym}`, 2 * 60_000, () => fetchMetricsUncached(sym));
+}
+
+async function fetchMetricsUncached(symbol: string, prefetched?: any): Promise<StockMetrics | null> {
+  const sym = symbol.trim();
+  // Try Finimpulse
   const [searchItem, summary, closes] = await Promise.all([
-    prefetched ? Promise.resolve(prefetched) : fetchListingsBySymbols([sym]).then((a) => a[0] ?? null),
-    fetchSummary(sym),
+    prefetched ? Promise.resolve(prefetched) : fetchListingsBySymbols([sym]).then((a) => a[0] ?? null).catch(() => null),
+    fetchSummary(sym).catch(() => null),
     fetchHistoryCloses(sym).catch(() => [] as number[]),
   ]);
-  if (!searchItem && !summary && !closes.length) return null;
 
-  const listing: Listing = searchItem
-    ? listingFromItem(searchItem)
-    : { ...listingFromItem({ symbol: sym }), companyName: summary?.long_name ?? summary?.short_name ?? sym, sector: summary?.sector ?? null, industry: summary?.industry ?? null, marketCap: summary?.market_cap ?? null, marketCapUsd: null };
+  if (searchItem || summary || closes.length) {
+    const listing: Listing = searchItem
+      ? listingFromItem(searchItem)
+      : { ...listingFromItem({ symbol: sym }), companyName: summary?.long_name ?? summary?.short_name ?? sym, sector: summary?.sector ?? null, industry: summary?.industry ?? null, marketCap: summary?.market_cap ?? null, marketCapUsd: null };
 
-  const filter = REGIONAL_FILTERS[listing.region] ?? REGIONAL_FILTERS.OTHER;
+    const filter = REGIONAL_FILTERS[listing.region] ?? REGIONAL_FILTERS.OTHER;
+    const price = searchItem?.regular_market_price ?? summary?.current_price ?? summary?.regular_market_price ?? (closes.length ? closes[closes.length - 1] : null);
+    const priceUsd = searchItem?.regular_market_price_usd ?? null;
+    const high52 = searchItem?.fifty_two_week_high ?? summary?.fifty_two_week_high ?? null;
+    const low52 = searchItem?.fifty_two_week_low ?? summary?.fifty_two_week_low ?? null;
+    const pctFromLow = price && low52 ? ((price - low52) / low52) * 100 : null;
+    const ma50 = searchItem?.fifty_day_average ?? summary?.fifty_day_average ?? sma(closes, 50);
+    const ma200 = searchItem?.two_hundred_day_average ?? summary?.two_hundred_day_average ?? sma(closes, 200);
+    const ma20 = sma(closes, 20);
 
-  const price = searchItem?.regular_market_price ?? summary?.current_price ?? summary?.regular_market_price ?? (closes.length ? closes[closes.length - 1] : null);
-  const priceUsd = searchItem?.regular_market_price_usd ?? null;
-  const high52 = searchItem?.fifty_two_week_high ?? summary?.fifty_two_week_high ?? null;
-  const low52 = searchItem?.fifty_two_week_low ?? summary?.fifty_two_week_low ?? null;
+    const missing: string[] = [];
+    if (!closes.length) missing.push("price history");
+    if (price == null) missing.push("price");
+    if (summary?.trailing_pe == null) missing.push("P/E");
+
+    return {
+      ...listing,
+      marketCap: listing.marketCap ?? summary?.market_cap ?? null,
+      price, priceUsd,
+      avgVolume: searchItem?.average_daily_volume_3_month ?? searchItem?.average_daily_volume_10_day ?? summary?.average_volume ?? summary?.average_daily_volume_10_day ?? null,
+      pe: summary?.trailing_pe ?? null,
+      high52, low52, pctFromLow,
+      perf5d: pctPerf(closes, 5),
+      rsi14: rsi(closes, 14),
+      roc14: roc(closes, 14),
+      roc21: roc(closes, 21),
+      ma20, ma50, ma200,
+      earningsDate: summary?.earnings_date ?? null,
+      dataMissing: missing,
+      filter,
+      closes: closes.slice(-260),
+    };
+  }
+
+  // Yahoo Finance fallback
+  return fetchMetricsFromYahoo(sym);
+}
+
+async function fetchMetricsFromYahoo(sym: string): Promise<StockMetrics | null> {
+  const [chart, summary] = await Promise.all([
+    yahooChart(sym, "2y").catch(() => null),
+    yahooSummary(sym).catch(() => null),
+  ]);
+  if (!chart && !summary) return null;
+  const closes = chart?.closes ?? [];
+  const fb = detectFromSymbol(sym);
+  const currency = chart?.currency ?? summary?.currency ?? fb.currency;
+  const region = regionFromMarketRegion(chart?.marketRegion ?? null, currency, fb.region);
+  const listing: Listing = {
+    symbol: sym,
+    companyName: summary?.longName ?? summary?.shortName ?? sym,
+    exchange: chart?.exchangeName ?? summary?.exchange ?? fb.exchange ?? null,
+    fullExchange: chart?.fullExchangeName ?? summary?.fullExchangeName ?? null,
+    country: summary?.country ?? fb.country,
+    region,
+    currency,
+    sector: summary?.sector ?? null,
+    industry: summary?.industry ?? null,
+    marketCap: summary?.marketCap ?? null,
+    marketCapUsd: null,
+    listingType: "stock",
+  };
+  const filter = REGIONAL_FILTERS[region] ?? REGIONAL_FILTERS.OTHER;
+  const price = chart?.regularMarketPrice ?? (closes.length ? closes[closes.length - 1] : null);
+  const high52 = chart?.fiftyTwoWeekHigh ?? null;
+  const low52 = chart?.fiftyTwoWeekLow ?? null;
   const pctFromLow = price && low52 ? ((price - low52) / low52) * 100 : null;
-  const ma50 = searchItem?.fifty_day_average ?? summary?.fifty_day_average ?? sma(closes, 50);
-  const ma200 = searchItem?.two_hundred_day_average ?? summary?.two_hundred_day_average ?? sma(closes, 200);
+  const ma50 = chart?.fiftyDayAverage ?? sma(closes, 50);
+  const ma200 = chart?.twoHundredDayAverage ?? sma(closes, 200);
   const ma20 = sma(closes, 20);
-
   const missing: string[] = [];
   if (!closes.length) missing.push("price history");
   if (price == null) missing.push("price");
-  if (summary?.trailing_pe == null) missing.push("P/E");
-
+  if (summary?.trailingPE == null) missing.push("P/E");
   return {
     ...listing,
-    marketCap: listing.marketCap ?? summary?.market_cap ?? null,
     price,
-    priceUsd,
-    avgVolume: searchItem?.average_daily_volume_3_month ?? searchItem?.average_daily_volume_10_day ?? summary?.average_volume ?? summary?.average_daily_volume_10_day ?? null,
-    pe: summary?.trailing_pe ?? null,
+    priceUsd: null,
+    avgVolume: chart?.averageDailyVolume3Month ?? chart?.averageDailyVolume10Day ?? null,
+    pe: summary?.trailingPE ?? null,
     high52, low52, pctFromLow,
     perf5d: pctPerf(closes, 5),
     rsi14: rsi(closes, 14),
     roc14: roc(closes, 14),
     roc21: roc(closes, 21),
     ma20, ma50, ma200,
-    earningsDate: summary?.earnings_date ?? null,
+    earningsDate: summary?.earningsDate ?? null,
     dataMissing: missing,
     filter,
     closes: closes.slice(-260),

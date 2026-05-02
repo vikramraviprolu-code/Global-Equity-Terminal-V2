@@ -615,7 +615,30 @@ export const searchTickers = createServerFn({ method: "POST" })
         }
       }
 
-      return { matches: results.slice(0, 15) } as const;
+      // FMP fallback if still nothing (only fires when FMP_API_KEY is set)
+      if (results.length === 0) {
+        const fmp = await fmpSearch(q, 15).catch(() => []);
+        const seen = new Set<string>();
+        for (const it of fmp) {
+          if (seen.has(it.symbol)) continue;
+          seen.add(it.symbol);
+          const fb = detectFromSymbol(it.symbol);
+          results.push({
+            symbol: it.symbol,
+            companyName: it.name ?? it.symbol,
+            exchange: it.exchange ?? fb.exchange,
+            fullExchange: null,
+            country: fb.country,
+            region: fb.region,
+            currency: it.currency ?? fb.currency,
+            sector: null,
+            industry: null,
+            marketCap: null,
+            marketCapUsd: null,
+            listingType: "stock",
+          });
+        }
+      }
     });
   });
 

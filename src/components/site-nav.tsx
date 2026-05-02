@@ -42,6 +42,7 @@ const NAV_GROUPS: NavGroup[] = [
     id: "system",
     label: "System",
     items: [
+      { to: "/system/guide", label: "User Guide" },
       { to: "/data-quality", label: "Data Quality" },
       { to: "/sources", label: "Sources" },
       { to: "/settings", label: "Settings" },

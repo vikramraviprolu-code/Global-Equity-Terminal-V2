@@ -21,8 +21,8 @@ export const Route = createFileRoute("/")({
     ],
     links: [{ rel: "canonical", href: "https://rankaisolutions.tech/" }],
   }),
-  loader: ({ context }) => {
-    context.queryClient.prefetchQuery({
+  loader: async ({ context }) => {
+    await context.queryClient.prefetchQuery({
       queryKey: ["universe"],
       queryFn: () => fetchUniverse({ data: {} }),
       staleTime: 5 * 60 * 1000,

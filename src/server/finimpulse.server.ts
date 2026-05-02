@@ -3,6 +3,8 @@
 
 import { fetchWithRetry } from "./http.server";
 import { yahooChart, yahooSummary } from "./yahoo.server";
+import { stooqQuote } from "./stooq.server";
+import { fmpQuote } from "./fmp.server";
 import { cachedSWR } from "./cache.server";
 
 const FI_BASE = "https://api.finimpulse.com/v1";
@@ -257,8 +259,96 @@ async function fetchScreenerRowUncached(u: {
   const yahoo = await fetchScreenerRowFromYahoo(u);
   if (yahoo) return yahoo;
 
-  // 3. Last resort — deterministic mock so UI never breaks
+  // 3. Try Financial Modeling Prep (only if FMP_API_KEY is set; mainly US)
+  const fmp = await fetchScreenerRowFromFmp(u);
+  if (fmp) return fmp;
+
+  // 4. Try Stooq (free CSV, no key, global coverage but price-only)
+  const stooq = await fetchScreenerRowFromStooq(u);
+  if (stooq) return stooq;
+
+  // 5. Last resort — deterministic mock so UI never breaks
   return buildMockRow(u);
+}
+
+async function fetchScreenerRowFromFmp(u: {
+  symbol: string; name: string; exchange: string; country: string; region: RegionKey;
+  currency: string; sector: string; industry: string;
+}): Promise<ScreenerRow | null> {
+  const sym = u.symbol;
+  const f = await fmpQuote(sym).catch(() => null);
+  if (!f || (f.price == null && f.closes.length === 0)) return null;
+  const closes = f.closes;
+  const price = f.price ?? (closes.length ? closes[closes.length - 1] : null);
+  const high52 = f.high52 ?? (closes.length ? Math.max(...closes) : null);
+  const low52 = f.low52 ?? (closes.length ? Math.min(...closes) : null);
+  const pctFromLow = price && low52 ? ((price - low52) / low52) * 100 : null;
+  const pctFromHigh = price && high52 ? ((price - high52) / high52) * 100 : null;
+  return {
+    symbol: sym,
+    name: f.name ?? u.name,
+    exchange: f.exchange ?? u.exchange,
+    country: u.country, region: u.region,
+    currency: f.currency ?? u.currency,
+    sector: f.sector ?? u.sector,
+    industry: f.industry ?? u.industry,
+    price,
+    marketCap: f.marketCap ?? null,
+    marketCapUsd: null,
+    avgVolume: f.avgVolume ?? null,
+    pe: f.pe ?? null,
+    pb: f.pb ?? null,
+    dividendYield: f.dividendYield ?? null,
+    high52, low52,
+    pctFromLow: pctFromLow != null ? +pctFromLow.toFixed(2) : null,
+    pctFromHigh: pctFromHigh != null ? +pctFromHigh.toFixed(2) : null,
+    perf5d: roc(closes, 5),
+    rsi14: rsi(closes, 14),
+    roc14: roc(closes, 14),
+    roc21: roc(closes, 21),
+    ma20: sma(closes, 20),
+    ma50: f.ma50 ?? sma(closes, 50),
+    ma200: f.ma200 ?? sma(closes, 200),
+    closes: closes.slice(-30),
+    isMock: false,
+    source: "Financial Modeling Prep",
+    retrievedAt: new Date().toISOString(),
+  };
+}
+
+async function fetchScreenerRowFromStooq(u: {
+  symbol: string; name: string; exchange: string; country: string; region: RegionKey;
+  currency: string; sector: string; industry: string;
+}): Promise<ScreenerRow | null> {
+  const sym = u.symbol;
+  const s = await stooqQuote(sym).catch(() => null);
+  if (!s) return null;
+  const price = s.price;
+  const pctFromLow = price && s.low52 ? ((price - s.low52) / s.low52) * 100 : null;
+  const pctFromHigh = price && s.high52 ? ((price - s.high52) / s.high52) * 100 : null;
+  return {
+    symbol: sym,
+    name: u.name,
+    exchange: u.exchange,
+    country: u.country, region: u.region,
+    currency: u.currency,
+    sector: u.sector, industry: u.industry,
+    price,
+    marketCap: null,
+    marketCapUsd: null,
+    avgVolume: null,
+    pe: null, pb: null, dividendYield: null,
+    high52: s.high52, low52: s.low52,
+    pctFromLow: pctFromLow != null ? +pctFromLow.toFixed(2) : null,
+    pctFromHigh: pctFromHigh != null ? +pctFromHigh.toFixed(2) : null,
+    perf5d: s.perf5d,
+    rsi14: s.rsi14, roc14: s.roc14, roc21: s.roc21,
+    ma20: s.ma20, ma50: s.ma50, ma200: s.ma200,
+    closes: s.closes.slice(-30),
+    isMock: false,
+    source: "Stooq",
+    retrievedAt: new Date().toISOString(),
+  };
 }
 
 async function fetchScreenerRowFromYahoo(u: {

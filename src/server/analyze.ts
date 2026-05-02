@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { fetchWithRetry } from "./http.server";
 import { yahooChart, yahooSummary, yahooSearch } from "./yahoo.server";
+import { stooqQuote } from "./stooq.server";
+import { fmpQuote, fmpSearch } from "./fmp.server";
 import { cachedSWR } from "./cache.server";
 
 const FI_BASE = "https://api.finimpulse.com/v1";
@@ -169,6 +171,7 @@ export type StockMetrics = Listing & {
   dataMissing: string[];
   filter: Filter;
   closes: number[];
+  source: string;
 };
 
 function isoDateBack(d: number) { const x = new Date(); x.setUTCDate(x.getUTCDate() - d); return x.toISOString().slice(0, 10); }
@@ -269,11 +272,16 @@ async function fetchMetricsUncached(symbol: string, prefetched?: any): Promise<S
       dataMissing: missing,
       filter,
       closes: closes.slice(-260),
+      source: "Finimpulse",
     };
   }
 
-  // Yahoo Finance fallback
-  return fetchMetricsFromYahoo(sym);
+  // Fallback chain: Yahoo → FMP → Stooq
+  const yahoo = await fetchMetricsFromYahoo(sym);
+  if (yahoo) return yahoo;
+  const fmp = await fetchMetricsFromFmp(sym);
+  if (fmp) return fmp;
+  return fetchMetricsFromStooq(sym);
 }
 
 async function fetchMetricsFromYahoo(sym: string): Promise<StockMetrics | null> {
@@ -328,6 +336,100 @@ async function fetchMetricsFromYahoo(sym: string): Promise<StockMetrics | null> 
     dataMissing: missing,
     filter,
     closes: closes.slice(-260),
+    source: "Yahoo Finance",
+  };
+}
+
+async function fetchMetricsFromFmp(sym: string): Promise<StockMetrics | null> {
+  const f = await fmpQuote(sym).catch(() => null);
+  if (!f || (f.price == null && f.closes.length === 0)) return null;
+  const closes = f.closes;
+  const fb = detectFromSymbol(sym);
+  const currency = f.currency ?? fb.currency;
+  const region = regionFromMarketRegion(null, currency, fb.region);
+  const listing: Listing = {
+    symbol: sym,
+    companyName: f.name ?? sym,
+    exchange: f.exchange ?? fb.exchange ?? null,
+    fullExchange: null,
+    country: fb.country,
+    region,
+    currency,
+    sector: f.sector ?? null,
+    industry: f.industry ?? null,
+    marketCap: f.marketCap ?? null,
+    marketCapUsd: null,
+    listingType: "stock",
+  };
+  const filter = REGIONAL_FILTERS[region] ?? REGIONAL_FILTERS.OTHER;
+  const price = f.price ?? (closes.length ? closes[closes.length - 1] : null);
+  const high52 = f.high52 ?? (closes.length ? Math.max(...closes) : null);
+  const low52 = f.low52 ?? (closes.length ? Math.min(...closes) : null);
+  const pctFromLow = price && low52 ? ((price - low52) / low52) * 100 : null;
+  const missing: string[] = [];
+  if (!closes.length) missing.push("price history");
+  if (price == null) missing.push("price");
+  if (f.pe == null) missing.push("P/E");
+  return {
+    ...listing,
+    price,
+    priceUsd: null,
+    avgVolume: f.avgVolume ?? null,
+    pe: f.pe ?? null,
+    high52, low52, pctFromLow,
+    perf5d: pctPerf(closes, 5),
+    rsi14: rsi(closes, 14),
+    roc14: roc(closes, 14),
+    roc21: roc(closes, 21),
+    ma20: sma(closes, 20),
+    ma50: f.ma50 ?? sma(closes, 50),
+    ma200: f.ma200 ?? sma(closes, 200),
+    earningsDate: null,
+    dataMissing: missing,
+    filter,
+    closes: closes.slice(-260),
+    source: "Financial Modeling Prep",
+  };
+}
+
+async function fetchMetricsFromStooq(sym: string): Promise<StockMetrics | null> {
+  const s = await stooqQuote(sym).catch(() => null);
+  if (!s) return null;
+  const fb = detectFromSymbol(sym);
+  const region = fb.region;
+  const listing: Listing = {
+    symbol: sym,
+    companyName: sym,
+    exchange: fb.exchange ?? null,
+    fullExchange: null,
+    country: fb.country,
+    region,
+    currency: fb.currency,
+    sector: null,
+    industry: null,
+    marketCap: null,
+    marketCapUsd: null,
+    listingType: "stock",
+  };
+  const filter = REGIONAL_FILTERS[region] ?? REGIONAL_FILTERS.OTHER;
+  const price = s.price;
+  const pctFromLow = price && s.low52 ? ((price - s.low52) / s.low52) * 100 : null;
+  const missing: string[] = ["P/E", "market cap", "fundamentals"];
+  return {
+    ...listing,
+    price,
+    priceUsd: null,
+    avgVolume: null,
+    pe: null,
+    high52: s.high52, low52: s.low52, pctFromLow,
+    perf5d: s.perf5d,
+    rsi14: s.rsi14, roc14: s.roc14, roc21: s.roc21,
+    ma20: s.ma20, ma50: s.ma50, ma200: s.ma200,
+    earningsDate: null,
+    dataMissing: missing,
+    filter,
+    closes: s.closes.slice(-260),
+    source: "Stooq",
   };
 }
 
@@ -506,6 +608,31 @@ export const searchTickers = createServerFn({ method: "POST" })
             currency: fb.currency,
             sector: it.sector ?? null,
             industry: it.industry ?? null,
+            marketCap: null,
+            marketCapUsd: null,
+            listingType: "stock",
+          });
+        }
+      }
+
+      // FMP fallback if still nothing (only fires when FMP_API_KEY is set)
+      if (results.length === 0) {
+        const fmp = await fmpSearch(q, 15).catch(() => []);
+        const seen = new Set<string>();
+        for (const it of fmp) {
+          if (seen.has(it.symbol)) continue;
+          seen.add(it.symbol);
+          const fb = detectFromSymbol(it.symbol);
+          results.push({
+            symbol: it.symbol,
+            companyName: it.name ?? it.symbol,
+            exchange: it.exchange ?? fb.exchange,
+            fullExchange: null,
+            country: fb.country,
+            region: fb.region,
+            currency: it.currency ?? fb.currency,
+            sector: null,
+            industry: null,
             marketCap: null,
             marketCapUsd: null,
             listingType: "stock",

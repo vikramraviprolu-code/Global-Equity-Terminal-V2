@@ -15,6 +15,7 @@ import { Sparkline as SparkLineShared } from "@/components/sparkline";
 import { TableSkeleton, EmptyState as SharedEmptyState } from "@/components/feedback-states";
 import { onAction } from "@/lib/action-bus";
 import { useRef } from "react";
+import { ProviderBadge } from "@/components/provider-badge";
 
 const SORTABLE_KEYS = ["symbol", "name", "sector", "price", "marketCapUsd", "pe", "pb", "dividendYield", "pctFromLow", "perf5d", "rsi14", "value", "momentum", "quality", "risk", "confidence"] as const;
 type SortKey = (typeof SORTABLE_KEYS)[number];
@@ -650,7 +651,14 @@ function ResultsTable({ rows, columns, sortBy, sortDir, onSort, selected, toggle
                       {isOpen ? "▾" : "▸"}
                     </button>
                   </td>
-                  {has("symbol") && <td className="text-primary font-mono">{r.symbol}</td>}
+                  {has("symbol") && (
+                    <td className="text-primary font-mono">
+                      <span className="inline-flex items-center gap-1.5">
+                        {r.symbol}
+                        <ProviderBadge source={r.source} size="xs" />
+                      </span>
+                    </td>
+                  )}
                   {has("name") && <td className="max-w-[160px] truncate" title={r.name}>{r.name}</td>}
                   {has("region") && <td className="text-muted-foreground">{r.region}</td>}
                   {has("sector") && <td className="text-muted-foreground max-w-[140px] truncate" title={r.sector}>{r.sector}</td>}
@@ -747,7 +755,7 @@ function ResultsCards({ rows, watchlist, onAddOne, onRemoveOne, onOpen }: {
             onClick={() => onOpen(r.symbol)}>
             <div className="flex items-baseline justify-between gap-2">
               <div className="min-w-0">
-                <div className="font-mono text-primary text-sm">{r.symbol}</div>
+                <div className="font-mono text-primary text-sm flex items-center gap-1.5">{r.symbol} <ProviderBadge source={r.source} size="xs" /></div>
                 <div className="text-xs text-muted-foreground truncate" title={r.name}>{r.name}</div>
               </div>
               <div className="text-right">

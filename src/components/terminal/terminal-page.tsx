@@ -17,6 +17,7 @@ import { AiNarrative } from "@/components/ai-narrative";
 import { AskTerminal } from "@/components/ask-terminal";
 import { NewsCatalysts } from "@/components/news-catalysts";
 import { MetricLabel } from "@/components/metric-label";
+import { ProviderBadge } from "@/components/provider-badge";
 
 const routeApi = getRouteApi("/terminal");
 
@@ -275,6 +276,7 @@ function SnapshotBar({ r }: { r: Success }) {
             <span className="text-[10px] font-mono uppercase border border-border rounded px-1.5 py-0.5 text-muted-foreground">
               {t.fullExchange ?? t.exchange ?? "—"} · {t.country ?? t.region} · {t.currency}
             </span>
+            <ProviderBadge source={t.source} />
             <button
               onClick={() => (inList ? wl.remove(t.symbol) : wl.add([t.symbol]))}
               className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded border transition-colors ${inList ? "border-primary text-primary bg-primary/10" : "border-border text-muted-foreground hover:text-foreground"}`}
@@ -367,7 +369,7 @@ function OverviewSection({ r }: { r: Success }) {
   const t = r.target;
   const f = t.filter;
   // Treat analyze target as live data (analyze never returns mock).
-  const provRow = { isMock: false, source: "Finimpulse", retrievedAt: new Date().toISOString(), closes: t.closes };
+  const provRow = { isMock: false, source: t.source ?? "Finimpulse", retrievedAt: new Date().toISOString(), closes: t.closes };
   const sv = (field: Parameters<typeof provenanceFor>[1], value: number | null) => provenanceFor(provRow, field, value);
   type Row = { k: string; v: React.ReactNode };
   const rows: Row[] = [
@@ -766,7 +768,7 @@ function ScoresSection({ r }: { r: Success }) {
     pctFromLow: t.pctFromLow, pctFromHigh: null,
     perf5d: t.perf5d, rsi14: t.rsi14, roc14: t.roc14, roc21: t.roc21,
     ma20: t.ma20, ma50: t.ma50, ma200: t.ma200,
-    closes: t.closes ?? [], isMock: false, source: "Finimpulse",
+    closes: t.closes ?? [], isMock: false, source: t.source ?? "Finimpulse",
     retrievedAt: new Date().toISOString(),
   }), [t]);
   const s = scoreRow(scoreInput as any);

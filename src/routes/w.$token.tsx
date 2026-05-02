@@ -55,12 +55,12 @@ export const Route = createFileRoute("/w/$token")({
       <Disclaimer />
     </div>
   ),
-  errorComponent: ({ error }) => (
+  errorComponent: () => (
     <div className="min-h-screen flex flex-col">
       <SiteNav />
       <main className="flex-1 max-w-[800px] mx-auto px-4 py-16 w-full text-center">
         <h1 className="text-2xl font-semibold tracking-tight">Couldn't load this share</h1>
-        <p className="text-sm text-muted-foreground mt-3">{error?.message ?? "Unknown error."}</p>
+        <p className="text-sm text-muted-foreground mt-3">An unexpected error occurred. Please try again.</p>
       </main>
     </div>
   ),

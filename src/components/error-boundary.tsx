@@ -44,7 +44,7 @@ export class AppErrorBoundary extends Component<Props, State> {
               The page hit an unexpected error. Try reloading; if it keeps failing, the issue has been logged.
             </p>
             <p className="mt-3 text-xs font-mono text-muted-foreground/80 break-words">
-              {this.state.error.message}
+              An unexpected error occurred. Please try again.
             </p>
             <div className="mt-6 flex items-center justify-center gap-3">
               <button

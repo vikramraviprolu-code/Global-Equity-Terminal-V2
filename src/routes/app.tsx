@@ -265,8 +265,8 @@ function ScreenerPage() {
       <SiteNav right={<button onClick={() => refetch()} disabled={isFetching} className="bg-primary text-primary-foreground px-3 py-1.5 rounded hover:opacity-90 disabled:opacity-50">{isFetching ? "Refreshing…" : "Refresh"}</button>} />
       <main className="flex-1">
         <ScreenerIntro meta={data?.meta} isLoading={isLoading} />
-        <PresetBar current={filters.preset} onPick={onPickPreset} />
         <FilterBar filters={filters} setFilters={setFilters} sectors={sectors} onReset={() => replaceFilters(DEFAULT_FILTERS)} />
+        <PresetBar current={filters.preset} onPick={onPickPreset} />
 
         <div className="max-w-[1400px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-border">
           <div className="text-xs font-mono text-muted-foreground">

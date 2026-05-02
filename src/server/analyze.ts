@@ -639,6 +639,8 @@ export const searchTickers = createServerFn({ method: "POST" })
           });
         }
       }
+
+      return { matches: results.slice(0, 15) } as const;
     });
   });
 

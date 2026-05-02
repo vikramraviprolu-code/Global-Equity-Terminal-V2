@@ -53,7 +53,24 @@ export function TerminalPage({ initialTicker: initialTickerProp }: { initialTick
     if (!q) return;
     setTab("overview");
     analyze.reset();
-    search.mutate(q);
+    search.reset();
+    // If input looks like a clean ticker symbol, analyze directly.
+    const looksLikeSymbol = /^[A-Za-z0-9.\-]{1,15}$/.test(q);
+    if (looksLikeSymbol) {
+      analyze.mutate(q.toUpperCase());
+    } else {
+      search.mutate(q, {
+        onSuccess: (res) => {
+          const m = res?.matches ?? [];
+          if (m.length === 0) {
+            // No name matches — try analyzing the raw query as a symbol fallback.
+            analyze.mutate(q.toUpperCase());
+          } else if (m.length === 1) {
+            analyze.mutate(m[0].symbol);
+          }
+        },
+      });
+    }
   };
 
   const onPickMatch = (sym: string) => {
@@ -62,7 +79,7 @@ export function TerminalPage({ initialTicker: initialTickerProp }: { initialTick
   };
 
   const matches = search.data?.matches ?? [];
-  const showPicker = !analyze.isPending && !analyze.data && matches.length > 0;
+  const showPicker = !analyze.isPending && !analyze.data && matches.length > 1;
   const data = analyze.data;
   const isError = data && "error" in data;
   const result = data && !("error" in data) ? data : null;

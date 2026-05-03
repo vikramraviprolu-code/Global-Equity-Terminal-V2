@@ -122,6 +122,7 @@ STRICT RULES:
 - End with: "Not investment advice."`;
 
 export const aiTickerNarrative = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) =>
     z
       .object({

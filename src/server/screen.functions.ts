@@ -113,5 +113,11 @@ export const getPublicUniverseCacheStats = createServerFn({ method: "GET" })
       .eq("role", "admin")
       .maybeSingle();
     if (!roleRow) throw new Error("Forbidden: admin only");
-    return { stats: getCacheStats("public:universe") };
+    return {
+      stats: getCacheStats("public:universe"),
+      lastBuild: {
+        upstreamErrors: lastBuildUpstreamErrors,
+        upstreamErrorSamples: lastBuildUpstreamErrorSamples,
+      },
+    };
   });

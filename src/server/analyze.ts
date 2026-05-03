@@ -8,6 +8,15 @@ import { yahooChart, yahooSummary, yahooSearch } from "./yahoo.server";
 import { stooqQuote } from "./stooq.server";
 import { fmpQuote, fmpSearch } from "./fmp.server";
 import { cachedSWR } from "./cache.server";
+import { UNIVERSE } from "./universe";
+
+// Lookup curated metadata for a symbol so we always have at least
+// sector/industry/exchange/region even when upstream profile endpoints
+// (Yahoo quoteSummary, FMP profile) are blocked or rate-limited.
+function universeMeta(sym: string) {
+  const u = UNIVERSE.find((x) => x.symbol.toUpperCase() === sym.toUpperCase());
+  return u ?? null;
+}
 
 const FI_BASE = "https://api.finimpulse.com/v1";
 

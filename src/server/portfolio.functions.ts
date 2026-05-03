@@ -50,7 +50,7 @@ export const deleteHolding = createServerFn({ method: "POST" })
   .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("holdings").delete().eq("id", data.id);
+    const { error } = await context.supabase.from("holdings").delete().eq("id", data.id).eq("user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

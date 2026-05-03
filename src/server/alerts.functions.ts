@@ -51,7 +51,7 @@ export const toggleAlert = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ id: z.string().uuid(), active: z.boolean() }).parse(d))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
-      .from("alerts").update({ active: data.active }).eq("id", data.id);
+      .from("alerts").update({ active: data.active }).eq("id", data.id).eq("user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -60,7 +60,7 @@ export const deleteAlert = createServerFn({ method: "POST" })
   .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("alerts").delete().eq("id", data.id);
+    const { error } = await context.supabase.from("alerts").delete().eq("id", data.id).eq("user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

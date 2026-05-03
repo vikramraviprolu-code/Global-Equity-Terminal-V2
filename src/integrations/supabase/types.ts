@@ -319,6 +319,27 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          called_at: string
+          endpoint: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          called_at?: string
+          endpoint: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          called_at?: string
+          endpoint?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       shared_watchlists: {
         Row: {
           created_at: string
@@ -447,6 +468,15 @@ export type Database = {
       bump_shared_watchlist_view: {
         Args: { _token: string }
         Returns: undefined
+      }
+      check_rate_limit: {
+        Args: {
+          _endpoint: string
+          _max_calls: number
+          _user_id: string
+          _window_seconds: number
+        }
+        Returns: boolean
       }
       delete_email: {
         Args: { message_id: number; queue_name: string }

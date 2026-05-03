@@ -132,7 +132,8 @@ export function SiteNav({ right }: { right?: React.ReactNode }) {
           >
             ?
           </button>
-          {right ?? <AuthNav />}
+          {right}
+          <AuthNav />
         </div>
       </div>
     </header>

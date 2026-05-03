@@ -279,6 +279,7 @@ export const evaluateThesis = createServerFn({ method: "POST" })
         tools: [THESIS_TOOL as any],
         tool_choice: { type: "function", function: { name: "evaluate_thesis" } },
         temperature: 0.2,
+        max_tokens: 400,
       });
       const call = resp?.choices?.[0]?.message?.tool_calls?.[0];
       const args = call?.function?.arguments;

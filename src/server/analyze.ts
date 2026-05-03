@@ -584,10 +584,10 @@ function buildRecommendation(m: StockMetrics) {
 
 // ============== SEARCH / DISAMBIGUATE ==============
 export const searchTickers = createServerFn({ method: "POST" })
-  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, optionalSupabaseAuth])
   .inputValidator(z.object({ q: z.string().min(1).max(80) }))
   .handler(async ({ data, context }) => {
-    await enforceRateLimit(context.userId, "analyze.searchTickers", 120, 3600);
+    if (context.userId) await enforceRateLimit(context.userId, "analyze.searchTickers", 120, 3600);
     const q = data.q.trim();
     return cachedSWR(`search:${q.toLowerCase()}`, 5 * 60_000, async () => {
       const looksLikeSymbol = /^[A-Za-z0-9.\-]{1,15}$/.test(q);

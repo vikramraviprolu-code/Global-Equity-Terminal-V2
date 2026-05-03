@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { chat } from "./ai.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAuthHeaders } from "./supabase-auth-headers";
 
 // ----- 1. Co-pilot: parse natural-language query into a structured intent -----
 
@@ -79,6 +81,7 @@ Rules:
 - Always fill "explain" with a friendly paraphrase. Use empty strings ("") not nulls for string fields you don't set; use 0 for unused numbers; use null only where the schema allows null.`;
 
 export const aiParseQuery = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) => z.object({ q: z.string().min(1).max(300) }).parse(d))
   .handler(async ({ data }) => {
     try {
@@ -119,6 +122,7 @@ STRICT RULES:
 - End with: "Not investment advice."`;
 
 export const aiTickerNarrative = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) =>
     z
       .object({

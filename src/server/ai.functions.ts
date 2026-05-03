@@ -81,6 +81,7 @@ Rules:
 - Always fill "explain" with a friendly paraphrase. Use empty strings ("") not nulls for string fields you don't set; use 0 for unused numbers; use null only where the schema allows null.`;
 
 export const aiParseQuery = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) => z.object({ q: z.string().min(1).max(300) }).parse(d))
   .handler(async ({ data }) => {
     try {

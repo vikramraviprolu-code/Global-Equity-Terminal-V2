@@ -142,7 +142,9 @@ export const aiTickerNarrative = createServerFn({ method: "POST" })
           { role: "system", content: SYSTEM_NARRATIVE },
           { role: "user", content: `Stock: ${data.symbol}\n\nFacts:\n${data.facts}` },
         ],
+        model: "google/gemini-2.5-flash-lite",
         temperature: 0.3,
+        max_tokens: 320,
       });
       const text = resp?.choices?.[0]?.message?.content?.trim?.() ?? "";
       if (!text) return { text: "", error: "Empty response from AI." };

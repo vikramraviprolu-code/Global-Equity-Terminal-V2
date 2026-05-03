@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { fetchWithRetry } from "./http.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAuthHeaders } from "./supabase-auth-headers";
 
 /**
  * News & Catalysts via Perplexity — answers "what's moving this stock?"

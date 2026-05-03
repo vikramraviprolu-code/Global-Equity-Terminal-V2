@@ -596,12 +596,13 @@ function ResultsTable({ rows, columns, sortBy, sortDir, onSort, selected, toggle
 }) {
   const has = (k: ColumnKey) => columns.has(k);
   const [ccyMode] = useDisplayCurrency();
-  const Th = ({ k, label, num, colKey }: { k: string; label: string; num?: boolean; colKey?: ColumnKey }) => {
+  const Th = ({ k, label, num, colKey, term }: { k: string; label: string; num?: boolean; colKey?: ColumnKey; term?: Parameters<typeof MetricLabel>[0]["term"] }) => {
     if (colKey && !has(colKey)) return null;
+    const content = term ? <MetricLabel term={term} asChild>{label}</MetricLabel> : label;
     return (
       <th className={num ? "text-right" : "text-left"}>
         <button onClick={() => onSort(k)} className="font-medium hover:text-primary inline-flex items-center gap-1">
-          {label}
+          {content}
           {sortBy === k && <span className="text-primary">{sortDir === "asc" ? "▲" : "▼"}</span>}
         </button>
       </th>

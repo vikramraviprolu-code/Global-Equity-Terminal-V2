@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { getSharedWatchlist } from "@/server/share.functions";
-import { fetchUniverse } from "@/server/screen.functions";
+import { fetchPublicUniverseSnapshot } from "@/server/screen.functions";
 import { scoreAll } from "@/lib/scores";
 import { fmtNum, fmtPct, fmtMcapUsd, fmtPriceDisplay, colorFor } from "@/lib/format";
 import { useDisplayCurrency } from "@/hooks/use-display-currency";
@@ -72,8 +72,8 @@ function SharedWatchlistPage() {
   const [ccyMode] = useDisplayCurrency();
 
   const { data: universe, isLoading } = useQuery({
-    queryKey: ["universe"],
-    queryFn: () => fetchUniverse({ data: {} }),
+    queryKey: ["universe", "public"],
+    queryFn: () => fetchPublicUniverseSnapshot({ data: undefined as any }),
     staleTime: 5 * 60 * 1000,
   });
 

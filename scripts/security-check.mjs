@@ -19,8 +19,7 @@ const ROOT = process.cwd();
 const ALLOWED_PUBLIC_FNS = new Set([
   // explicitly public/anonymous server functions
   "getSharedWatchlist",
-  "fetchUniverse", // accepted finding (public landing/share)
-  "fetchEvents",   // accepted finding (events page client-gated)
+  "fetchPublicUniverseSnapshot", // public, heavily-cached snapshot for landing/share
   "reportError",   // public error telemetry, hardened with strict validation
 ]);
 

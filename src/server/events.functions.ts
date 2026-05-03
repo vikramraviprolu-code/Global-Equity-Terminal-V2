@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { UNIVERSE } from "./universe";
 import { fi } from "./finimpulse.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAuthHeaders } from "./supabase-auth-headers";
 
 export type EventKind = "earnings" | "dividend" | "split";
 
@@ -86,6 +88,7 @@ async function fetchEventsFor(u: typeof UNIVERSE[number]): Promise<CalendarEvent
 }
 
 export const fetchEvents = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator(z.object({
     regions: z.array(z.string()).optional(),
     symbols: z.array(z.string()).optional(),

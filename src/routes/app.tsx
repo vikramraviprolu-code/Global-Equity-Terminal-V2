@@ -272,8 +272,8 @@ function ScreenerPage() {
         <div className="max-w-[1400px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-border">
           <div className="text-xs font-mono text-muted-foreground">
             <span className="text-foreground">{sorted.length}</span> of <span className="text-foreground">{scored.length}</span> stocks ·
-            <span className="ml-2">Mock: <span className="text-primary">{data?.meta.mockCount ?? 0}</span></span> ·
-            <span className="ml-2">Live: <span className="text-[color:var(--bull)]">{data?.meta.liveCount ?? 0}</span></span>
+            <span className="ml-2">Mock: <span className="text-primary">{data?.meta?.mockCount ?? 0}</span></span> ·
+            <span className="ml-2">Live: <span className="text-[color:var(--bull)]">{data?.meta?.liveCount ?? 0}</span></span>
             {sorted.length > 0 && (
               <span className="ml-2">· Page <span className="text-foreground">{page}</span>/{totalPages}</span>
             )}

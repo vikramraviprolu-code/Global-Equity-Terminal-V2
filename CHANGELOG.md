@@ -3,6 +3,21 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.11.2] — 2026-05-03 — "Inbox" (patch)
+
+Smarter ticker resolution in Analyze and Compare, plus ISIN support.
+
+### Added
+- **ISIN lookup** (`src/components/terminal/terminal-page.tsx`, `src/routes/compare.tsx`) — pasting a 12-character ISIN (e.g. `US0378331005`) into the Analyze search box or the Compare add-ticker input now resolves to the canonical listing via the existing search pipeline. Compare additionally maps the resolved symbol back into the curated universe.
+- **Glossary** (`src/lib/glossary.ts`) — added an entry for ISIN.
+
+### Fixed
+- **Plain company-name queries** (`src/components/terminal/terminal-page.tsx`) — typing lowercase words like `adani` or `reliance` into Analyze previously fast-pathed to a doomed direct ticker fetch (no exchange suffix). The fast-path now requires real ticker shape (contains `.`, contains a digit, or short ALL-CAPS); everything else goes through search and surfaces the disambiguation picker.
+- **Compare add-by-name** (`src/routes/compare.tsx`) — the Add input now matches by company name and partial symbol within the curated universe, not just exact ticker.
+
+### UX
+- Updated input placeholders in Analyze and Compare to advertise ticker / company / ISIN inputs.
+
 ## [1.11.1] — 2026-05-03 — "Inbox" (patch)
 
 Hardens screener data resilience, fixes a runtime crash on the screener header, and tightens CI security gating.

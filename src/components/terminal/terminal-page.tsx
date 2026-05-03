@@ -151,7 +151,7 @@ function SubHeader({ query, setQuery, onSubmit, loading }: { query: string; setQ
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="TICKER OR COMPANY (AAPL · RELIANCE.NS · 7203.T · BMW.DE · Tencent)"
+              placeholder="TICKER · COMPANY · ISIN (AAPL · RELIANCE.NS · 7203.T · US0378331005)"
               maxLength={80}
               className="flex-1 bg-transparent outline-none font-mono text-sm placeholder:text-muted-foreground/60"
             />

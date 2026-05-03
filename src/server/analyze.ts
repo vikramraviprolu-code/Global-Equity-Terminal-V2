@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { fetchWithRetry } from "./http.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { supabaseAuthHeaders } from "./supabase-auth-headers";
 import { enforceRateLimit } from "./rate-limit.server";
 import { yahooChart, yahooSummary, yahooSearch } from "./yahoo.server";

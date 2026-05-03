@@ -13,6 +13,7 @@ import { Route as WatchlistRouteImport } from './routes/watchlist'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as ThesesRouteImport } from './routes/theses'
 import { Route as TerminalRouteImport } from './routes/terminal'
+import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as SourcesRouteImport } from './routes/sources'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -60,6 +61,11 @@ const ThesesRoute = ThesesRouteImport.update({
 const TerminalRoute = TerminalRouteImport.update({
   id: '/terminal',
   path: '/terminal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TasksRoute = TasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SourcesRoute = SourcesRouteImport.update({
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sources': typeof SourcesRoute
+  '/tasks': typeof TasksRoute
   '/terminal': typeof TerminalRouteWithChildren
   '/theses': typeof ThesesRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -256,6 +263,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sources': typeof SourcesRoute
+  '/tasks': typeof TasksRoute
   '/theses': typeof ThesesRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/watchlist': typeof WatchlistRoute
@@ -290,6 +298,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sources': typeof SourcesRoute
+  '/tasks': typeof TasksRoute
   '/terminal': typeof TerminalRouteWithChildren
   '/theses': typeof ThesesRoute
   '/unsubscribe': typeof UnsubscribeRoute
@@ -326,6 +335,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sitemap.xml'
     | '/sources'
+    | '/tasks'
     | '/terminal'
     | '/theses'
     | '/unsubscribe'
@@ -360,6 +370,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sitemap.xml'
     | '/sources'
+    | '/tasks'
     | '/theses'
     | '/unsubscribe'
     | '/watchlist'
@@ -393,6 +404,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/sitemap.xml'
     | '/sources'
+    | '/tasks'
     | '/terminal'
     | '/theses'
     | '/unsubscribe'
@@ -428,6 +440,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SourcesRoute: typeof SourcesRoute
+  TasksRoute: typeof TasksRoute
   TerminalRoute: typeof TerminalRouteWithChildren
   ThesesRoute: typeof ThesesRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
@@ -474,6 +487,13 @@ declare module '@tanstack/react-router' {
       path: '/terminal'
       fullPath: '/terminal'
       preLoaderRoute: typeof TerminalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tasks': {
+      id: '/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof TasksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sources': {
@@ -704,6 +724,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SourcesRoute: SourcesRoute,
+  TasksRoute: TasksRoute,
   TerminalRoute: TerminalRouteWithChildren,
   ThesesRoute: ThesesRoute,
   UnsubscribeRoute: UnsubscribeRoute,

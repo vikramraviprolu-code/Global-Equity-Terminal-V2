@@ -18,6 +18,8 @@ export function NewsCatalysts({
   symbol: string;
   name?: string;
 }) {
+  const { user } = useAuth();
+  const signedIn = !!user;
   const [text, setText] = useState<string>("");
   const [citations, setCitations] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +83,8 @@ export function NewsCatalysts({
           </select>
           <button
             onClick={() => gen.mutate()}
-            disabled={gen.isPending}
+            disabled={gen.isPending || !signedIn}
+            title={signedIn ? "" : "Sign in to use AI"}
             className="text-[10px] font-mono uppercase tracking-wider border border-primary/50 text-primary px-2 py-1 rounded hover:bg-primary/10 disabled:opacity-50"
           >
             {gen.isPending ? "Searching…" : text ? "Refresh" : "Ask"}
@@ -89,6 +92,9 @@ export function NewsCatalysts({
         </div>
       </div>
       <div className="p-5 text-sm leading-relaxed max-w-4xl space-y-4">
+        {!signedIn && (
+          <p className="text-muted-foreground"><Link to="/auth" className="text-primary underline">Sign in</Link> to ask about news catalysts.</p>
+        )}
         <div className="flex flex-col sm:flex-row gap-2">
           <input
             type="text"

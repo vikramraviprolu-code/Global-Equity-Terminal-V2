@@ -11,6 +11,8 @@ type Msg = { role: "user" | "assistant"; content: string };
  * Non-streaming (single round-trip per turn) to keep parity with existing AI helpers.
  */
 export function AskTerminal({ symbol, facts }: { symbol: string; facts: string }) {
+  const { user } = useAuth();
+  const signedIn = !!user;
   const [history, setHistory] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -116,16 +118,22 @@ export function AskTerminal({ symbol, facts }: { symbol: string; facts: string }
             placeholder={`Ask about ${symbol}…`}
             className="flex-1 bg-background border border-border rounded px-3 py-2 text-sm font-mono focus:border-primary outline-none"
             maxLength={500}
-            disabled={ask.isPending}
+            disabled={ask.isPending || !signedIn}
           />
           <button
             onClick={handleSend}
-            disabled={ask.isPending || !input.trim()}
+            disabled={ask.isPending || !input.trim() || !signedIn}
+            title={signedIn ? "" : "Sign in to use AI"}
             className="text-[10px] font-mono uppercase tracking-wider bg-primary text-primary-foreground px-3 py-2 rounded hover:opacity-90 disabled:opacity-40"
           >
             Send
           </button>
         </div>
+        {!signedIn && (
+          <p className="text-xs text-muted-foreground mt-2">
+            <Link to="/auth" className="text-primary underline">Sign in</Link> to chat with the AI.
+          </p>
+        )}
         <div className="text-[10px] text-muted-foreground border-t border-border pt-3 mt-4 font-mono">
           AI-generated answers grounded in the metrics on this page. No external news or forecasts. Not investment advice.
         </div>

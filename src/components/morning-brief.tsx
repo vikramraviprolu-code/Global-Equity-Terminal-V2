@@ -9,6 +9,8 @@ import { useAuth } from "@/hooks/use-auth";
  * On-demand (button) so we don't burn AI credits on every page load.
  */
 export function MorningBrief({ symbols }: { symbols: string[] }) {
+  const { user } = useAuth();
+  const signedIn = !!user;
   const [summary, setSummary] = useState("");
   const [highlights, setHighlights] = useState<Array<{ symbol: string; perf5d: number; rsi14: number | null }>>([]);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +41,8 @@ export function MorningBrief({ symbols }: { symbols: string[] }) {
           <span className="text-[10px] font-mono uppercase tracking-wider text-primary">Powered by Lovable AI</span>
           <button
             onClick={() => gen.mutate()}
-            disabled={gen.isPending || symbols.length === 0}
+            disabled={gen.isPending || symbols.length === 0 || !signedIn}
+            title={signedIn ? "" : "Sign in to use AI"}
             className="text-[10px] font-mono uppercase tracking-wider border border-primary/50 text-primary px-2 py-1 rounded hover:bg-primary/10 disabled:opacity-50"
           >
             {gen.isPending ? "Composing…" : summary ? "Refresh" : "Generate brief"}
@@ -47,6 +50,9 @@ export function MorningBrief({ symbols }: { symbols: string[] }) {
         </div>
       </div>
       <div className="p-5 text-sm leading-relaxed max-w-4xl">
+        {!signedIn && (
+          <p className="text-muted-foreground mb-3"><Link to="/auth" className="text-primary underline">Sign in</Link> to generate an AI morning brief.</p>
+        )}
         {!summary && !gen.isPending && !error && (
           <p className="text-muted-foreground">
             One-paragraph digest of overnight moves across this watchlist — biggest movers, breakouts, and oversold flips, grounded only in the metrics shown.

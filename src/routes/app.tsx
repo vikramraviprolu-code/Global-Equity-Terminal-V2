@@ -16,6 +16,7 @@ import { TableSkeleton, EmptyState as SharedEmptyState } from "@/components/feed
 import { onAction } from "@/lib/action-bus";
 import { useRef } from "react";
 import { ProviderBadge } from "@/components/provider-badge";
+import { MetricLabel } from "@/components/metric-label";
 
 const SORTABLE_KEYS = ["symbol", "name", "sector", "price", "marketCapUsd", "pe", "pb", "dividendYield", "pctFromLow", "perf5d", "rsi14", "value", "momentum", "quality", "risk", "confidence"] as const;
 type SortKey = (typeof SORTABLE_KEYS)[number];

@@ -84,7 +84,8 @@ Rules:
 export const aiParseQuery = createServerFn({ method: "POST" })
   .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) => z.object({ q: z.string().min(1).max(300) }).parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await enforceRateLimit(context.userId, "ai.parseQuery", 60, 3600);
     try {
       const resp = await chat({
         messages: [
@@ -132,7 +133,8 @@ export const aiTickerNarrative = createServerFn({ method: "POST" })
       })
       .parse(d),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await enforceRateLimit(context.userId, "ai.tickerNarrative", 30, 3600);
     try {
       const resp = await chat({
         messages: [

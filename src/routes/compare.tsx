@@ -51,11 +51,23 @@ function ComparePage() {
   };
 
   const onAdd = (sym: string) => {
-    const u = sym.toUpperCase().trim();
-    if (!u || picked.map((p) => p.toUpperCase()).includes(u)) return;
-    if (!symbolMap.has(u)) return;
-    if (picked.length >= 6) return;
-    updateUrl([...picked, u]);
+    const raw = sym.trim();
+    if (!raw || picked.length >= 6) return;
+    const u = raw.toUpperCase();
+    // Direct symbol hit
+    let resolved: string | null = symbolMap.has(u) ? u : null;
+    // Otherwise resolve by name / partial-symbol match within the curated universe
+    if (!resolved) {
+      const needle = raw.toLowerCase();
+      const hit = scored.find((r) =>
+        r.symbol.toLowerCase().includes(needle) ||
+        (r.name ?? "").toLowerCase().includes(needle)
+      );
+      if (hit) resolved = hit.symbol.toUpperCase();
+    }
+    if (!resolved) return;
+    if (picked.map((p) => p.toUpperCase()).includes(resolved)) return;
+    updateUrl([...picked, resolved]);
     setAdd("");
   };
   const onRemove = (sym: string) => updateUrl(picked.filter((p) => p.toUpperCase() !== sym.toUpperCase()));

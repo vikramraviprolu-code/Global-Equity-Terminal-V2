@@ -55,8 +55,15 @@ export function TerminalPage({ initialTicker: initialTickerProp }: { initialTick
     setTab("overview");
     analyze.reset();
     search.reset();
-    // If input looks like a clean ticker symbol, analyze directly.
-    const looksLikeSymbol = /^[A-Za-z0-9.\-]{1,15}$/.test(q);
+    // Fast-path only for inputs that clearly look like a ticker:
+    //  - contains an exchange suffix dot (e.g. RELIANCE.NS, 7203.T)
+    //  - contains a digit (e.g. 7203, 005930.KS)
+    //  - is short ALL-CAPS letters (e.g. AAPL, MSFT) — typed deliberately
+    // Plain lowercase words like "adani" or "reliance" must go through search
+    // so we can disambiguate to the right exchange listing.
+    const looksLikeSymbol =
+      /^[A-Za-z0-9.\-]{1,15}$/.test(q) &&
+      (q.includes(".") || /\d/.test(q) || (/^[A-Z]{1,6}$/.test(q)));
     if (looksLikeSymbol) {
       analyze.mutate(q.toUpperCase());
     } else {

@@ -18,6 +18,9 @@ jobs:
   security:
     name: Security checks
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write  # required for SARIF upload to Code Scanning
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,11 +32,34 @@ jobs:
         run: node scripts/security-check.mjs
       - name: Dependency audit (high+ fails the build)
         run: bun pm audit --audit-level high
-      - name: Gitleaks secret scan
+      - name: Gitleaks secret scan (SARIF)
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Trivy filesystem scan (CRITICAL/HIGH fails the build)
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "true"
+          GITLEAKS_ENABLE_SUMMARY: "true"
+      - name: Upload Gitleaks SARIF
+        if: always() && hashFiles('results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+          category: gitleaks
+      - name: Trivy filesystem scan (SARIF)
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          format: sarif
+          output: trivy.sarif
+      - name: Upload Trivy SARIF
+        if: always() && hashFiles('trivy.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy.sarif
+          category: trivy
+      - name: Trivy filesystem scan (hard gate)
         uses: aquasecurity/trivy-action@0.24.0
         with:
           scan-type: fs

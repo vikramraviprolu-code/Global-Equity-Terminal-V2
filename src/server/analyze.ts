@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { fetchWithRetry } from "./http.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAuthHeaders } from "./supabase-auth-headers";
 import { yahooChart, yahooSummary, yahooSearch } from "./yahoo.server";
 import { stooqQuote } from "./stooq.server";
 import { fmpQuote, fmpSearch } from "./fmp.server";

@@ -234,10 +234,12 @@ function listingFromItem(it: any): Listing {
 
 async function fetchMetrics(symbol: string, prefetched?: any): Promise<StockMetrics | null> {
   const sym = symbol.trim();
-  // Cache analyze results for 2 min — same ticker is often re-analyzed during a session.
-  // Don't cache when prefetched is supplied (peer enrichment uses already-resolved data).
-  if (prefetched) return fetchMetricsUncached(sym, prefetched);
-  return cachedSWR(`analyze:${sym}`, 2 * 60_000, () => fetchMetricsUncached(sym));
+  // Always cache by symbol (2 min). Peer enrichment previously bypassed the
+  // cache when `prefetched` was supplied, which let one anonymous /analyze
+  // call fan out to ~25 uncached upstream fetches. The `prefetched` listing
+  // is still passed to short-circuit the symbol lookup on cache miss, but
+  // the resolved metrics are now always cached per symbol.
+  return cachedSWR(`analyze:${sym}`, 2 * 60_000, () => fetchMetricsUncached(sym, prefetched));
 }
 
 async function fetchMetricsUncached(symbol: string, prefetched?: any): Promise<StockMetrics | null> {

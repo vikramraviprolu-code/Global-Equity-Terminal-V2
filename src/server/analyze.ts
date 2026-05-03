@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { fetchWithRetry } from "./http.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAuthHeaders } from "./supabase-auth-headers";
 import { yahooChart, yahooSummary, yahooSearch } from "./yahoo.server";
 import { stooqQuote } from "./stooq.server";
 import { fmpQuote, fmpSearch } from "./fmp.server";
@@ -568,6 +570,7 @@ function buildRecommendation(m: StockMetrics) {
 
 // ============== SEARCH / DISAMBIGUATE ==============
 export const searchTickers = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator(z.object({ q: z.string().min(1).max(80) }))
   .handler(async ({ data }) => {
     const q = data.q.trim();
@@ -646,6 +649,7 @@ export const searchTickers = createServerFn({ method: "POST" })
 
 // ============== ANALYZE ==============
 export const analyzeTicker = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator(z.object({ ticker: z.string().min(1).max(20).regex(/^[A-Za-z0-9.\-]+$/) }))
   .handler(async ({ data }) => {
     const symbol = data.ticker.trim();

@@ -356,6 +356,13 @@ export const GLOSSARY = {
     definition: "Short symbol identifying a listed security (e.g. AAPL, RELIANCE.NS).",
     group: "market",
   },
+  isin: {
+    term: "ISIN",
+    full: "International Securities Identification Number",
+    definition: "Globally unique 12-character security identifier (2-letter country code + 9 alphanumerics + check digit).",
+    hint: "Paste an ISIN (e.g. US0378331005) into Analyze or Compare to resolve the canonical ticker.",
+    group: "market",
+  },
   exchange: {
     term: "Exchange",
     definition: "The venue where the security is listed (e.g. NASDAQ, NSE, LSE).",

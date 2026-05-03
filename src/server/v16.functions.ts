@@ -241,7 +241,7 @@ export const deleteThesis = createServerFn({ method: "POST" })
   .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("theses").delete().eq("id", data.id);
+    const { error } = await context.supabase.from("theses").delete().eq("id", data.id).eq("user_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -254,6 +254,7 @@ export const evaluateThesis = createServerFn({ method: "POST" })
       .from("theses")
       .select("*")
       .eq("id", data.id)
+      .eq("user_id", context.userId)
       .single();
     if (e1 || !t) throw new Error(e1?.message ?? "Thesis not found");
 
@@ -286,7 +287,8 @@ export const evaluateThesis = createServerFn({ method: "POST" })
       await context.supabase
         .from("theses")
         .update({ status, rationale, evaluated_at: new Date().toISOString() })
-        .eq("id", t.id);
+        .eq("id", t.id)
+        .eq("user_id", context.userId);
 
       // v1.7: Alerts × Theses — auto-fire an alert event when a thesis flips
       // to a breaking/broken state (only on transition from a non-broken

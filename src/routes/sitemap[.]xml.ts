@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { fetchUniverse } from "@/server/screen.functions";
+import { UNIVERSE } from "@/server/universe";
 
 const SITE = "https://rankaisolutions.tech";
 const STATIC_PATHS = [
@@ -18,13 +18,9 @@ export const Route = createFileRoute("/sitemap.xml")({
     handlers: {
       GET: async () => {
         const today = new Date().toISOString().slice(0, 10);
-        let symbols: string[] = [];
-        try {
-          const u = await fetchUniverse({ data: {} });
-          symbols = (u?.rows ?? []).map((r: any) => r.symbol).filter(Boolean);
-        } catch {
-          symbols = [];
-        }
+        // Use the static UNIVERSE constant — never hit a paid API on a public,
+        // crawler-indexed endpoint (security: SERVER_ROUTE_PAID_API_NO_AUTH).
+        const symbols = UNIVERSE.map((u) => u.symbol).filter(Boolean);
 
         const urls: string[] = [];
         for (const p of STATIC_PATHS) {

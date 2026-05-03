@@ -339,8 +339,8 @@ async function fetchMetricsFromYahoo(sym: string): Promise<StockMetrics | null> 
     ...listing,
     price,
     priceUsd: null,
-    avgVolume: chart?.averageDailyVolume3Month ?? chart?.averageDailyVolume10Day ?? null,
-    pe: summary?.trailingPE ?? null,
+    avgVolume: chart?.averageDailyVolume3Month ?? chart?.averageDailyVolume10Day ?? fmpFallback?.avgVolume ?? null,
+    pe: summary?.trailingPE ?? fmpFallback?.pe ?? null,
     high52, low52, pctFromLow,
     perf5d: pctPerf(closes, 5),
     rsi14: rsi(closes, 14),
@@ -351,7 +351,7 @@ async function fetchMetricsFromYahoo(sym: string): Promise<StockMetrics | null> 
     dataMissing: missing,
     filter,
     closes: closes.slice(-260),
-    source: "Yahoo Finance",
+    source: summary ? "Yahoo Finance" : (fmpFallback ? "Yahoo + FMP" : "Yahoo Finance"),
   };
 }
 

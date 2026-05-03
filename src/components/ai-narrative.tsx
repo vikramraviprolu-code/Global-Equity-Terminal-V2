@@ -38,19 +38,28 @@ export function AiNarrative({
     setError(null);
   }, [symbol]);
 
+  const { user } = useAuth();
+  const signedIn = !!user;
+
   return (
     <div className="panel">
       <div className="panel-header flex items-center justify-between">
         <span>AI Narrative · {symbol}</span>
         <button
           onClick={() => gen.mutate()}
-          disabled={gen.isPending}
+          disabled={gen.isPending || !signedIn}
+          title={signedIn ? "" : "Sign in to use AI features"}
           className="text-[10px] font-mono uppercase tracking-wider border border-primary/50 text-primary px-2 py-1 rounded hover:bg-primary/10 disabled:opacity-50"
         >
           {gen.isPending ? "Generating…" : text ? "Regenerate" : "Generate"}
         </button>
       </div>
       <div className="p-5 text-sm leading-relaxed max-w-4xl">
+        {!signedIn && (
+          <p className="text-muted-foreground mb-3">
+            <Link to="/auth" className="text-primary underline">Sign in</Link> to generate an AI thesis. All other terminal data is freely available.
+          </p>
+        )}
         {!text && !gen.isPending && !error && (
           <p className="text-muted-foreground">
             Generate a plain-English thesis grounded in the metrics shown on this page — what the

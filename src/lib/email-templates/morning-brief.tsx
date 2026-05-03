@@ -33,6 +33,7 @@ const MorningBriefEmail = ({
       <Preview>{summary.slice(0, 110)}</Preview>
       <Body style={main}>
         <Container style={container}>
+          <Text style={brandTag}>{SITE_NAME}</Text>
           <Heading style={h1}>{headline}</Heading>
           <Text style={meta}>
             {symbols.length} ticker{symbols.length === 1 ? '' : 's'} ·{' '}

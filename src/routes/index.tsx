@@ -53,6 +53,19 @@ function LandingPage() {
     <div className="min-h-screen flex flex-col">
       <SiteNav />
       <main className="flex-1">
+        {(data as any)?.unavailable ? (
+          <div className="max-w-[1400px] mx-auto px-4 pt-4">
+            <div className="font-mono text-[11px] uppercase tracking-widest text-amber-500 border border-amber-500/30 bg-amber-500/10 rounded-sm px-3 py-2">
+              Data unavailable — upstream feeds are temporarily down. Try again shortly.
+            </div>
+          </div>
+        ) : (data as any)?._stale ? (
+          <div className="max-w-[1400px] mx-auto px-4 pt-4">
+            <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground border border-border bg-muted/30 rounded-sm px-3 py-2">
+              Showing cached snapshot — live refresh failed, data may be slightly outdated.
+            </div>
+          </div>
+        ) : null}
         <LandingHero meta={data?.meta} isLoading={isLoading} />
         <LandingProofStrip rows={scored} />
         <LandingAboutStory />

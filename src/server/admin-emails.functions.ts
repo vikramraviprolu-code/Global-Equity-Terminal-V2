@@ -3,6 +3,12 @@ import { z } from "zod";
 import { supabaseAuthHeaders } from "./supabase-auth-headers";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { chat } from "@/server/ai.server";
+import { fetchScreenerRow } from "@/server/finimpulse.server";
+import { UNIVERSE } from "@/server/universe";
+import { render as renderAsync } from "@react-email/components";
+import * as React from "react";
+import { TEMPLATES } from "@/lib/email-templates/registry";
 
 async function assertAdmin(supabase: any, userId: string) {
   const { data, error } = await supabase

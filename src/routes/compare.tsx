@@ -50,13 +50,13 @@ function ComparePage() {
     navigate({ to: "/compare", search: { s: next.join(",") || undefined } as any, replace: true });
   };
 
-  const onAdd = (sym: string) => {
+  const onAdd = async (sym: string) => {
     const raw = sym.trim();
     if (!raw || picked.length >= 6) return;
     const u = raw.toUpperCase();
-    // Direct symbol hit
+    // 1. Direct symbol hit in the curated universe
     let resolved: string | null = symbolMap.has(u) ? u : null;
-    // Otherwise resolve by name / partial-symbol match within the curated universe
+    // 2. Resolve by name / partial-symbol match within the curated universe
     if (!resolved) {
       const needle = raw.toLowerCase();
       const hit = scored.find((r) =>
@@ -64,6 +64,18 @@ function ComparePage() {
         (r.name ?? "").toLowerCase().includes(needle)
       );
       if (hit) resolved = hit.symbol.toUpperCase();
+    }
+    // 3. ISIN (12 chars: 2-letter country + 9 alphanum + check digit) —
+    //    resolve via the search server fn, then map back into the universe.
+    if (!resolved && /^[A-Z]{2}[A-Z0-9]{9}\d$/.test(u)) {
+      try {
+        const { searchTickers } = await import("@/server/analyze");
+        const res = await searchTickers({ data: { q: u } });
+        for (const m of res?.matches ?? []) {
+          const cand = m.symbol.toUpperCase();
+          if (symbolMap.has(cand)) { resolved = cand; break; }
+        }
+      } catch { /* fall through */ }
     }
     if (!resolved) return;
     if (picked.map((p) => p.toUpperCase()).includes(resolved)) return;

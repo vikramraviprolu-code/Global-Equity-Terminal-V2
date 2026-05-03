@@ -3,6 +3,24 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.11.0] — 2026-05-03 — "Inbox" (minor)
+
+Ships the full email surface end-to-end: every auth message and the morning brief now render with a single branded **Insight Investor** template, route through a durable retry queue, and are observable from a new admin dashboard. Also locks down database function privileges flagged by the security scan.
+
+### Added
+- **Branded auth emails** (`src/lib/email-templates/{signup,magic-link,recovery,invite,email-change,reauthentication}.tsx`, `src/lib/email-templates/brand.ts`) — signup confirmations, magic links, password recovery, invitations, email-change, and reauthentication all share a single white-bodied amber-accent template that matches the in-app terminal aesthetic.
+- **Morning brief delivery** (`src/lib/email-templates/morning-brief.tsx`, `src/routes/api/public/hooks/run-scheduled-briefs.ts`) — scheduled morning briefs now render the same branded template and flow through the queue, with end-to-end verification from `pending` → `sent` in `email_send_log`.
+- **Admin email monitoring** (`src/routes/admin.emails.tsx`, `src/server/admin-emails.functions.ts`) — new `/admin/emails` route surfaces failure rate, queue latency (p50/p95/max), retry counts, and DLQ depth. Includes deliverability alerts (≥3 failures in 24h, p95 latency >30s) and one-click test triggers for each auth template + morning brief.
+- **Roles infrastructure** (`public.user_roles` table + `has_role()` helper) — admin gating for the email dashboard. Roles live in their own table per security guidance; first user seeded as admin.
+- **Insight Investor sender identity** — all outbound mail (auth + transactional + scheduled) uses `Insight Investor <noreply@rankaisolutions.tech>` for a consistent inbox brand.
+
+### Security
+- **Locked down `SECURITY DEFINER` functions** — `REVOKE EXECUTE` on `enqueue_email`, `delete_email`, `read_email_batch`, `move_to_dlq`, and `bump_shared_watchlist_view` from `public` / `anon` / `authenticated`; restricted to `service_role`. `has_role` retains `authenticated` execute (required for RLS evaluation).
+
+### Notes
+- Email templates render server-side via `@react-email/components`; no runtime fetches.
+- Queue dispatcher (`process-email-queue`) handles retries, rate-limit backoff, and DLQ routing automatically.
+
 ## [1.10.0] — 2026-05-02 — "Resilience" (minor)
 
 Hardens the data layer so the terminal stays useful even when any single upstream provider is rate-limited, geo-blocked, or simply down. Adds a comprehensive in-app User Guide.

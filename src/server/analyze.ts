@@ -664,10 +664,10 @@ export const searchTickers = createServerFn({ method: "POST" })
 
 // ============== ANALYZE ==============
 export const analyzeTicker = createServerFn({ method: "POST" })
-  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, optionalSupabaseAuth])
   .inputValidator(z.object({ ticker: z.string().min(1).max(20).regex(/^[A-Za-z0-9.\-]+$/) }))
   .handler(async ({ data, context }) => {
-    await enforceRateLimit(context.userId, "analyze.analyzeTicker", 60, 3600);
+    if (context.userId) await enforceRateLimit(context.userId, "analyze.analyzeTicker", 60, 3600);
     const symbol = data.ticker.trim();
     const target = await fetchMetrics(symbol);
     if (!target) {

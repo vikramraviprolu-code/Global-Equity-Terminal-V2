@@ -266,7 +266,16 @@ function ScreenerPage() {
       <SiteNav right={<button onClick={() => refetch()} disabled={isFetching} className="bg-primary text-primary-foreground px-3 py-1.5 rounded hover:opacity-90 disabled:opacity-50">{isFetching ? "Refreshing…" : "Refresh"}</button>} />
       <main className="flex-1">
         <ScreenerIntro meta={data?.meta} isLoading={isLoading} />
-        <FilterBar filters={filters} setFilters={setFilters} sectors={sectors} onReset={() => replaceFilters(DEFAULT_FILTERS)} />
+        {/* Render FilterBar only after mount to avoid hydration mismatches caused by
+            browser extensions that rewrite native <select> elements (e.g. form-styling
+            extensions injecting bb-customSelect containers). */}
+        {hydrated ? (
+          <FilterBar filters={filters} setFilters={setFilters} sectors={sectors} onReset={() => replaceFilters(DEFAULT_FILTERS)} />
+        ) : (
+          <div className="border-b border-border bg-card/30">
+            <div className="max-w-[1400px] mx-auto px-4 py-3 h-[58px]" />
+          </div>
+        )}
         <PresetBar current={filters.preset} onPick={onPickPreset} />
 
         <div className="max-w-[1400px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-border">

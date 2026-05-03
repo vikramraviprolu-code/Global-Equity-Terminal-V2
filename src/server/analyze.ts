@@ -570,6 +570,7 @@ function buildRecommendation(m: StockMetrics) {
 
 // ============== SEARCH / DISAMBIGUATE ==============
 export const searchTickers = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator(z.object({ q: z.string().min(1).max(80) }))
   .handler(async ({ data }) => {
     const q = data.q.trim();

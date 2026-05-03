@@ -126,7 +126,9 @@ export const generateBrief = createServerFn({ method: "POST" })
           { role: "system", content: BRIEF_SYSTEM },
           { role: "user", content: `Watchlist snapshot (${live.length} tickers):\n${facts}` },
         ],
+        model: "google/gemini-2.5-flash-lite",
         temperature: 0.3,
+        max_tokens: 320,
       });
       const summary = resp?.choices?.[0]?.message?.content?.trim?.() ?? "";
       if (!summary) return { summary: "", highlights: [], error: "Empty response from AI." };

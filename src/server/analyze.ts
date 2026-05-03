@@ -649,6 +649,7 @@ export const searchTickers = createServerFn({ method: "POST" })
 
 // ============== ANALYZE ==============
 export const analyzeTicker = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator(z.object({ ticker: z.string().min(1).max(20).regex(/^[A-Za-z0-9.\-]+$/) }))
   .handler(async ({ data }) => {
     const symbol = data.ticker.trim();

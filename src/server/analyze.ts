@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { fetchWithRetry } from "./http.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { supabaseAuthHeaders } from "./supabase-auth-headers";
 import { enforceRateLimit } from "./rate-limit.server";
 import { yahooChart, yahooSummary, yahooSearch } from "./yahoo.server";
@@ -583,10 +584,10 @@ function buildRecommendation(m: StockMetrics) {
 
 // ============== SEARCH / DISAMBIGUATE ==============
 export const searchTickers = createServerFn({ method: "POST" })
-  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, optionalSupabaseAuth])
   .inputValidator(z.object({ q: z.string().min(1).max(80) }))
   .handler(async ({ data, context }) => {
-    await enforceRateLimit(context.userId, "analyze.searchTickers", 120, 3600);
+    if (context.userId) await enforceRateLimit(context.userId, "analyze.searchTickers", 120, 3600);
     const q = data.q.trim();
     return cachedSWR(`search:${q.toLowerCase()}`, 5 * 60_000, async () => {
       const looksLikeSymbol = /^[A-Za-z0-9.\-]{1,15}$/.test(q);
@@ -663,10 +664,10 @@ export const searchTickers = createServerFn({ method: "POST" })
 
 // ============== ANALYZE ==============
 export const analyzeTicker = createServerFn({ method: "POST" })
-  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, optionalSupabaseAuth])
   .inputValidator(z.object({ ticker: z.string().min(1).max(20).regex(/^[A-Za-z0-9.\-]+$/) }))
   .handler(async ({ data, context }) => {
-    await enforceRateLimit(context.userId, "analyze.analyzeTicker", 60, 3600);
+    if (context.userId) await enforceRateLimit(context.userId, "analyze.analyzeTicker", 60, 3600);
     const symbol = data.ticker.trim();
     const target = await fetchMetrics(symbol);
     if (!target) {

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { UNIVERSE } from "./universe";
 import { fetchScreenerRow, type ScreenerRow } from "./finimpulse.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { supabaseAuthHeaders } from "./supabase-auth-headers";
 import { cached, cachedSWR, getCacheStats } from "./cache.server";
 
@@ -58,12 +59,17 @@ async function buildUniverse(regions?: string[]) {
   } as const;
 }
 
-// Authenticated full-universe fetcher (used by signed-in workspace pages).
+// Universe fetcher — works for everyone (signed-in or anonymous). The result
+// is cached server-side via cachedSWR so anonymous traffic cannot drive paid
+// API fan-out.
+const UNIVERSE_TTL_MS = 5 * 60 * 1000;
 export const fetchUniverse = createServerFn({ method: "POST" })
-  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
+  .middleware([supabaseAuthHeaders, optionalSupabaseAuth])
   .inputValidator(z.object({ regions: z.array(z.string()).optional() }).optional().default({}))
   .handler(async ({ data }) => {
-    return buildUniverse(data?.regions);
+    const regions = data?.regions;
+    const key = `universe:${regions?.length ? [...regions].sort().join(",") : "all"}`;
+    return cachedSWR(key, UNIVERSE_TTL_MS, () => buildUniverse(regions));
   });
 
 // Public, heavily-cached snapshot for unauthenticated surfaces (landing page,

@@ -16,6 +16,7 @@ import { TableSkeleton, EmptyState as SharedEmptyState } from "@/components/feed
 import { onAction } from "@/lib/action-bus";
 import { useRef } from "react";
 import { ProviderBadge } from "@/components/provider-badge";
+import { MetricLabel } from "@/components/metric-label";
 
 const SORTABLE_KEYS = ["symbol", "name", "sector", "price", "marketCapUsd", "pe", "pb", "dividendYield", "pctFromLow", "perf5d", "rsi14", "value", "momentum", "quality", "risk", "confidence"] as const;
 type SortKey = (typeof SORTABLE_KEYS)[number];
@@ -595,12 +596,13 @@ function ResultsTable({ rows, columns, sortBy, sortDir, onSort, selected, toggle
 }) {
   const has = (k: ColumnKey) => columns.has(k);
   const [ccyMode] = useDisplayCurrency();
-  const Th = ({ k, label, num, colKey }: { k: string; label: string; num?: boolean; colKey?: ColumnKey }) => {
+  const Th = ({ k, label, num, colKey, term }: { k: string; label: string; num?: boolean; colKey?: ColumnKey; term?: Parameters<typeof MetricLabel>[0]["term"] }) => {
     if (colKey && !has(colKey)) return null;
+    const content = term ? <MetricLabel term={term} asChild>{label}</MetricLabel> : label;
     return (
       <th className={num ? "text-right" : "text-left"}>
         <button onClick={() => onSort(k)} className="font-medium hover:text-primary inline-flex items-center gap-1">
-          {label}
+          {content}
           {sortBy === k && <span className="text-primary">{sortDir === "asc" ? "▲" : "▼"}</span>}
         </button>
       </th>
@@ -618,21 +620,21 @@ function ResultsTable({ rows, columns, sortBy, sortDir, onSort, selected, toggle
             <Th k="symbol" label="Ticker" colKey="symbol" />
             <Th k="name" label="Company" colKey="name" />
             {has("region") && <th>Region</th>}
-            <Th k="sector" label="Sector" colKey="sector" />
+            <Th k="sector" label="Sector" colKey="sector" term="sector" />
             <Th k="price" label="Price" num colKey="price" />
-            <Th k="marketCapUsd" label="Mcap (USD)" num colKey="marketCapUsd" />
-            <Th k="pe" label="P/E" num colKey="pe" />
-            <Th k="pb" label="P/B" num colKey="pb" />
-            <Th k="dividendYield" label="Div %" num colKey="dividendYield" />
-            <Th k="pctFromLow" label="From 52W Low" num colKey="pctFromLow" />
+            <Th k="marketCapUsd" label="Mcap (USD)" num colKey="marketCapUsd" term="marketCap" />
+            <Th k="pe" label="P/E" num colKey="pe" term="peRatio" />
+            <Th k="pb" label="P/B" num colKey="pb" term="pbRatio" />
+            <Th k="dividendYield" label="Div %" num colKey="dividendYield" term="dividendYield" />
+            <Th k="pctFromLow" label="From 52W Low" num colKey="pctFromLow" term="pctFromLow" />
             <th className="text-left">Trend</th>
-            <Th k="perf5d" label="5D %" num colKey="perf5d" />
-            <Th k="rsi14" label="RSI" num colKey="rsi14" />
-            <Th k="value" label="Value" num colKey="value" />
-            <Th k="momentum" label="Mom" num colKey="momentum" />
-            <Th k="quality" label="Qual" num colKey="quality" />
-            <Th k="risk" label="Risk" num colKey="risk" />
-            <Th k="confidence" label="Conf" num colKey="confidence" />
+            <Th k="perf5d" label="5D %" num colKey="perf5d" term="perf5d" />
+            <Th k="rsi14" label="RSI" num colKey="rsi14" term="rsi" />
+            <Th k="value" label="Value" num colKey="value" term="valueScore" />
+            <Th k="momentum" label="Mom" num colKey="momentum" term="momentumScore" />
+            <Th k="quality" label="Qual" num colKey="quality" term="qualityScore" />
+            <Th k="risk" label="Risk" num colKey="risk" term="riskScore" />
+            <Th k="confidence" label="Conf" num colKey="confidence" term="confidence" />
             <th></th>
           </tr>
         </thead>

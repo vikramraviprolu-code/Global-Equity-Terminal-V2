@@ -4,7 +4,7 @@ import { UNIVERSE } from "./universe";
 import { fetchScreenerRow, type ScreenerRow } from "./finimpulse.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAuthHeaders } from "./supabase-auth-headers";
-import { cached } from "./cache.server";
+import { cached, cachedSWR, getCacheStats } from "./cache.server";
 
 async function buildUniverse(regions?: string[]) {
   const filtered = regions?.length

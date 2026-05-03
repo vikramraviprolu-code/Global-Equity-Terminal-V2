@@ -1,6 +1,6 @@
 # Global Equity Terminal
 
-> **v1.11.2 — "Inbox"** · A keyboard-driven, AI-augmented research terminal for global equities.
+> **v1.12.0 — "Tasks"** · A keyboard-driven, AI-augmented research terminal for global equities.
 
 Global Equity Terminal blends terminal-style data density with an AI co-pilot
 layer. It's built for retail and prosumer investors who want fast research,
@@ -42,6 +42,9 @@ Hong Kong, Korea, Taiwan, Singapore, and Australia**.
 - **Alerts** — rule-based alerts on price, RSI, 52-week range proximity, and
   5-day momentum, plus thesis-break notifications. Evaluated server-side with
   in-app notifications and a 12h cooldown per rule.
+- **Tasks** *(new in v1.12)* — kanban-style research to-do board at `/tasks`.
+  Capture follow-ups, optionally link a ticker, set a due date, and move
+  cards across To-do / In progress / Done. Per-user, RLS-protected.
 - **Multi-provider data fallbacks** *(new in v1.10)* — every screener row and
   terminal page tries Finimpulse first, then falls back through Yahoo Finance,
   Financial Modeling Prep (free tier), and Stooq. **Provider badges** on each
@@ -77,7 +80,7 @@ Hong Kong, Korea, Taiwan, Singapore, and Australia**.
 The top nav is grouped into 4 dropdown menus:
 
 - **Research** — Screener · Analysis · Compare
-- **Workspace** — Watchlists · Portfolio · Theses · Alerts
+- **Workspace** — Watchlists · Portfolio · Theses · Tasks · Alerts
 - **Market** — Events
 - **System** — Data Quality · Sources · User Guide · Settings
 

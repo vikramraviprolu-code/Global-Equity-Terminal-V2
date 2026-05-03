@@ -3,6 +3,16 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.12.0] — 2026-05-03 — "Tasks" (minor)
+
+Adds a dedicated research **Tasks** board so users can capture to-dos and link them to tickers.
+
+### Added
+- **Tasks page** (`src/routes/tasks.tsx`, `src/server/tasks.functions.ts`) — new `/tasks` route with kanban-style columns (To-do / In progress / Done). Each task supports title, optional notes, optional ticker link (deep-links into `/terminal/$symbol`), and an optional due date. Status changes via inline dropdown; completion timestamps are recorded server-side.
+- **Database** — new `public.tasks` table + `task_status` enum, full per-user RLS (view / insert / update / delete scoped to `auth.uid()`), `set_updated_at` trigger, and indexes on `user_id` and `symbol`.
+- **Navigation** (`src/components/site-nav.tsx`) — Workspace dropdown now includes **Tasks** between Theses and Alerts.
+- **Glossary** (`src/lib/glossary.ts`) — added an entry for the Tasks board.
+
 ## [1.11.2] — 2026-05-03 — "Inbox" (patch)
 
 Smarter ticker resolution in Analyze and Compare, plus ISIN support.

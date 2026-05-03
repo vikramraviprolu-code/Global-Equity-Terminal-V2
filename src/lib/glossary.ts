@@ -554,6 +554,13 @@ export const GLOSSARY = {
     hint: "Replaces previous product names across the email surface for a consistent inbox brand.",
     group: "navigation",
   },
+  tasks: {
+    term: "Tasks",
+    full: "Research task board",
+    definition: "Personal kanban board for research to-dos, optionally linked to a ticker, with To-do / In progress / Done columns.",
+    hint: "Open from Workspace → Tasks. Per-user and RLS-protected.",
+    group: "navigation",
+  },
 } as const satisfies Record<string, GlossaryEntry>;
 
 export type GlossaryKey = keyof typeof GLOSSARY;

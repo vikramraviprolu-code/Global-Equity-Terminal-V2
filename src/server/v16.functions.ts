@@ -60,6 +60,7 @@ export const askTerminal = createServerFn({ method: "POST" })
           ...data.history.map((m) => ({ role: m.role, content: m.content })),
         ],
         temperature: 0.2,
+        max_tokens: 500,
       });
       const text = resp?.choices?.[0]?.message?.content?.trim?.() ?? "";
       if (!text) return { text: "", error: "Empty response from AI." };
@@ -125,7 +126,9 @@ export const generateBrief = createServerFn({ method: "POST" })
           { role: "system", content: BRIEF_SYSTEM },
           { role: "user", content: `Watchlist snapshot (${live.length} tickers):\n${facts}` },
         ],
+        model: "google/gemini-2.5-flash-lite",
         temperature: 0.3,
+        max_tokens: 320,
       });
       const summary = resp?.choices?.[0]?.message?.content?.trim?.() ?? "";
       if (!summary) return { summary: "", highlights: [], error: "Empty response from AI." };
@@ -276,6 +279,7 @@ export const evaluateThesis = createServerFn({ method: "POST" })
         tools: [THESIS_TOOL as any],
         tool_choice: { type: "function", function: { name: "evaluate_thesis" } },
         temperature: 0.2,
+        max_tokens: 400,
       });
       const call = resp?.choices?.[0]?.message?.tool_calls?.[0];
       const args = call?.function?.arguments;

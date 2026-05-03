@@ -361,6 +361,11 @@ async function fetchScreenerRowFromYahoo(u: {
     yahooSummary(sym).catch(() => null),
   ]);
   if (!chart && !summary) return null;
+
+  // If Yahoo's quoteSummary is missing fundamentals, enrich from FMP (best-effort).
+  const needsEnrichment = !summary || summary.sector == null || summary.marketCap == null || summary.trailingPE == null;
+  const fmpFallback = needsEnrichment ? await fmpQuote(sym).catch(() => null) : null;
+
   const closes = chart?.closes ?? [];
   const price = chart?.regularMarketPrice ?? (closes.length ? closes[closes.length - 1] : null);
   const high52 = chart?.fiftyTwoWeekHigh ?? null;
@@ -373,20 +378,20 @@ async function fetchScreenerRowFromYahoo(u: {
 
   return {
     symbol: sym,
-    name: summary?.longName ?? summary?.shortName ?? u.name,
-    exchange: chart?.fullExchangeName ?? chart?.exchangeName ?? summary?.fullExchangeName ?? summary?.exchange ?? u.exchange,
+    name: summary?.longName ?? summary?.shortName ?? fmpFallback?.name ?? u.name,
+    exchange: chart?.fullExchangeName ?? chart?.exchangeName ?? summary?.fullExchangeName ?? summary?.exchange ?? fmpFallback?.exchange ?? u.exchange,
     country: summary?.country ?? u.country,
     region: u.region,
-    currency: chart?.currency ?? summary?.currency ?? u.currency,
-    sector: summary?.sector ?? u.sector,
-    industry: summary?.industry ?? u.industry,
+    currency: chart?.currency ?? summary?.currency ?? fmpFallback?.currency ?? u.currency,
+    sector: summary?.sector ?? fmpFallback?.sector ?? u.sector,
+    industry: summary?.industry ?? fmpFallback?.industry ?? u.industry,
     price,
-    marketCap: summary?.marketCap ?? null,
+    marketCap: summary?.marketCap ?? fmpFallback?.marketCap ?? null,
     marketCapUsd: null,
-    avgVolume: chart?.averageDailyVolume3Month ?? chart?.averageDailyVolume10Day ?? null,
-    pe: summary?.trailingPE ?? null,
-    pb: summary?.priceToBook ?? null,
-    dividendYield: summary?.dividendYield ?? null,
+    avgVolume: chart?.averageDailyVolume3Month ?? chart?.averageDailyVolume10Day ?? fmpFallback?.avgVolume ?? null,
+    pe: summary?.trailingPE ?? fmpFallback?.pe ?? null,
+    pb: summary?.priceToBook ?? fmpFallback?.pb ?? null,
+    dividendYield: summary?.dividendYield ?? fmpFallback?.dividendYield ?? null,
     high52, low52,
     pctFromLow: pctFromLow != null ? +pctFromLow.toFixed(2) : null,
     pctFromHigh: pctFromHigh != null ? +pctFromHigh.toFixed(2) : null,

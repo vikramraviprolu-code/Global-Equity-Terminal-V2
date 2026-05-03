@@ -88,6 +88,7 @@ async function fetchEventsFor(u: typeof UNIVERSE[number]): Promise<CalendarEvent
 }
 
 export const fetchEvents = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator(z.object({
     regions: z.array(z.string()).optional(),
     symbols: z.array(z.string()).optional(),

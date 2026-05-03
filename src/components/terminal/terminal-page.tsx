@@ -55,6 +55,9 @@ export function TerminalPage({ initialTicker: initialTickerProp }: { initialTick
     setTab("overview");
     analyze.reset();
     search.reset();
+    // ISIN: 12 chars, 2-letter country + 9 alphanumerics + 1 check digit.
+    // Always route through search so it resolves to the canonical ticker.
+    const isIsin = /^[A-Z]{2}[A-Z0-9]{9}\d$/i.test(q);
     // Fast-path only for inputs that clearly look like a ticker:
     //  - contains an exchange suffix dot (e.g. RELIANCE.NS, 7203.T)
     //  - contains a digit (e.g. 7203, 005930.KS)
@@ -62,6 +65,7 @@ export function TerminalPage({ initialTicker: initialTickerProp }: { initialTick
     // Plain lowercase words like "adani" or "reliance" must go through search
     // so we can disambiguate to the right exchange listing.
     const looksLikeSymbol =
+      !isIsin &&
       /^[A-Za-z0-9.\-]{1,15}$/.test(q) &&
       (q.includes(".") || /\d/.test(q) || (/^[A-Z]{1,6}$/.test(q)));
     if (looksLikeSymbol) {
@@ -71,8 +75,8 @@ export function TerminalPage({ initialTicker: initialTickerProp }: { initialTick
         onSuccess: (res) => {
           const m = res?.matches ?? [];
           if (m.length === 0) {
-            // No name matches — try analyzing the raw query as a symbol fallback.
-            analyze.mutate(q.toUpperCase());
+            // No name matches — for ISINs there's nothing useful to fall back to.
+            if (!isIsin) analyze.mutate(q.toUpperCase());
           } else if (m.length === 1) {
             analyze.mutate(m[0].symbol);
           }
@@ -147,7 +151,7 @@ function SubHeader({ query, setQuery, onSubmit, loading }: { query: string; setQ
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="TICKER OR COMPANY (AAPL · RELIANCE.NS · 7203.T · BMW.DE · Tencent)"
+              placeholder="TICKER · COMPANY · ISIN (AAPL · RELIANCE.NS · 7203.T · US0378331005)"
               maxLength={80}
               className="flex-1 bg-transparent outline-none font-mono text-sm placeholder:text-muted-foreground/60"
             />

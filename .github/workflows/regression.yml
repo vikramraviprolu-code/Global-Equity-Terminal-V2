@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  schedule:
+    # Daily security scan (06:00 UTC) catches newly-disclosed advisories
+    # against unchanged dependencies.
+    - cron: "0 6 * * *"
 
 concurrency:
   group: regression-${{ github.ref }}
@@ -21,17 +25,23 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with: { bun-version: latest }
       - run: bun install --frozen-lockfile
-      - name: Auth-middleware + secret scan
+      - name: Auth-middleware + secret scan (hard gate)
         run: node scripts/security-check.mjs
-      - name: npm audit (high+)
-        run: bun pm audit --audit-level high || true
-        # `|| true` because Bun's audit may exit non-zero on transitive
-        # advisories that have no fix available; the security-check script
-        # is the hard gate for project-owned issues.
+      - name: Dependency audit (high+ fails the build)
+        run: bun pm audit --audit-level high
       - name: Gitleaks secret scan
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Trivy filesystem scan (CRITICAL/HIGH fails the build)
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+          format: table
 
   docs:
     name: Docs consistency (pre-publish)

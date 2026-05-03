@@ -134,7 +134,7 @@ function ComparePage() {
             value={add}
             onChange={(e) => setAdd(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") onAdd(add); }}
-            placeholder="Add ticker (e.g. AAPL, RELIANCE.NS, 7203.T)"
+            placeholder="Add ticker, company, or ISIN (AAPL · RELIANCE.NS · US0378331005)"
             className="bg-input border border-border rounded px-2 py-1 text-xs font-mono w-72 focus:border-primary outline-none"
           />
           <button onClick={() => onAdd(add)} className="font-mono text-[10px] uppercase tracking-wider bg-primary text-primary-foreground px-3 py-1.5 rounded hover:opacity-90">

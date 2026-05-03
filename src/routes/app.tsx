@@ -204,10 +204,14 @@ function ScreenerPage() {
     setColumns(next); saveCols(next);
   };
 
-  const { data, isLoading, isError, refetch, isFetching } = useQuery({
+  const { data, isLoading, isError, refetch, isFetching, dataUpdatedAt } = useQuery({
     queryKey: ["universe"],
     queryFn: () => fetchUniverse({ data: {} }),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
+    refetchInterval: 60 * 1000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
   });
 
   const scored = useMemo(() => (data?.rows ? scoreAll(data.rows) : []), [data]);

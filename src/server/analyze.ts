@@ -306,17 +306,20 @@ async function fetchMetricsFromYahoo(sym: string): Promise<StockMetrics | null> 
   const fb = detectFromSymbol(sym);
   const currency = chart?.currency ?? summary?.currency ?? fb.currency;
   const region = regionFromMarketRegion(chart?.marketRegion ?? null, currency, fb.region);
+  // If Yahoo quoteSummary is blocked, enrich with FMP profile + curated universe metadata
+  const fmpFallback = !summary ? await fmpQuote(sym).catch(() => null) : null;
+  const um = universeMeta(sym);
   const listing: Listing = {
     symbol: sym,
-    companyName: summary?.longName ?? summary?.shortName ?? sym,
-    exchange: chart?.exchangeName ?? summary?.exchange ?? fb.exchange ?? null,
+    companyName: summary?.longName ?? summary?.shortName ?? fmpFallback?.name ?? um?.name ?? sym,
+    exchange: chart?.exchangeName ?? summary?.exchange ?? fmpFallback?.exchange ?? fb.exchange ?? um?.exchange ?? null,
     fullExchange: chart?.fullExchangeName ?? summary?.fullExchangeName ?? null,
-    country: summary?.country ?? fb.country,
+    country: summary?.country ?? um?.country ?? fb.country,
     region,
     currency,
-    sector: summary?.sector ?? null,
-    industry: summary?.industry ?? null,
-    marketCap: summary?.marketCap ?? null,
+    sector: summary?.sector ?? fmpFallback?.sector ?? um?.sector ?? null,
+    industry: summary?.industry ?? fmpFallback?.industry ?? um?.industry ?? null,
+    marketCap: summary?.marketCap ?? fmpFallback?.marketCap ?? null,
     marketCapUsd: null,
     listingType: "stock",
   };

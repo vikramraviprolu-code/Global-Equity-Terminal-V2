@@ -3,7 +3,7 @@
  * Body must always be white (#ffffff). Accents use the terminal's amber
  * primary and slate text palette to match the in-app aesthetic.
  */
-export const SITE_NAME = 'Global Equity Terminal'
+export const SITE_NAME = 'Insight Investor'
 
 export const main = {
   backgroundColor: '#ffffff',

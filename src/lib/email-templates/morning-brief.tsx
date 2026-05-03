@@ -11,7 +11,7 @@ import {
 } from '@react-email/components'
 import type { TemplateEntry } from './registry'
 
-const SITE_NAME = 'Global Equity Terminal'
+const SITE_NAME = 'Insight Investor'
 
 interface MorningBriefProps {
   date?: string

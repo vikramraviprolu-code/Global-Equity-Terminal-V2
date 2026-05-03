@@ -33,6 +33,7 @@ const MorningBriefEmail = ({
       <Preview>{summary.slice(0, 110)}</Preview>
       <Body style={main}>
         <Container style={container}>
+          <Text style={brandTag}>{SITE_NAME}</Text>
           <Heading style={h1}>{headline}</Heading>
           <Text style={meta}>
             {symbols.length} ticker{symbols.length === 1 ? '' : 's'} ·{' '}
@@ -91,6 +92,14 @@ export const template = {
 } satisfies TemplateEntry
 
 const main = { backgroundColor: '#ffffff', fontFamily: 'Inter, Arial, sans-serif' }
+const brandTag = {
+  fontFamily: 'JetBrains Mono, monospace',
+  fontSize: '11px',
+  letterSpacing: '0.12em',
+  textTransform: 'uppercase' as const,
+  color: '#b45309',
+  margin: '0 0 14px',
+}
 const container = { padding: '24px', maxWidth: '560px' }
 const h1 = { fontSize: '22px', fontWeight: 700, color: '#0f172a', margin: '0 0 4px' }
 const h2 = { fontSize: '14px', fontWeight: 600, color: '#0f172a', margin: '8px 0' }

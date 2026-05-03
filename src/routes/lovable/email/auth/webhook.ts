@@ -31,7 +31,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "ticker-tuner-pro"
+const SITE_NAME = "Global Equity Terminal"
 const SENDER_DOMAIN = "notify.rankaisolutions.tech"
 const ROOT_DOMAIN = "rankaisolutions.tech"
 const FROM_DOMAIN = "rankaisolutions.tech"

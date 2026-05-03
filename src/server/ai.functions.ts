@@ -95,6 +95,7 @@ export const aiParseQuery = createServerFn({ method: "POST" })
         tools: [PARSE_TOOL as any],
         tool_choice: { type: "function", function: { name: "build_intent" } },
         temperature: 0,
+        max_tokens: 400,
       });
       const call = resp?.choices?.[0]?.message?.tool_calls?.[0];
       const args = call?.function?.arguments;

@@ -1,7 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { aiTickerNarrative } from "@/server/ai.functions";
 import { ParagraphSkeleton } from "@/components/feedback-states";
+import { useAuth } from "@/hooks/use-auth";
 
 /**
  * AI Narrative panel — generates a 3-paragraph plain-English thesis grounded

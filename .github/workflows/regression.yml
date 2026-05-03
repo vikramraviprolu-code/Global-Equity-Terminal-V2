@@ -11,9 +11,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  security:
+    name: Security checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with: { bun-version: latest }
+      - run: bun install --frozen-lockfile
+      - name: Auth-middleware + secret scan
+        run: node scripts/security-check.mjs
+      - name: npm audit (high+)
+        run: bun pm audit --audit-level high || true
+        # `|| true` because Bun's audit may exit non-zero on transitive
+        # advisories that have no fix available; the security-check script
+        # is the hard gate for project-owned issues.
+      - name: Gitleaks secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   docs:
     name: Docs consistency (pre-publish)
     runs-on: ubuntu-latest
+    needs: security
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2

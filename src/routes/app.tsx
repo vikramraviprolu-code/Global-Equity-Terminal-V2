@@ -253,6 +253,9 @@ function ScreenerPage() {
 
   const sectors = useMemo(() => Array.from(new Set(scored.map((r) => r.sector))).sort(), [scored]);
 
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => { setHydrated(true); }, []);
+
   // Press "e" to export current filtered results as CSV
   useEffect(() => {
     return onAction("export", () => {

@@ -3,6 +3,17 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.11.1] — 2026-05-03 — "Inbox" (patch)
+
+Hardens screener data resilience, fixes a runtime crash on the screener header, and tightens CI security gating.
+
+### Fixed
+- **Screener fundamentals fallback** (`src/server/finimpulse.server.ts`, `src/server/analyze.ts`) — when Yahoo's `quoteSummary` endpoint is blocked, Sector / Industry / Market Cap / P/E / P/B / dividend yield are now backfilled from FMP (when configured) and finally from the static universe metadata, so rows no longer show `—` for covered tickers.
+- **Universe meta crash** (`src/routes/app.tsx`) — safe optional chaining on `data?.meta?.mockCount` / `liveCount` prevents a "Cannot read properties of undefined" crash when the universe query is loading or returns 401.
+
+### Security / CI
+- **Hardened CI security gate** (`.github/workflows/regression.yml`) — `bun pm audit --audit-level high` is no longer masked with `|| true`; added Trivy filesystem scan (CRITICAL/HIGH fails the build); Gitleaks and Trivy now upload SARIF results to GitHub Code Scanning; daily scheduled run (06:00 UTC) catches newly-disclosed advisories.
+
 ## [1.11.0] — 2026-05-03 — "Inbox" (minor)
 
 Ships the full email surface end-to-end: every auth message and the morning brief now render with a single branded **Insight Investor** template, route through a durable retry queue, and are observable from a new admin dashboard. Also locks down database function privileges flagged by the security scan.

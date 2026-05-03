@@ -33,6 +33,7 @@ import { Route as TerminalSymbolRouteImport } from './routes/terminal.$symbol'
 import { Route as SystemGuideRouteImport } from './routes/system.guide'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
+import { Route as AdminCacheRouteImport } from './routes/admin.cache'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -161,6 +162,11 @@ const AdminEmailsRoute = AdminEmailsRouteImport.update({
   path: '/admin/emails',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCacheRoute = AdminCacheRouteImport.update({
+  id: '/admin/cache',
+  path: '/admin/cache',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -220,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/theses': typeof ThesesRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/watchlist': typeof WatchlistRoute
+  '/admin/cache': typeof AdminCacheRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/system/guide': typeof SystemGuideRoute
@@ -252,6 +259,7 @@ export interface FileRoutesByTo {
   '/theses': typeof ThesesRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/watchlist': typeof WatchlistRoute
+  '/admin/cache': typeof AdminCacheRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/system/guide': typeof SystemGuideRoute
@@ -286,6 +294,7 @@ export interface FileRoutesById {
   '/theses': typeof ThesesRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/watchlist': typeof WatchlistRoute
+  '/admin/cache': typeof AdminCacheRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/system/guide': typeof SystemGuideRoute
@@ -321,6 +330,7 @@ export interface FileRouteTypes {
     | '/theses'
     | '/unsubscribe'
     | '/watchlist'
+    | '/admin/cache'
     | '/admin/emails'
     | '/email/unsubscribe'
     | '/system/guide'
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/theses'
     | '/unsubscribe'
     | '/watchlist'
+    | '/admin/cache'
     | '/admin/emails'
     | '/email/unsubscribe'
     | '/system/guide'
@@ -386,6 +397,7 @@ export interface FileRouteTypes {
     | '/theses'
     | '/unsubscribe'
     | '/watchlist'
+    | '/admin/cache'
     | '/admin/emails'
     | '/email/unsubscribe'
     | '/system/guide'
@@ -420,6 +432,7 @@ export interface RootRouteChildren {
   ThesesRoute: typeof ThesesRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   WatchlistRoute: typeof WatchlistRoute
+  AdminCacheRoute: typeof AdminCacheRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   SystemGuideRoute: typeof SystemGuideRoute
@@ -603,6 +616,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEmailsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/cache': {
+      id: '/admin/cache'
+      path: '/admin/cache'
+      fullPath: '/admin/cache'
+      preLoaderRoute: typeof AdminCacheRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -688,6 +708,7 @@ const rootRouteChildren: RootRouteChildren = {
   ThesesRoute: ThesesRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   WatchlistRoute: WatchlistRoute,
+  AdminCacheRoute: AdminCacheRoute,
   AdminEmailsRoute: AdminEmailsRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   SystemGuideRoute: SystemGuideRoute,

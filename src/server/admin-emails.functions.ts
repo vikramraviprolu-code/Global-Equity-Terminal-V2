@@ -266,7 +266,7 @@ export const triggerTestMorningBrief = createServerFn({ method: "POST" })
       payload: {
         message_id: messageId,
         to: recipient,
-        from: `Global Equity Terminal <noreply@rankaisolutions.tech>`,
+        from: `Insight Investor <noreply@rankaisolutions.tech>`,
         sender_domain: "notify.rankaisolutions.tech",
         subject,
         html,

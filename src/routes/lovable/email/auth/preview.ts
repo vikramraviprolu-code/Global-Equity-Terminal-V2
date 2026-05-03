@@ -18,7 +18,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "Global Equity Terminal"
+const SITE_NAME = "Insight Investor"
 const ROOT_DOMAIN = "rankaisolutions.tech"
 
 // Sample data for preview mode ONLY (not used in actual email sending).

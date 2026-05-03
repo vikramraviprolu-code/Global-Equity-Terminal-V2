@@ -3,6 +3,7 @@ import { z } from "zod";
 import { chat } from "./ai.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAuthHeaders } from "./supabase-auth-headers";
+import { enforceRateLimit } from "./rate-limit.server";
 
 // ----- 1. Co-pilot: parse natural-language query into a structured intent -----
 

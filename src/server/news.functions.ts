@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { fetchWithRetry } from "./http.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAuthHeaders } from "./supabase-auth-headers";
 
 /**
  * News & Catalysts via Perplexity — answers "what's moving this stock?"
@@ -21,6 +23,7 @@ STRICT RULES:
 - End with a single line: "Not investment advice."`;
 
 export const aiNewsCatalysts = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) =>
     z
       .object({

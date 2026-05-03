@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Public read active shares" ON public.shared_watchlists;

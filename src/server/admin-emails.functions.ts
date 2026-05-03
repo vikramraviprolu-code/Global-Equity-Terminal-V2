@@ -113,7 +113,7 @@ export const getEmailDashboard = createServerFn({ method: "POST" })
     // Recent failures (last 24h) for alerting badge
     const last24 = new Date(Date.now() - 24 * 3600 * 1000).getTime();
     const recentFailures = latest.filter(
-      (r) => new Date(r.createdAt ?? r.created_at).getTime() >= last24 && (r.status === "failed" || r.status === "dlq" || r.status === "bounced"),
+      (r) => new Date(r.created_at).getTime() >= last24 && (r.status === "failed" || r.status === "dlq" || r.status === "bounced"),
     ).length;
 
     return {

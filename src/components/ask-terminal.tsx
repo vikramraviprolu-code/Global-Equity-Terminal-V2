@@ -1,6 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { askTerminal } from "@/server/v16.functions";
+import { useAuth } from "@/hooks/use-auth";
 
 type Msg = { role: "user" | "assistant"; content: string };
 

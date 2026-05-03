@@ -1,6 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { generateBrief } from "@/server/v16.functions";
+import { useAuth } from "@/hooks/use-auth";
 
 /**
  * AI Morning Brief — generates a concise digest over the active watchlist's symbols.

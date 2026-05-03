@@ -6,17 +6,42 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAuthHeaders } from "./supabase-auth-headers";
 import { cached, cachedSWR, getCacheStats } from "./cache.server";
 
+// Tracks upstream fetch errors during the most recent buildUniverse rebuild.
+// Reset at the start of each rebuild; read by getPublicUniverseCacheStats.
+let lastBuildUpstreamErrors = 0;
+let lastBuildUpstreamErrorSamples: string[] = [];
+
 async function buildUniverse(regions?: string[]) {
   const filtered = regions?.length
     ? UNIVERSE.filter((u) => regions.includes(u.region))
     : UNIVERSE;
 
+  lastBuildUpstreamErrors = 0;
+  lastBuildUpstreamErrorSamples = [];
+
   const CHUNK = 20;
   const out: ScreenerRow[] = [];
   for (let i = 0; i < filtered.length; i += CHUNK) {
     const chunk = filtered.slice(i, i + CHUNK);
-    const rows = await Promise.all(chunk.map((u) => fetchScreenerRow(u).catch(() => null)));
+    const rows = await Promise.all(
+      chunk.map((u) =>
+        fetchScreenerRow(u).catch((err) => {
+          lastBuildUpstreamErrors++;
+          if (lastBuildUpstreamErrorSamples.length < 5) {
+            lastBuildUpstreamErrorSamples.push(`${u.symbol}: ${(err as Error)?.message ?? "error"}`.slice(0, 200));
+          }
+          return null;
+        }),
+      ),
+    );
     for (const r of rows) if (r) out.push(r);
+  }
+
+  if (lastBuildUpstreamErrors > 0) {
+    console.warn(
+      `[universe] rebuild had ${lastBuildUpstreamErrors}/${filtered.length} upstream errors. Samples:`,
+      lastBuildUpstreamErrorSamples,
+    );
   }
 
   const mockCount = out.filter((r) => r.isMock).length;
@@ -28,6 +53,7 @@ async function buildUniverse(regions?: string[]) {
       mockCount,
       liveCount: out.length - mockCount,
       universeSize: filtered.length,
+      upstreamErrors: lastBuildUpstreamErrors,
     },
   } as const;
 }

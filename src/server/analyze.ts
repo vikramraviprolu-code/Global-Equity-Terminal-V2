@@ -8,6 +8,15 @@ import { yahooChart, yahooSummary, yahooSearch } from "./yahoo.server";
 import { stooqQuote } from "./stooq.server";
 import { fmpQuote, fmpSearch } from "./fmp.server";
 import { cachedSWR } from "./cache.server";
+import { UNIVERSE } from "./universe";
+
+// Lookup curated metadata for a symbol so we always have at least
+// sector/industry/exchange/region even when upstream profile endpoints
+// (Yahoo quoteSummary, FMP profile) are blocked or rate-limited.
+function universeMeta(sym: string) {
+  const u = UNIVERSE.find((x) => x.symbol.toUpperCase() === sym.toUpperCase());
+  return u ?? null;
+}
 
 const FI_BASE = "https://api.finimpulse.com/v1";
 
@@ -297,17 +306,20 @@ async function fetchMetricsFromYahoo(sym: string): Promise<StockMetrics | null> 
   const fb = detectFromSymbol(sym);
   const currency = chart?.currency ?? summary?.currency ?? fb.currency;
   const region = regionFromMarketRegion(chart?.marketRegion ?? null, currency, fb.region);
+  // If Yahoo quoteSummary is blocked, enrich with FMP profile + curated universe metadata
+  const fmpFallback = !summary ? await fmpQuote(sym).catch(() => null) : null;
+  const um = universeMeta(sym);
   const listing: Listing = {
     symbol: sym,
-    companyName: summary?.longName ?? summary?.shortName ?? sym,
-    exchange: chart?.exchangeName ?? summary?.exchange ?? fb.exchange ?? null,
+    companyName: summary?.longName ?? summary?.shortName ?? fmpFallback?.name ?? um?.name ?? sym,
+    exchange: chart?.exchangeName ?? summary?.exchange ?? fmpFallback?.exchange ?? fb.exchange ?? um?.exchange ?? null,
     fullExchange: chart?.fullExchangeName ?? summary?.fullExchangeName ?? null,
-    country: summary?.country ?? fb.country,
+    country: summary?.country ?? um?.country ?? fb.country,
     region,
     currency,
-    sector: summary?.sector ?? null,
-    industry: summary?.industry ?? null,
-    marketCap: summary?.marketCap ?? null,
+    sector: summary?.sector ?? fmpFallback?.sector ?? um?.sector ?? null,
+    industry: summary?.industry ?? fmpFallback?.industry ?? um?.industry ?? null,
+    marketCap: summary?.marketCap ?? fmpFallback?.marketCap ?? null,
     marketCapUsd: null,
     listingType: "stock",
   };
@@ -327,8 +339,8 @@ async function fetchMetricsFromYahoo(sym: string): Promise<StockMetrics | null> 
     ...listing,
     price,
     priceUsd: null,
-    avgVolume: chart?.averageDailyVolume3Month ?? chart?.averageDailyVolume10Day ?? null,
-    pe: summary?.trailingPE ?? null,
+    avgVolume: chart?.averageDailyVolume3Month ?? chart?.averageDailyVolume10Day ?? fmpFallback?.avgVolume ?? null,
+    pe: summary?.trailingPE ?? fmpFallback?.pe ?? null,
     high52, low52, pctFromLow,
     perf5d: pctPerf(closes, 5),
     rsi14: rsi(closes, 14),
@@ -339,7 +351,7 @@ async function fetchMetricsFromYahoo(sym: string): Promise<StockMetrics | null> 
     dataMissing: missing,
     filter,
     closes: closes.slice(-260),
-    source: "Yahoo Finance",
+    source: summary ? "Yahoo Finance" : (fmpFallback ? "Yahoo + FMP" : "Yahoo Finance"),
   };
 }
 

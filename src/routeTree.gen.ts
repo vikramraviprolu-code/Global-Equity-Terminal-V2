@@ -32,6 +32,7 @@ import { Route as WTokenRouteImport } from './routes/w.$token'
 import { Route as TerminalSymbolRouteImport } from './routes/terminal.$symbol'
 import { Route as SystemGuideRouteImport } from './routes/system.guide'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -155,6 +156,11 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminEmailsRoute = AdminEmailsRouteImport.update({
+  id: '/admin/emails',
+  path: '/admin/emails',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/theses': typeof ThesesRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/watchlist': typeof WatchlistRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/system/guide': typeof SystemGuideRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
@@ -245,6 +252,7 @@ export interface FileRoutesByTo {
   '/theses': typeof ThesesRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/watchlist': typeof WatchlistRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/system/guide': typeof SystemGuideRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
@@ -278,6 +286,7 @@ export interface FileRoutesById {
   '/theses': typeof ThesesRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/watchlist': typeof WatchlistRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/system/guide': typeof SystemGuideRoute
   '/terminal/$symbol': typeof TerminalSymbolRoute
@@ -312,6 +321,7 @@ export interface FileRouteTypes {
     | '/theses'
     | '/unsubscribe'
     | '/watchlist'
+    | '/admin/emails'
     | '/email/unsubscribe'
     | '/system/guide'
     | '/terminal/$symbol'
@@ -343,6 +353,7 @@ export interface FileRouteTypes {
     | '/theses'
     | '/unsubscribe'
     | '/watchlist'
+    | '/admin/emails'
     | '/email/unsubscribe'
     | '/system/guide'
     | '/terminal/$symbol'
@@ -375,6 +386,7 @@ export interface FileRouteTypes {
     | '/theses'
     | '/unsubscribe'
     | '/watchlist'
+    | '/admin/emails'
     | '/email/unsubscribe'
     | '/system/guide'
     | '/terminal/$symbol'
@@ -408,6 +420,7 @@ export interface RootRouteChildren {
   ThesesRoute: typeof ThesesRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   WatchlistRoute: typeof WatchlistRoute
+  AdminEmailsRoute: typeof AdminEmailsRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   SystemGuideRoute: typeof SystemGuideRoute
   WTokenRoute: typeof WTokenRoute
@@ -583,6 +596,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/emails': {
+      id: '/admin/emails'
+      path: '/admin/emails'
+      fullPath: '/admin/emails'
+      preLoaderRoute: typeof AdminEmailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -668,6 +688,7 @@ const rootRouteChildren: RootRouteChildren = {
   ThesesRoute: ThesesRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   WatchlistRoute: WatchlistRoute,
+  AdminEmailsRoute: AdminEmailsRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   SystemGuideRoute: SystemGuideRoute,
   WTokenRoute: WTokenRoute,

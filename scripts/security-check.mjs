@@ -17,10 +17,11 @@ import { join, relative } from "node:path";
 
 const ROOT = process.cwd();
 const ALLOWED_PUBLIC_FNS = new Set([
-  // explicitly public/anonymous server functions (e.g. share-token reads)
+  // explicitly public/anonymous server functions
   "getSharedWatchlist",
   "fetchUniverse", // accepted finding (public landing/share)
   "fetchEvents",   // accepted finding (events page client-gated)
+  "reportError",   // public error telemetry, hardened with strict validation
 ]);
 
 function walk(dir, out = []) {

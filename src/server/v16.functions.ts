@@ -38,6 +38,7 @@ const askMessage = z.object({
 });
 
 export const askTerminal = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) =>
     z
       .object({

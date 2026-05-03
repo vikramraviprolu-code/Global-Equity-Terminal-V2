@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { fetchUniverse } from "@/server/screen.functions";
+import { fetchPublicUniverseSnapshot } from "@/server/screen.functions";
 import { scoreAll } from "@/lib/scores";
 import { SiteNav } from "@/components/site-nav";
 import { LandingHero } from "@/components/landing-hero";
@@ -23,8 +23,8 @@ export const Route = createFileRoute("/")({
   }),
   loader: async ({ context }) => {
     await context.queryClient.prefetchQuery({
-      queryKey: ["universe"],
-      queryFn: () => fetchUniverse({ data: {} }),
+      queryKey: ["universe", "public"],
+      queryFn: () => fetchPublicUniverseSnapshot({ data: undefined as any }),
       staleTime: 5 * 60 * 1000,
     });
   },
@@ -38,8 +38,8 @@ function LandingPage() {
   // Use the "Launch Screener" CTA or nav to enter the workspace.
 
   const { data, isLoading } = useQuery({
-    queryKey: ["universe"],
-    queryFn: () => fetchUniverse({ data: {} }),
+    queryKey: ["universe", "public"],
+    queryFn: () => fetchPublicUniverseSnapshot({ data: undefined as any }),
     staleTime: 5 * 60 * 1000,
   });
 

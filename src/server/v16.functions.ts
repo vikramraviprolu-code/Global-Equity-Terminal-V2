@@ -60,6 +60,7 @@ export const askTerminal = createServerFn({ method: "POST" })
           ...data.history.map((m) => ({ role: m.role, content: m.content })),
         ],
         temperature: 0.2,
+        max_tokens: 500,
       });
       const text = resp?.choices?.[0]?.message?.content?.trim?.() ?? "";
       if (!text) return { text: "", error: "Empty response from AI." };

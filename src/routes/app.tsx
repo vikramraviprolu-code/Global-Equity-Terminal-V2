@@ -270,7 +270,16 @@ function ScreenerPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SiteNav right={<button onClick={() => refetch()} disabled={isFetching} className="bg-primary text-primary-foreground px-3 py-1.5 rounded hover:opacity-90 disabled:opacity-50">{isFetching ? "Refreshing…" : "Refresh"}</button>} />
+      <SiteNav right={
+        <div className="flex items-center gap-2">
+          <span className="hidden md:inline text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+            {isFetching ? "Updating…" : dataUpdatedAt ? `Updated ${new Date(dataUpdatedAt).toLocaleTimeString()}` : "Live"}
+          </span>
+          <button onClick={() => refetch()} disabled={isFetching} title="Refresh now (auto-refreshes every 60s)" className="bg-primary text-primary-foreground px-3 py-1.5 rounded hover:opacity-90 disabled:opacity-50 text-xs font-mono">
+            {isFetching ? "…" : "↻"}
+          </button>
+        </div>
+      } />
       <main className="flex-1">
         <ScreenerIntro meta={data?.meta} isLoading={isLoading} />
         {/* Render FilterBar only after mount to avoid hydration mismatches caused by

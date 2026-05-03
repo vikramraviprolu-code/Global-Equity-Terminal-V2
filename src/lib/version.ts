@@ -1,9 +1,9 @@
 // Single source of truth for app version + feature flags.
 // Bump on every shipped change: minor for features, patch for fixes.
 
-export const APP_VERSION = "1.10.0";
-export const APP_RELEASE_DATE = "2026-05-02";
-export const APP_CODENAME = "Resilience";
+export const APP_VERSION = "1.11.0";
+export const APP_RELEASE_DATE = "2026-05-03";
+export const APP_CODENAME = "Inbox";
 
 export const FEATURE_FLAGS = {
   newsCatalysts: true,

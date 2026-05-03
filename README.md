@@ -1,6 +1,6 @@
 # Global Equity Terminal
 
-> **v1.10.0 — "Resilience"** · A keyboard-driven, AI-augmented research terminal for global equities.
+> **v1.11.0 — "Inbox"** · A keyboard-driven, AI-augmented research terminal for global equities.
 
 Global Equity Terminal blends terminal-style data density with an AI co-pilot
 layer. It's built for retail and prosumer investors who want fast research,

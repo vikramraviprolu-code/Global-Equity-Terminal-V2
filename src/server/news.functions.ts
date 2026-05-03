@@ -23,6 +23,7 @@ STRICT RULES:
 - End with a single line: "Not investment advice."`;
 
 export const aiNewsCatalysts = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
   .inputValidator((d) =>
     z
       .object({

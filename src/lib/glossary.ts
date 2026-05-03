@@ -527,6 +527,26 @@ export const GLOSSARY = {
     hint: "Open from the System nav dropdown.",
     group: "navigation",
   },
+  morningBriefEmail: {
+    term: "Morning Brief email",
+    full: "Scheduled morning brief delivery",
+    definition: "Personalized daily digest of watchlist movers, alerts, and AI commentary, delivered to your inbox at your chosen local time.",
+    hint: "Configure cadence and delivery time in Settings → Morning Brief.",
+    group: "navigation",
+  },
+  emailQueue: {
+    term: "Email queue",
+    full: "Durable email delivery queue",
+    definition: "Background pipeline that enqueues every transactional and auth email, retries on transient failures, and dead-letters after 5 attempts.",
+    hint: "Admins can monitor failure rates, latency, and retries at /admin/emails.",
+    group: "data",
+  },
+  insightInvestor: {
+    term: "Insight Investor",
+    definition: "Sender identity used for all outbound email — auth, magic links, invites, and the morning brief.",
+    hint: "Replaces previous product names across the email surface for a consistent inbox brand.",
+    group: "navigation",
+  },
 } as const satisfies Record<string, GlossaryEntry>;
 
 export type GlossaryKey = keyof typeof GLOSSARY;

@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import { listAlerts, addAlert, deleteAlert, toggleAlert, evaluateMyAlerts, type AlertType } from "@/server/alerts.functions";
+import { listTasks } from "@/server/tasks.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { SiteNav, Disclaimer } from "@/components/site-nav";
 import { AuthNav } from "@/components/auth-nav";
@@ -11,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Plus, BellRing } from "lucide-react";
+import { Trash2, Plus, BellRing, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState, TableSkeleton } from "@/components/feedback-states";
 
@@ -63,6 +64,24 @@ function AlertsContent() {
     },
     enabled: !!token,
     retry: false,
+    staleTime: 30 * 1000, // Cache alerts for 30 seconds
+    gcTime: 5 * 60 * 1000, // Keep in memory for 5 minutes
+  });
+
+  const { data: tasksData } = useQuery({
+    queryKey: ["tasks"],
+    queryFn: async () => {
+      if (!authHeaders) return { tasks: [] } as any;
+      try {
+        return await listTasks({ headers: authHeaders });
+      } catch {
+        return { tasks: [] } as any;
+      }
+    },
+    enabled: !!token,
+    retry: false,
+    staleTime: 60 * 1000, // Cache tasks for 1 minute
+    gcTime: 10 * 60 * 1000, // Keep in memory for 10 minutes
   });
 
   const evalMut = useMutation({
@@ -92,7 +111,7 @@ function AlertsContent() {
 
         <Card className="mb-5">
           <CardHeader><CardTitle className="text-sm font-mono uppercase tracking-widest">New alert</CardTitle></CardHeader>
-          <CardContent><NewAlertForm headers={authHeaders} onCreated={() => qc.invalidateQueries({ queryKey: ["alerts"] })} /></CardContent>
+          <CardContent><NewAlertForm headers={authHeaders} tasks={tasksData?.tasks ?? []} onCreated={() => qc.invalidateQueries({ queryKey: ["alerts"] })} /></CardContent>
         </Card>
 
         <Card>
@@ -111,11 +130,11 @@ function AlertsContent() {
                 <table className="w-full text-xs">
                   <thead className="text-muted-foreground border-b border-border">
                     <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:text-left font-mono uppercase tracking-wider">
-                      <th>Symbol</th><th>Condition</th><th>Threshold</th><th>Last fired</th><th>Active</th><th></th>
+                      <th>Symbol</th><th>Condition</th><th>Threshold</th><th>Last fired</th><th>Task</th><th>Active</th><th></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {data.alerts.map((a: any) => <AlertRow key={a.id} a={a} headers={authHeaders} />)}
+                    {data.alerts.map((a: any) => <AlertRow key={a.id} a={a} tasks={tasksData?.tasks ?? []} headers={authHeaders} />)}
                   </tbody>
                 </table>
               </div>
@@ -128,7 +147,7 @@ function AlertsContent() {
   );
 }
 
-function AlertRow({ a, headers }: { a: any; headers?: HeadersInit }) {
+const AlertRow = memo(function AlertRow({ a, tasks, headers }: { a: any; tasks: any[]; headers?: HeadersInit }) {
   const qc = useQueryClient();
   const tog = useMutation({
     mutationFn: (active: boolean) => toggleAlert({ data: { id: a.id, active }, headers }),
@@ -139,6 +158,8 @@ function AlertRow({ a, headers }: { a: any; headers?: HeadersInit }) {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["alerts"] }); toast.success("Alert removed"); },
   });
   const typeMeta = TYPES.find((t) => t.v === a.alert_type);
+  const linkedTask = tasks.find(t => t.id === a.task_id);
+
   return (
     <tr className="border-b border-border last:border-0 hover:bg-muted/30">
       <td className="px-3 py-2 font-mono">
@@ -147,6 +168,16 @@ function AlertRow({ a, headers }: { a: any; headers?: HeadersInit }) {
       <td className="px-3 py-2">{typeMeta?.label ?? a.alert_type}</td>
       <td className="px-3 py-2 font-mono">{a.threshold}</td>
       <td className="px-3 py-2 text-muted-foreground">{a.last_fired_at ? new Date(a.last_fired_at).toLocaleString() : "—"}</td>
+      <td className="px-3 py-2">
+        {linkedTask ? (
+          <Link to="/tasks" className="text-[10px] text-primary hover:underline flex items-center gap-1">
+            <LinkIcon className="w-3 h-3" />
+            {linkedTask.symbol ? `${linkedTask.symbol}: ` : ""}{linkedTask.title.substring(0, 20)}...
+          </Link>
+        ) : (
+          <span className="text-muted-foreground text-[10px]">—</span>
+        )}
+      </td>
       <td className="px-3 py-2"><Switch checked={a.active} onCheckedChange={(v) => tog.mutate(v)} /></td>
       <td className="px-3 py-2">
         <button onClick={() => del.mutate()} className="text-muted-foreground hover:text-[color:var(--bear)]" aria-label="Remove">
@@ -155,12 +186,13 @@ function AlertRow({ a, headers }: { a: any; headers?: HeadersInit }) {
       </td>
     </tr>
   );
-}
+});
 
-function NewAlertForm({ headers, onCreated }: { headers?: HeadersInit; onCreated: () => void }) {
+const NewAlertForm = memo(function NewAlertForm({ headers, tasks, onCreated }: { headers?: HeadersInit; tasks: any[]; onCreated: () => void }) {
   const [symbol, setSymbol] = useState("");
   const [type, setType] = useState<AlertType>("price_above");
   const [threshold, setThreshold] = useState("");
+  const [selectedTask, setSelectedTask] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const meta = TYPES.find((t) => t.v === type);
 
@@ -168,9 +200,17 @@ function NewAlertForm({ headers, onCreated }: { headers?: HeadersInit; onCreated
     e.preventDefault();
     setBusy(true);
     try {
-      await addAlert({ data: { symbol: symbol.trim().toUpperCase(), alertType: type, threshold: Number(threshold) }, headers });
+      await addAlert({
+        data: {
+          symbol: symbol.trim().toUpperCase(),
+          alertType: type,
+          threshold: Number(threshold),
+          taskId: selectedTask || null,
+        },
+        headers,
+      });
       toast.success(`Alert created for ${symbol.toUpperCase()}`);
-      setSymbol(""); setThreshold("");
+      setSymbol(""); setThreshold(""); setSelectedTask("");
       onCreated();
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to create alert");
@@ -178,7 +218,7 @@ function NewAlertForm({ headers, onCreated }: { headers?: HeadersInit; onCreated
   };
 
   return (
-    <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+    <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
       <div className="space-y-1.5">
         <Label htmlFor="sym">Symbol</Label>
         <Input id="sym" required value={symbol} onChange={(e) => setSymbol(e.target.value)} placeholder="AAPL" />
@@ -196,8 +236,24 @@ function NewAlertForm({ headers, onCreated }: { headers?: HeadersInit; onCreated
         <Label htmlFor="th">Threshold</Label>
         <Input id="th" required type="number" step="any" value={threshold} onChange={(e) => setThreshold(e.target.value)} />
       </div>
+      <div className="space-y-1.5">
+        <Label>Link to Task (optional)</Label>
+        <Select value={selectedTask} onValueChange={setSelectedTask}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select task" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">No task</SelectItem>
+            {tasks.map((task) => (
+              <SelectItem key={task.id} value={task.id}>
+                {task.symbol ? `${task.symbol}: ` : ""}{task.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <Button type="submit" disabled={busy}><Plus className="w-3.5 h-3.5 mr-1" /> {busy ? "Creating…" : "Create alert"}</Button>
-      {meta && <p className="md:col-span-4 text-[11px] text-muted-foreground -mt-1">{meta.hint}</p>}
+      {meta && <p className="md:col-span-5 text-[11px] text-muted-foreground -mt-1">{meta.hint}</p>}
     </form>
   );
-}
+});

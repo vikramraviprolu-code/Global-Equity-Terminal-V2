@@ -17,6 +17,7 @@ const AlertInput = z.object({
   symbol: z.string().min(1).max(20),
   alertType: z.enum(ALERT_TYPES),
   threshold: z.number().finite(),
+  taskId: z.string().uuid().optional().nullable(),
 });
 
 export const listAlerts = createServerFn({ method: "GET" })
@@ -40,6 +41,7 @@ export const addAlert = createServerFn({ method: "POST" })
         alert_type: data.alertType,
         threshold: data.threshold,
         active: true,
+        task_id: data.taskId || null,
       })
       .select().single();
     if (error) throw new Error(error.message);
@@ -167,4 +169,90 @@ export const evaluateMyAlerts = createServerFn({ method: "POST" })
     ));
 
     return { fired: toFire.length };
+  });
+
+// ---------- Task-Alert Linking ----------
+
+export const linkAlertToTask = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
+  .inputValidator((d) => z.object({
+    alertId: z.string().uuid(),
+    taskId: z.string().uuid(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    // Verify both belong to the user
+    const { data: alert, error: alertError } = await context.supabase
+      .from("alerts")
+      .select("id")
+      .eq("id", data.alertId)
+      .eq("user_id", context.userId)
+      .single();
+
+    if (alertError || !alert) throw new Error("Alert not found");
+
+    const { data: task, error: taskError } = await context.supabase
+      .from("tasks")
+      .select("id")
+      .eq("id", data.taskId)
+      .eq("user_id", context.userId)
+      .single();
+
+    if (taskError || !task) throw new Error("Task not found");
+
+    // Link the alert to the task
+    const { error: updateError } = await context.supabase
+      .from("alerts")
+      .update({ task_id: data.taskId })
+      .eq("id", data.alertId)
+      .eq("user_id", context.userId);
+
+    if (updateError) throw new Error(updateError.message);
+
+    return { ok: true };
+  });
+
+export const unlinkAlertFromTask = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
+  .inputValidator((d) => z.object({ alertId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("alerts")
+      .update({ task_id: null })
+      .eq("id", data.alertId)
+      .eq("user_id", context.userId);
+
+    if (error) throw new Error(error.message);
+
+    return { ok: true };
+  });
+
+export const getAlertsForTask = createServerFn({ method: "GET" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
+  .inputValidator((d) => z.object({ taskId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: alerts, error } = await context.supabase
+      .from("alerts")
+      .select("*")
+      .eq("task_id", data.taskId)
+      .eq("user_id", context.userId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw new Error(error.message);
+
+    return { alerts: alerts ?? [] };
+  });
+
+export const disableAlertsForTask = createServerFn({ method: "POST" })
+  .middleware([supabaseAuthHeaders, requireSupabaseAuth])
+  .inputValidator((d) => z.object({ taskId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("alerts")
+      .update({ active: false })
+      .eq("task_id", data.taskId)
+      .eq("user_id", context.userId);
+
+    if (error) throw new Error(error.message);
+
+    return { ok: true };
   });

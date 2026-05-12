@@ -68,6 +68,7 @@ export const Route = createFileRoute("/app")({
       queryKey: ["universe"],
       queryFn: () => fetchUniverse({ data: {} }),
       staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
     });
   },
   component: ScreenerPage,
@@ -207,11 +208,12 @@ function ScreenerPage() {
   const { data, isLoading, isError, refetch, isFetching, dataUpdatedAt } = useQuery({
     queryKey: ["universe"],
     queryFn: () => fetchUniverse({ data: {} }),
-    staleTime: 60 * 1000,
-    refetchInterval: 60 * 1000,
+    staleTime: 5 * 60 * 1000, // Increased from 60s to 5min for better cache utilization
+    gcTime: 10 * 60 * 1000, // Keep data in memory for 10min
+    refetchInterval: 5 * 60 * 1000, // Increased from 60s to 5min to reduce server load
     refetchIntervalInBackground: false,
-    refetchOnWindowFocus: true,
-    refetchOnMount: "always",
+    refetchOnWindowFocus: false, // Disable refetch on window focus to reduce unnecessary calls
+    refetchOnMount: false, // Don't refetch on mount if data is fresh
   });
 
   const scored = useMemo(() => (data?.rows ? scoreAll(data.rows) : []), [data]);

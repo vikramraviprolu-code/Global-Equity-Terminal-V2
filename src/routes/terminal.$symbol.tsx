@@ -1,12 +1,15 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { TerminalPage } from "@/components/terminal/terminal-page";
+import { lazy, Suspense } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+
+const TerminalPage = lazy(() => import("@/components/terminal/terminal-page").then(m => ({ default: m.TerminalPage })));
 
 export const Route = createFileRoute("/terminal/$symbol")({
   head: ({ params }) => {
     const sym = (params?.symbol ?? "").toUpperCase();
     const title = sym
       ? `${sym} — Stock Analysis · Global Equity Terminal`
-      : "Stock Analysis — Global Equity Terminal";
+      : "Stock Analysis · Global Equity Terminal";
     const description = sym
       ? `Evidence-based Buy/Hold/Avoid analysis for ${sym}: valuation, momentum, fundamentals, and catalysts.`
       : "Data-driven equity research for any US or international stock ticker.";
@@ -55,5 +58,19 @@ export const Route = createFileRoute("/terminal/$symbol")({
 
 function SymbolTerminalPage() {
   const { symbol } = Route.useParams();
-  return <TerminalPage key={symbol} initialTicker={symbol} />;
+  return (
+    <Suspense fallback={
+      <div className="max-w-[1400px] mx-auto px-4 py-6">
+        <Card>
+          <CardContent className="p-8">
+            <div className="flex items-center justify-center">
+              <div className="text-sm font-mono text-muted-foreground">Loading terminal...</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <TerminalPage key={symbol} initialTicker={symbol} />
+    </Suspense>
+  );
 }

@@ -12,6 +12,7 @@ const TaskInput = z.object({
   symbol: z.string().trim().max(20).optional().nullable(),
   status: z.enum(TASK_STATUSES).default("todo"),
   dueDate: z.string().optional().nullable(),
+  disableAlertsOnComplete: z.boolean().optional().default(false),
 });
 
 export const listTasks = createServerFn({ method: "GET" })
@@ -38,6 +39,7 @@ export const addTask = createServerFn({ method: "POST" })
         symbol: data.symbol ? data.symbol.toUpperCase() : null,
         status: data.status,
         due_date: data.dueDate || null,
+        disable_alerts_on_complete: data.disableAlertsOnComplete,
       })
       .select()
       .single();
@@ -51,6 +53,17 @@ export const updateTaskStatus = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), status: z.enum(TASK_STATUSES) }).parse(d)
   )
   .handler(async ({ data, context }) => {
+    // First, get the task to check if we should disable alerts
+    const { data: task, error: taskError } = await context.supabase
+      .from("tasks")
+      .select("disable_alerts_on_complete")
+      .eq("id", data.id)
+      .eq("user_id", context.userId)
+      .single();
+
+    if (taskError) throw new Error(taskError.message);
+
+    // Update the task status
     const { error } = await context.supabase
       .from("tasks")
       .update({
@@ -59,7 +72,18 @@ export const updateTaskStatus = createServerFn({ method: "POST" })
       })
       .eq("id", data.id)
       .eq("user_id", context.userId);
+
     if (error) throw new Error(error.message);
+
+    // Auto-disable alerts if task is completed and the setting is enabled
+    if (data.status === "done" && task?.disable_alerts_on_complete) {
+      await context.supabase
+        .from("alerts")
+        .update({ active: false })
+        .eq("task_id", data.id)
+        .eq("user_id", context.userId);
+    }
+
     return { ok: true };
   });
 

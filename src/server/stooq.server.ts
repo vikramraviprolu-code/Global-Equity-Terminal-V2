@@ -73,6 +73,7 @@ function parseCsv(text: string): Record<string, string>[] {
 export type StooqQuote = {
   symbol: string;
   closes: number[];
+  volumes: number[];
   price: number | null;
   high52: number | null;
   low52: number | null;
@@ -98,14 +99,19 @@ export async function stooqQuote(symbol: string): Promise<StooqQuote | null> {
   const closes = rows
     .map((r) => parseFloat(r.close))
     .filter((n) => Number.isFinite(n));
+  const volumes = rows
+    .map((r) => parseFloat(r.volume))
+    .filter((n) => Number.isFinite(n) && n > 0);
   if (closes.length < 5) return null;
   const recent = closes.slice(-260);
+  const recentVolumes = volumes.slice(-260);
   const price = recent[recent.length - 1];
   const high52 = Math.max(...recent);
   const low52 = Math.min(...recent);
   return {
     symbol,
     closes: recent,
+    volumes: recentVolumes,
     price,
     high52,
     low52,

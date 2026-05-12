@@ -55,6 +55,7 @@ export type YahooChart = {
   averageDailyVolume3Month: number | null;
   averageDailyVolume10Day: number | null;
   closes: number[];
+  volumes: number[];
 };
 
 export async function yahooChart(symbol: string, range = "1y"): Promise<YahooChart | null> {
@@ -65,7 +66,9 @@ export async function yahooChart(symbol: string, range = "1y"): Promise<YahooCha
   const meta = result.meta ?? {};
   const adj: number[] = result.indicators?.adjclose?.[0]?.adjclose ?? [];
   const raw: number[] = result.indicators?.quote?.[0]?.close ?? [];
+  const volume: number[] = result.indicators?.volume?.[0]?.volume ?? [];
   const series = (adj.length ? adj : raw).filter((n: any) => typeof n === "number" && Number.isFinite(n));
+  const volumeSeries = volume.filter((n: any) => typeof n === "number" && Number.isFinite(n) && n > 0);
   return {
     symbol,
     currency: meta.currency ?? null,
@@ -80,6 +83,7 @@ export async function yahooChart(symbol: string, range = "1y"): Promise<YahooCha
     averageDailyVolume3Month: meta.averageDailyVolume3Month ?? null,
     averageDailyVolume10Day: meta.averageDailyVolume10Day ?? null,
     closes: series,
+    volumes: volumeSeries,
   };
 }
 

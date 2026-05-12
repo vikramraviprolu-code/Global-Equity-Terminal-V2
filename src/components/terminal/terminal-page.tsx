@@ -6,6 +6,7 @@ import { fmtNum, fmtPct, fmtMcap, fmtMcapUsd, fmtVol, fmtPrice, fmtPriceDisplay,
 import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import { SiteNav, Disclaimer as SharedDisclaimer } from "@/components/site-nav";
 import { PriceChart } from "@/components/price-chart";
+import { VolumeChart } from "@/components/volume-chart";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { scoreRow } from "@/lib/scores";
 import { backtestMaCross, computeHistoricalReturns } from "@/lib/backtest";
@@ -18,6 +19,7 @@ import { AskTerminal } from "@/components/ask-terminal";
 import { NewsCatalysts } from "@/components/news-catalysts";
 import { MetricLabel } from "@/components/metric-label";
 import { ProviderBadge } from "@/components/provider-badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const routeApi = getRouteApi("/terminal");
 
@@ -56,7 +58,7 @@ export function TerminalPage({ initialTicker: initialTickerProp }: { initialTick
     analyze.reset();
     search.reset();
     // ISIN: 12 chars, 2-letter country + 9 alphanumerics + 1 check digit.
-    // Always route through search so it resolves to the canonical ticker.
+    // The server now validates ISINs properly using the Luhn algorithm.
     const isIsin = /^[A-Z]{2}[A-Z0-9]{9}\d$/i.test(q);
     // Fast-path only for inputs that clearly look like a ticker:
     //  - contains an exchange suffix dot (e.g. RELIANCE.NS, 7203.T)
@@ -71,6 +73,8 @@ export function TerminalPage({ initialTicker: initialTickerProp }: { initialTick
     if (looksLikeSymbol) {
       analyze.mutate(q.toUpperCase());
     } else {
+      // For ISINs and company names, route through search which now handles
+      // ISIN validation and resolution server-side
       search.mutate(q, {
         onSuccess: (res) => {
           const m = res?.matches ?? [];
@@ -376,37 +380,845 @@ function Tabs({ tab, setTab }: { tab: string; setTab: (t: any) => void }) {
   );
 }
 
+// Helper function for contextual advice
+function getContextualAdvice(t: Success["target"]): React.ReactNode {
+  const advice: Array<{ type: "bullish" | "bearish" | "neutral"; title: string; content: string }> = [];
+
+  // Value + Momentum combination analysis
+  if (t.passesValue && (t.perf5d ?? 0) > 0) {
+    advice.push({
+      type: "bullish",
+      title: "Value + Momentum Alignment",
+      content: "Stock qualifies as value candidate AND showing positive momentum. This rare combination suggests the market may be recognizing undervaluation. Consider entry with stop loss below recent lows."
+    });
+  }
+
+  // Oversold RSI with value
+  if ((t.rsi14 ?? 50) < 30 && t.passesValue) {
+    advice.push({
+      type: "bullish",
+      title: "Deep Value Opportunity",
+      content: `RSI of ${(t.rsi14 ?? 50).toFixed(1)} indicates oversold conditions combined with attractive valuation. Historical data shows this setup often precedes mean reversion, but confirm trend direction before positioning.`
+    });
+  }
+
+  // Overbought warning
+  if ((t.rsi14 ?? 50) > 70) {
+    advice.push({
+      type: "bearish",
+      title: "Overbought Warning",
+      content: `RSI of ${(t.rsi14 ?? 50).toFixed(1)} suggests overextended upside. Consider taking partial profits or waiting for pullback before new entries. Watch for negative divergence.`
+    });
+  }
+
+  // High P/E with weak momentum
+  if ((t.pe ?? 0) > 30 && (t.perf5d ?? 0) < 0) {
+    advice.push({
+      type: "bearish",
+      title: "Valuation Risk",
+      content: `High P/E of ${(t.pe ?? 0).toFixed(1)} combined with negative momentum raises concern about growth expectations. Avoid until valuation compresses or momentum improves.`
+    });
+  }
+
+  // Strong momentum trend
+  const above20 = !!(t.price && t.ma20 && t.price > t.ma20);
+  const above50 = !!(t.price && t.ma50 && t.price > t.ma50);
+  const above200 = !!(t.price && t.ma200 && t.price > t.ma200);
+
+  if (above20 && above50 && above200) {
+    advice.push({
+      type: "bullish",
+      title: "Trend Confirmation",
+      content: "Price above all key moving averages (20D, 50D, 200D) confirms strong uptrend. This is technically constructive for long positions. Use pullbacks to MA levels as entry opportunities."
+    });
+  }
+
+  if (!above20 && !above50 && !above200) {
+    advice.push({
+      type: "bearish",
+      title: "Trend Breakdown",
+      content: "Price below all key moving averages indicates broken trend. Avoid long positions until price reclaim at least the 50D MA. This could be a value trap or the start of a deeper decline."
+    });
+  }
+
+  // Near 52W low analysis
+  if ((t.pctFromLow ?? 100) < 10) {
+    if (t.passesValue) {
+      advice.push({
+        type: "bullish",
+        title: "52W Low Proximity",
+        content: `Trading only ${(t.pctFromLow ?? 100).toFixed(1)}% above 52W low with value metrics. This could be a底部ing opportunity if fundamentals remain intact. Watch for volume confirmation on reversal.`
+      });
+    } else {
+      advice.push({
+        type: "neutral",
+        title: "52W Low Risk",
+        content: `Near 52W low but valuation doesn't support value thesis. Could be a value trap - investigate fundamental deterioration before considering.`
+      });
+    }
+  }
+
+  // Momentum shift detection
+  const roc14 = t.roc14 ?? 0;
+  const roc21 = t.roc21 ?? 0;
+  if (roc14 > 0 && roc21 < 0) {
+    advice.push({
+      type: "bullish",
+      title: "Momentum Shift",
+      content: "Short-term ROC (14D) turned positive while medium-term (21D) remains negative. This early bullish divergence suggests potential trend reversal forming. Monitor for confirmation."
+    });
+  }
+
+  if (roc14 < 0 && roc21 > 0) {
+    advice.push({
+      type: "bearish",
+      title: "Momentum Deterioration",
+      content: "Short-term ROC (14D) turned negative while medium-term (21D) remains positive. This bearish divergence suggests trend may be weakening. Consider defensive positioning."
+    });
+  }
+
+  // If no specific advice, provide general guidance
+  if (advice.length === 0) {
+    advice.push({
+      type: "neutral",
+      title: "Mixed Signals",
+      content: "No strong directional bias from current metric combination. Market appears to be in wait-and-see mode. Consider waiting for clearer catalyst or indicator convergence before taking large positions."
+    });
+  }
+
+  return (
+    <>
+      {advice.map((item, index) => (
+        <div key={index} className={`flex items-start gap-3 p-3 rounded-lg border ${
+          item.type === "bullish" ? "bg-[color:var(--bull)]/5 border-[color:var(--bull)]/20" :
+          item.type === "bearish" ? "bg-[color:var(--bear)]/5 border-[color:var(--bear)]/20" :
+          "bg-primary/5 border-primary/20"
+        }`}>
+          <div className={`mt-0.5 flex-shrink-0 ${
+            item.type === "bullish" ? "text-[color:var(--bull)]" :
+            item.type === "bearish" ? "text-[color:var(--bear)]" :
+            "text-primary"
+          }`}>
+            {item.type === "bullish" ? "▲" : item.type === "bearish" ? "▼" : "◆"}
+          </div>
+          <div className="flex-1">
+            <div className={`font-semibold mb-1 ${
+              item.type === "bullish" ? "text-[color:var(--bull)]" :
+              item.type === "bearish" ? "text-[color:var(--bear)]" :
+              "text-primary"
+            }`}>
+              {item.title}
+            </div>
+            <div className="text-muted-foreground leading-relaxed">{item.content}</div>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+// Helper function for peer comparison highlights
+function getPeerComparison(t: Success["target"], peers: Success["peers"]): React.ReactNode {
+  const allPeers = peers || [];
+  if (allPeers.length === 0) return <div className="text-muted-foreground">No peer data available for comparison</div>;
+
+  // Calculate peer averages
+  const avgPE = allPeers.reduce((sum, p) => sum + (p.pe ?? 0), 0) / allPeers.length;
+  const avgMcapUsd = allPeers.reduce((sum, p) => sum + (p.marketCapUsd ?? 0), 0) / allPeers.length;
+  const avgRSI = allPeers.reduce((sum, p) => sum + (p.rsi14 ?? 50), 0) / allPeers.length;
+  const avgPerf5d = allPeers.reduce((sum, p) => sum + (p.perf5d ?? 0), 0) / allPeers.length;
+
+  const comparisons: Array<{ metric: string; target: number; peerAvg: number; better: boolean; interpretation: string }> = [];
+
+  // P/E comparison
+  if (t.pe && avgPE > 0) {
+    const better = t.pe < avgPE;
+    comparisons.push({
+      metric: "P/E Ratio",
+      target: t.pe,
+      peerAvg: avgPE,
+      better,
+      interpretation: better
+        ? `Trading at ${(t.pe / avgPE * 100).toFixed(0)}% of sector average - potentially undervalued vs peers`
+        : `Trading at ${(t.pe / avgPE * 100).toFixed(0)}% of sector average - premium valuation suggests growth expectations`
+    });
+  }
+
+  // Market cap comparison
+  if (t.marketCapUsd && avgMcapUsd > 0) {
+    const better = t.marketCapUsd > avgMcapUsd;
+    comparisons.push({
+      metric: "Market Cap",
+      target: t.marketCapUsd,
+      peerAvg: avgMcapUsd,
+      better,
+      interpretation: better
+        ? `Larger than peers by ${(t.marketCapUsd / avgMcapUsd).toFixed(1)}x - industry leader with potential stability premium`
+        : `Smaller than peers by ${(avgMcapUsd / t.marketCapUsd).toFixed(1)}x - higher growth potential but also higher risk`
+    });
+  }
+
+  // RSI comparison
+  if (t.rsi14) {
+    const better = t.rsi14 < avgRSI && t.rsi14 < 50;
+    comparisons.push({
+      metric: "RSI (14D)",
+      target: t.rsi14,
+      peerAvg: avgRSI,
+      better,
+      interpretation: better
+        ? `RSI ${(avgRSI - t.rsi14).toFixed(1)} points below peer average - potentially oversold relative to sector`
+        : `RSI ${(t.rsi14 - avgRSI).toFixed(1)} points above peer average - stronger momentum or overextended`
+    });
+  }
+
+  // 5D performance comparison
+  if (t.perf5d != null) {
+    const better = t.perf5d > avgPerf5d;
+    comparisons.push({
+      metric: "5D Performance",
+      target: t.perf5d,
+      peerAvg: avgPerf5d,
+      better,
+      interpretation: better
+        ? `Outperforming peers by ${(t.perf5d - avgPerf5d).toFixed(1)}% - strong relative strength`
+        : `Underperforming peers by ${(avgPerf5d - t.perf5d).toFixed(1)}% - relative weakness or sector rotation`
+    });
+  }
+
+  if (comparisons.length === 0) {
+    return <div className="text-muted-foreground">Insufficient peer data for comparison</div>;
+  }
+
+  return (
+    <>
+      {comparisons.map((comp, index) => (
+        <div key={index} className={`flex items-start gap-2 p-2 rounded ${
+          comp.better ? "bg-[color:var(--bull)]/5" : "bg-[color:var(--bear)]/5"
+        }`}>
+          <div className={`flex-shrink-0 ${comp.better ? "text-[color:var(--bull)]" : "text-[color:var(--bear)]"}`}>
+            {comp.better ? "✓" : "✗"}
+          </div>
+          <div className="flex-1">
+            <div className="font-medium text-foreground">
+              {comp.metric}: {comp.better ? "Better than peers" : "Worse than peers"}
+            </div>
+            <div className="text-muted-foreground">
+              {comp.metric}: {fmtNum(comp.target, 1)} vs peer avg {fmtNum(comp.peerAvg, 1)}
+            </div>
+            <div className="text-muted-foreground italic">
+              {comp.interpretation}
+            </div>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+// Helper function for actionable insights
+function getActionableInsights(t: Success["target"]): React.ReactNode {
+  const watchItems: Array<{ priority: "high" | "medium" | "low"; metric: string; alert: string; action: string }> = [];
+
+  // High priority alerts
+  if ((t.rsi14 ?? 50) > 75) {
+    watchItems.push({
+      priority: "high",
+      metric: "RSI",
+      alert: `RSI at ${(t.rsi14 ?? 50).toFixed(1)} is extremely overbought`,
+      action: "Consider taking profits or setting tighter stop-losses. Watch for negative divergence where price makes new highs but RSI doesn't."
+    });
+  }
+
+  if ((t.rsi14 ?? 50) < 25) {
+    watchItems.push({
+      priority: "high",
+      metric: "RSI",
+      alert: `RSI at ${(t.rsi14 ?? 50).toFixed(1)} is deeply oversold`,
+      action: "Monitor for reversal signals with volume confirmation. Could be accumulation phase or fundamental deterioration - verify with earnings and news."
+    });
+  }
+
+  if ((t.pe ?? 0) > 40) {
+    watchItems.push({
+      priority: "high",
+      metric: "Valuation",
+      alert: `P/E of ${(t.pe ?? 0).toFixed(1)} is very high`,
+      action: "Ensure growth expectations are supported by fundamentals. High P/E stocks are vulnerable to disappointments. Consider position sizing."
+    });
+  }
+
+  // Medium priority alerts
+  const above20 = !!(t.price && t.ma20 && t.price > t.ma20);
+  const above50 = !!(t.price && t.ma50 && t.price > t.ma50);
+  const above200 = !!(t.price && t.ma200 && t.price > t.ma200);
+
+  if (!above50 && above200) {
+    watchItems.push({
+      priority: "medium",
+      metric: "Moving Averages",
+      alert: "Price below 50D MA but above 200D MA",
+      action: "Intermediate-term correction within long-term uptrend. Watch for support at 200D MA. This could be buying opportunity if trend remains intact."
+    });
+  }
+
+  if (above50 && !above200) {
+    watchItems.push({
+      priority: "medium",
+      metric: "Moving Averages",
+      alert: "Price above 50D MA but below 200D MA",
+      action: "Short-term rebound but long-term trend still questionable. Wait for 200D MA crossover confirmation before committing significant capital."
+    });
+  }
+
+  if ((t.perf5d ?? 0) < -5) {
+    watchItems.push({
+      priority: "medium",
+      metric: "Momentum",
+      alert: `5D performance of ${(t.perf5d ?? 0).toFixed(1)}% is weak`,
+      action: "Investigate cause of decline - check news, earnings guidance, or sector issues. Determine if this is overreaction or fundamental change."
+    });
+  }
+
+  if ((t.pctFromLow ?? 100) > 80) {
+    watchItems.push({
+      priority: "medium",
+      metric: "52W Range",
+      alert: `Trading ${(t.pctFromLow ?? 100).toFixed(1)}% above 52W low`,
+      action: "Stock is extended from lows - risk of pullback increases. Consider partial profit-taking and wait for better entry on pullbacks to support levels."
+    });
+  }
+
+  // Low priority alerts
+  if ((t.pe ?? 0) < 10 && !t.passesValue) {
+    watchItems.push({
+      priority: "low",
+      metric: "Valuation",
+      alert: `Low P/E of ${(t.pe ?? 0).toFixed(1)} but doesn't pass value screen`,
+      action: "Investigate why value screen failed - may be due to weak fundamentals, liquidity issues, or technical concerns. Could be value trap."
+    });
+  }
+
+  if (t.avgVolume && t.avgVolume < 100000) {
+    watchItems.push({
+      priority: "low",
+      metric: "Liquidity",
+      alert: "Low average daily volume",
+      action: "Be cautious with position sizing - low volume stocks can be volatile and have wide bid-ask spreads. Consider limit orders."
+    });
+  }
+
+  if (watchItems.length === 0) {
+    return (
+      <div className="text-muted-foreground p-3 bg-primary/5 rounded-lg">
+        <div className="font-medium text-foreground mb-1">No Immediate Concerns</div>
+        <div>Current metrics don't trigger any watch alerts. Stock appears to be in normal trading range. Continue monitoring for changes in key indicators.</div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {watchItems.map((item, index) => (
+        <div key={index} className={`flex items-start gap-3 p-3 rounded-lg border ${
+          item.priority === "high" ? "bg-[color:var(--bear)]/5 border-[color:var(--bear)]/20" :
+          item.priority === "medium" ? "bg-primary/5 border-primary/20" :
+          "bg-muted/5 border-muted/20"
+        }`}>
+          <div className={`mt-0.5 flex-shrink-0 font-bold ${
+            item.priority === "high" ? "text-[color:var(--bear)]" :
+            item.priority === "medium" ? "text-primary" :
+            "text-muted-foreground"
+          }`}>
+            {item.priority === "high" ? "⚠" : item.priority === "medium" ? "◆" : "○"}
+          </div>
+          <div className="flex-1">
+            <div className="font-medium text-foreground">
+              {item.metric}: {item.alert}
+            </div>
+            <div className="text-muted-foreground mt-1">{item.action}</div>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+// Helper function for metric trend indicators
+function getMetricTrends(t: Success["target"]): React.ReactNode {
+  const trends: Array<{ metric: string; trend: "improving" | "deteriorating" | "stable"; description: string }> = [];
+  const closes = t.closes ?? [];
+  
+  // Price trend based on recent closes
+  if (closes.length >= 10) {
+    const recent5 = closes.slice(-5);
+    const previous5 = closes.slice(-10, -5);
+    const avgRecent = recent5.reduce((a, b) => a + b, 0) / recent5.length;
+    const avgPrevious = previous5.reduce((a, b) => a + b, 0) / previous5.length;
+    
+    if (avgRecent > avgPrevious * 1.02) {
+      trends.push({
+        metric: "Price Action",
+        trend: "improving",
+        description: `Recent 5-day average (+${((avgRecent / avgPrevious - 1) * 100).toFixed(1)}%) higher than previous 5 days - short-term uptrend intact`
+      });
+    } else if (avgRecent < avgPrevious * 0.98) {
+      trends.push({
+        metric: "Price Action",
+        trend: "deteriorating",
+        description: `Recent 5-day average (${((avgRecent / avgPrevious - 1) * 100).toFixed(1)}%) lower than previous 5 days - short-term weakening`
+      });
+    } else {
+      trends.push({
+        metric: "Price Action",
+        trend: "stable",
+        description: "Price action is consolidating with no clear directional bias in recent sessions"
+      });
+    }
+  }
+
+  // RSI trend
+  if (closes.length >= 20 && t.rsi14) {
+    const recentRSI = t.rsi14;
+    // Calculate RSI from 5 days ago by using closes from that period
+    const closes5DaysAgo = closes.slice(-20, -15);
+    if (closes5DaysAgo.length >= 14) {
+      const rsi5DaysAgo = calculateRSI(closes5DaysAgo, 14);
+      if (rsi5DaysAgo !== null) {
+        if (recentRSI > rsi5DaysAgo + 5) {
+          trends.push({
+            metric: "RSI Momentum",
+            trend: "improving",
+            description: `RSI increased from ${rsi5DaysAgo.toFixed(1)} to ${recentRSI.toFixed(1)} over 5 days - gaining bullish momentum`
+          });
+        } else if (recentRSI < rsi5DaysAgo - 5) {
+          trends.push({
+            metric: "RSI Momentum",
+            trend: "deteriorating",
+            description: `RSI decreased from ${rsi5DaysAgo.toFixed(1)} to ${recentRSI.toFixed(1)} over 5 days - losing bullish momentum`
+          });
+        } else {
+          trends.push({
+            metric: "RSI Momentum",
+            trend: "stable",
+            description: `RSI stable around ${recentRSI.toFixed(1)} over recent sessions - no momentum shift detected`
+          });
+        }
+      }
+    }
+  }
+
+  // Moving average relationship trend
+  const above20 = !!(t.price && t.ma20 && t.price > t.ma20);
+  const above50 = !!(t.price && t.ma50 && t.price > t.ma50);
+  
+  if (above20 && above50) {
+    if (t.ma20 && t.ma50 && t.ma20 > t.ma50) {
+      trends.push({
+        metric: "MA Structure",
+        trend: "improving",
+        description: "Golden cross pattern (20D MA above 50D MA) with price above both - strong bullish structure"
+      });
+    } else {
+      trends.push({
+        metric: "MA Structure",
+        trend: "stable",
+        description: "Price above key MAs but 20D MA still below 50D MA - waiting for bullish MA crossover confirmation"
+      });
+    }
+  } else if (!above20 && !above50) {
+    trends.push({
+      metric: "MA Structure",
+      trend: "deteriorating",
+      description: "Price below key moving averages - bearish structure, wait for MA crossover reversal signal"
+    });
+  } else {
+    trends.push({
+      metric: "MA Structure",
+      trend: "stable",
+      description: "Mixed MA signals - price between moving averages suggests consolidation phase"
+    });
+  }
+
+  // Volatility trend (using range expansion)
+  if (closes.length >= 20) {
+    const recent10 = closes.slice(-10);
+    const recentRange = Math.max(...recent10) - Math.min(...recent10);
+    const previous10 = closes.slice(-20, -10);
+    const previousRange = Math.max(...previous10) - Math.min(...previous10);
+    
+    if (recentRange > previousRange * 1.3) {
+      trends.push({
+        metric: "Volatility",
+        trend: "deteriorating",
+        description: "Volatility expanding significantly - increased risk and potential for sharp moves in either direction"
+      });
+    } else if (recentRange < previousRange * 0.7) {
+      trends.push({
+        metric: "Volatility",
+        trend: "improving",
+        description: "Volatility contracting - price action becoming more stable, potentially coiling for breakout"
+      });
+    }
+  }
+
+  if (trends.length === 0) {
+    return (
+      <div className="text-muted-foreground p-3 bg-primary/5 rounded-lg">
+        <div className="font-medium text-foreground mb-1">Insufficient Trend Data</div>
+        <div>Not enough historical data to determine metric trends. Continue monitoring for pattern development.</div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {trends.map((trend, index) => (
+        <div key={index} className={`flex items-start gap-2 p-2 rounded ${
+          trend.trend === "improving" ? "bg-[color:var(--bull)]/5" :
+          trend.trend === "deteriorating" ? "bg-[color:var(--bear)]/5" :
+          "bg-primary/5"
+        }`}>
+          <div className={`mt-0.5 flex-shrink-0 ${
+            trend.trend === "improving" ? "text-[color:var(--bull)]" :
+            trend.trend === "deteriorating" ? "text-[color:var(--bear)]" :
+            "text-primary"
+          }`}>
+            {trend.trend === "improving" ? "↑" : trend.trend === "deteriorating" ? "↓" : "→"}
+          </div>
+          <div className="flex-1">
+            <div className={`font-medium text-foreground ${
+              trend.trend === "improving" ? "text-[color:var(--bull)]" :
+              trend.trend === "deteriorating" ? "text-[color:var(--bear)]" :
+              "text-primary"
+            }`}>
+              {trend.metric}: {trend.trend === "improving" ? "Improving" : trend.trend === "deteriorating" ? "Deteriorating" : "Stable"}
+            </div>
+            <div className="text-muted-foreground italic">{trend.description}</div>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+// Simple RSI calculation helper
+function calculateRSI(closes: number[], period: number): number | null {
+  if (closes.length < period + 1) return null;
+  
+  let gains = 0, losses = 0;
+  for (let i = 1; i <= period; i++) {
+    const change = closes[i] - closes[i - 1];
+    if (change >= 0) gains += change;
+    else losses -= change;
+  }
+  
+  const avgGain = gains / period;
+  const avgLoss = losses / period;
+  
+  if (avgLoss === 0) return 100;
+  const rs = avgGain / avgLoss;
+  return 100 - (100 / (1 + rs));
+}
+
+// Helper function for historical context
+function getHistoricalContext(t: Success["target"]): React.ReactNode {
+  const contexts: Array<{ metric: string; context: string; percentile: string; interpretation: string }> = [];
+  const closes = t.closes ?? [];
+  
+  // Current price vs historical range
+  if (closes.length >= 20) {
+    const currentPrice = t.price;
+    const recentHigh = Math.max(...closes);
+    const recentLow = Math.min(...closes);
+    const percentile = currentPrice && recentHigh > recentLow 
+      ? ((currentPrice - recentLow) / (recentHigh - recentLow)) * 100 
+      : null;
+    
+    if (currentPrice && percentile !== null) {
+      let context = "";
+      if (percentile > 80) context = "Near historical highs - potentially overextended";
+      else if (percentile > 60) context = "In upper portion of historical range";
+      else if (percentile < 20) context = "Near historical lows - potentially undervalued";
+      else if (percentile < 40) context = "In lower portion of historical range";
+      else context = "Trading in middle of historical range";
+      
+      contexts.push({
+        metric: "Price Level",
+        context,
+        percentile: `At ${percentile.toFixed(0)}th percentile of recent range`,
+        interpretation: percentile < 30 
+          ? "Current price is in lower 30% of recent range - could be value opportunity if fundamentals support" 
+          : percentile > 70 
+          ? "Current price is in upper 30% of recent range - ensure fundamentals justify premium or consider waiting for pullback" 
+          : "Current price is in middle of recent range - no extreme positioning"
+      });
+    }
+  }
+
+  // RSI historical context
+  if (closes.length >= 50) {
+    const rsiHistory: number[] = [];
+    for (let i = 14; i < closes.length; i++) {
+      const windowCloses = closes.slice(i - 14, i + 1);
+      const rsi = calculateRSI(windowCloses, 14);
+      if (rsi !== null) rsiHistory.push(rsi);
+    }
+    
+    if (rsiHistory.length > 10 && t.rsi14) {
+      const highRSI = Math.max(...rsiHistory);
+      const lowRSI = Math.min(...rsiHistory);
+      const rsiPercentile = highRSI > lowRSI ? ((t.rsi14 - lowRSI) / (highRSI - lowRSI)) * 100 : 50;
+      
+      let context = "";
+      if (rsiPercentile > 75) context = "RSI near historical highs - stock is technically stretched";
+      else if (rsiPercentile > 50) context = "RSI in upper half of historical range";
+      else if (rsiPercentile < 25) context = "RSI near historical lows - oversold conditions relative to recent history";
+      else if (rsiPercentile < 50) context = "RSI in lower half of historical range";
+      else context = "RSI at middle of historical range";
+      
+      contexts.push({
+        metric: "RSI Context",
+        context,
+        percentile: `At ${rsiPercentile.toFixed(0)}th percentile of recent RSI range (${lowRSI.toFixed(0)}-${highRSI.toFixed(0)})`,
+        interpretation: rsiPercentile < 20
+          ? "RSI is in lowest 20% of recent readings - historically this has preceded reversals, but confirm with other indicators"
+          : rsiPercentile > 80
+          ? "RSI is in highest 20% of recent readings - historically elevated momentum often precedes pullbacks"
+          : "RSI is within normal historical range - no extreme positioning"
+      });
+    }
+  }
+
+  // Volatility context
+  if (closes.length >= 30) {
+    const recentVolatility = calculateVolatility(closes.slice(-20));
+    const historicalVolatility = calculateVolatility(closes.slice(-60, -20));
+    
+    if (recentVolatility && historicalVolatility) {
+      const volRatio = recentVolatility / historicalVolatility;
+      let context = "";
+      if (volRatio > 1.5) context = "Recent volatility significantly elevated - stock in high-volatility regime";
+      else if (volRatio > 1.2) context = "Recent volatility above historical average - increased uncertainty";
+      else if (volRatio < 0.7) context = "Recent volatility below historical average - stock stabilizing";
+      else if (volRatio < 0.5) context = "Recent volatility much lower than historical - unusually calm period";
+      else context = "Recent volatility around historical average";
+      
+      contexts.push({
+        metric: "Volatility Regime",
+        context,
+        percentile: volRatio > 1 ? `${(volRatio * 100).toFixed(0)}% of historical average` : `${(volRatio * 100).toFixed(0)}% of historical average`,
+        interpretation: volRatio > 1.3
+          ? "Elevated volatility increases risk but also opportunity - consider position sizing and use wider stops"
+          : volRatio < 0.7
+          ? "Low volatility could indicate consolidation before directional move - be prepared for breakout or breakdown"
+          : "Normal volatility environment - standard risk management applies"
+      });
+    }
+  }
+
+  if (contexts.length === 0) {
+    return (
+      <div className="text-muted-foreground p-3 bg-primary/5 rounded-lg">
+        <div className="font-medium text-foreground mb-1">Insufficient Historical Data</div>
+        <div>Need more historical data to provide context. Continue monitoring as data accumulates.</div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {contexts.map((ctx, index) => (
+        <div key={index} className="flex items-start gap-3 p-3 rounded-lg border border-border">
+          <div className="mt-0.5 flex-shrink-0 text-primary">
+            <MetricLabel term={ctx.metric.toLowerCase().replace(" ", "")}>{ctx.metric}</MetricLabel>
+          </div>
+          <div className="flex-1">
+            <div className="font-medium text-foreground mb-1">{ctx.context}</div>
+            <div className="text-muted-foreground mb-1">{ctx.percentile}</div>
+            <div className="text-muted-foreground italic">{ctx.interpretation}</div>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+// Simple volatility calculation helper
+function calculateVolatility(closes: number[]): number | null {
+  if (closes.length < 2) return null;
+  
+  const returns: number[] = [];
+  for (let i = 1; i < closes.length; i++) {
+    if (closes[i - 1] !== 0) {
+      returns.push((closes[i] - closes[i - 1]) / closes[i - 1]);
+    }
+  }
+  
+  if (returns.length === 0) return null;
+  
+  const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
+  const variance = returns.reduce((sum, ret) => sum + Math.pow(ret - mean, 2), 0) / returns.length;
+  return Math.sqrt(variance) * Math.sqrt(252) * 100; // Annualized volatility in percent
+}
+
 function OverviewSection({ r }: { r: Success }) {
   const t = r.target;
   const f = t.filter;
+  
+  // Customizable metric views state
+  const [visibleGroups, setVisibleGroups] = useState<string[]>(["fundamentals", "technicals", "momentum", "valuation"]);
+  
+  const toggleGroup = (group: string) => {
+    setVisibleGroups(prev => 
+      prev.includes(group) 
+        ? prev.filter(g => g !== group)
+        : [...prev, group]
+    );
+  };
+
   // Treat analyze target as live data (analyze never returns mock).
   const provRow = { isMock: false, source: t.source ?? "Finimpulse", retrievedAt: new Date().toISOString(), closes: t.closes };
   const sv = (field: Parameters<typeof provenanceFor>[1], value: number | null) => provenanceFor(provRow, field, value);
-  type Row = { k: string; v: React.ReactNode };
-  const rows: Row[] = [
-    { k: "Company", v: t.companyName },
-    { k: "Exchange", v: `${t.fullExchange ?? t.exchange ?? "—"}` },
-    { k: "Country / Region", v: `${t.country ?? "—"} · ${t.region}` },
-    { k: "Currency", v: t.currency },
-    { k: "Sector", v: t.sector ?? "—" },
-    { k: "Industry", v: t.industry ?? "—" },
-    { k: "Price", v: <SourcedCell provenance={sv("price", t.price)}>{fmtPrice(t.price, t.currency)}</SourcedCell> },
-    { k: "Market Cap (Local)", v: <SourcedCell provenance={sv("marketCap", t.marketCap)}>{fmtMcap(t.marketCap, t.currency)}</SourcedCell> },
-    { k: "Market Cap (USD)", v: <SourcedCell provenance={sv("marketCapUsd", t.marketCapUsd)}>{fmtMcapUsd(t.marketCapUsd)}</SourcedCell> },
-    { k: "Avg Daily Volume", v: <SourcedCell provenance={sv("avgVolume", t.avgVolume)}>{fmtVol(t.avgVolume)}</SourcedCell> },
-    { k: "52W Low", v: <SourcedCell provenance={sv("low52", t.low52)}>{fmtPrice(t.low52, t.currency)}</SourcedCell> },
-    { k: "52W High", v: <SourcedCell provenance={sv("high52", t.high52)}>{fmtPrice(t.high52, t.currency)}</SourcedCell> },
-    { k: "% From 52W Low", v: <SourcedCell provenance={sv("pctFromLow", t.pctFromLow)}>{fmtPct(t.pctFromLow)}</SourcedCell> },
-    { k: "Trailing P/E", v: <SourcedCell provenance={sv("pe", t.pe)}>{fmtNum(t.pe)}</SourcedCell> },
-    { k: "5D Performance", v: <SourcedCell provenance={sv("perf5d", t.perf5d)}>{fmtPct(t.perf5d)}</SourcedCell> },
-    { k: "RSI 14D", v: <SourcedCell provenance={sv("rsi14", t.rsi14)}>{fmtNum(t.rsi14, 1)} ({t.rsiLabel})</SourcedCell> },
-    { k: "ROC 14D", v: <SourcedCell provenance={sv("roc14", t.roc14)}>{fmtPct(t.roc14)}</SourcedCell> },
-    { k: "ROC 21D", v: <SourcedCell provenance={sv("roc21", t.roc21)}>{fmtPct(t.roc21)}</SourcedCell> },
-    { k: "Price vs 20D MA", v: <SourcedCell provenance={sv("ma20", t.ma20)}>{vsMA(t.price, t.ma20).label} ({fmtPrice(t.ma20, t.currency)})</SourcedCell> },
-    { k: "Price vs 50D MA", v: <SourcedCell provenance={sv("ma50", t.ma50)}>{vsMA(t.price, t.ma50).label} ({fmtPrice(t.ma50, t.currency)})</SourcedCell> },
-    { k: "Price vs 200D MA", v: <SourcedCell provenance={sv("ma200", t.ma200)}>{vsMA(t.price, t.ma200).label} ({fmtPrice(t.ma200, t.currency)})</SourcedCell> },
-    { k: "Earnings Date", v: t.earningsDate ? new Date(t.earningsDate).toLocaleDateString() : "—" },
+
+  // Helper to determine metric health
+  const getMetricHealth = (metric: string, value: number | null): "good" | "neutral" | "bad" | null => {
+    if (value == null) return null;
+    switch (metric) {
+      case "pe":
+        return value < 15 ? "good" : value < 25 ? "neutral" : "bad";
+      case "rsi14":
+        return value < 30 ? "good" : value < 70 ? "neutral" : "bad";
+      case "pctFromLow":
+        return value < 10 ? "good" : value < 50 ? "neutral" : "bad";
+      case "perf5d":
+        return value > 2 ? "good" : value > -2 ? "neutral" : "bad";
+      case "roc14":
+        return value > 3 ? "good" : value > -3 ? "neutral" : "bad";
+      case "roc21":
+        return value > 5 ? "good" : value > -5 ? "neutral" : "bad";
+      default:
+        return null;
+    }
+  };
+
+  // Helper to get metric-specific tooltip message
+  const getMetricTooltip = (metric: string, value: number | null): string => {
+    if (value == null) return "Data not available";
+    switch (metric) {
+      case "pe":
+        if (value < 10) return `P/E of ${value.toFixed(1)} is very low - stock may be undervalued or facing fundamental issues`;
+        if (value < 15) return `P/E of ${value.toFixed(1)} suggests attractive valuation - compare with sector average`;
+        if (value < 25) return `P/E of ${value.toFixed(1)} is reasonable - growth expectations are moderate`;
+        if (value < 35) return `P/E of ${value.toFixed(1)} is elevated - stock priced for growth`;
+        return `P/E of ${value.toFixed(1)} is high - ensure growth justifies premium`;
+      case "rsi14":
+        if (value < 20) return `RSI of ${value.toFixed(1)} is deeply oversold - potential bounce opportunity but watch for trend`;
+        if (value < 30) return `RSI of ${value.toFixed(1)} is oversold - consider accumulation if other signals align`;
+        if (value < 45) return `RSI of ${value.toFixed(1)} is in neutral zone - no strong momentum signal`;
+        if (value < 55) return `RSI of ${value.toFixed(1)} is balanced - wait for directional confirmation`;
+        if (value < 70) return `RSI of ${value.toFixed(1)} is in neutral zone - momentum is neither strong nor weak`;
+        if (value < 80) return `RSI of ${value.toFixed(1)} is overbought - consider taking profits or waiting for pullback`;
+        return `RSI of ${value.toFixed(1)} is extremely overbought - high risk of short-term reversal`;
+      case "pctFromLow":
+        if (value < 5) return `Trading only ${value.toFixed(1)}% above 52W low - could be value opportunity or value trap`;
+        if (value < 15) return `Trading ${value.toFixed(1)}% above 52W low - attractive if fundamentals are sound`;
+        if (value < 35) return `Trading ${value.toFixed(1)}% above 52W low - reasonable entry point for long-term holders`;
+        if (value < 60) return `Trading ${value.toFixed(1)}% above 52W low - waiting for better entry may be prudent`;
+        return `Trading ${value.toFixed(1)}% above 52W low - stock has moved significantly from lows`;
+      case "perf5d":
+        if (value > 5) return `Strong ${value.toFixed(1)}% gain in 5 days - momentum is bullish but watch for exhaustion`;
+        if (value > 2) return `Positive ${value.toFixed(1)}% in 5 days - short-term momentum is favorable`;
+        if (value > -2) return `Flat ${value.toFixed(1)}% in 5 days - stock is consolidating, waiting for catalyst`;
+        if (value > -5) return `Negative ${value.toFixed(1)}% in 5 days - short-term weakness, assess if overreaction`;
+        return `Significant ${value.toFixed(1)}% drop in 5 days - either opportunity or deteriorating fundamentals`;
+      case "roc14":
+        if (value > 8) return `ROC14 of ${value.toFixed(1)}% shows strong momentum - monitor for divergence`;
+        if (value > 3) return `ROC14 of ${value.toFixed(1)}% indicates positive momentum - trend is intact`;
+        if (value > -3) return `ROC14 of ${value.toFixed(1)}% is neutral - no clear directional bias`;
+        if (value > -8) return `ROC14 of ${value.toFixed(1)}% shows weakening momentum - trend may be reversing`;
+        return `ROC14 of ${value.toFixed(1)}% indicates strong negative momentum - avoid until stabilization`;
+      case "roc21":
+        if (value > 10) return `ROC21 of ${value.toFixed(1)}% shows very strong medium-term momentum`;
+        if (value > 5) return `ROC21 of ${value.toFixed(1)}% indicates healthy medium-term uptrend`;
+        if (value > -5) return `ROC21 of ${value.toFixed(1)}% is neutral - medium-term trend is flat`;
+        if (value > -10) return `ROC21 of ${value.toFixed(1)}% shows medium-term weakness`;
+        return `ROC21 of ${value.toFixed(1)}% indicates strong medium-term downtrend`;
+      default:
+        return "";
+    }
+  };
+
+  const healthColor = (health: "good" | "neutral" | "bad" | null) => {
+    if (!health) return "";
+    return health === "good" ? "text-[color:var(--bull)]" : health === "bad" ? "text-[color:var(--bear)]" : "text-primary";
+  };
+
+  const healthIndicator = (health: "good" | "neutral" | "bad" | null) => {
+    if (!health) return null;
+    const color = health === "good" ? "bg-[color:var(--bull)]" : health === "bad" ? "bg-[color:var(--bear)]" : "bg-primary";
+    return <span className={`w-2 h-2 rounded-full ${color}`} />;
+  };
+
+  // Grouped metrics for better organization
+  const fundamentalMetrics = [
+    { k: "Price", v: <SourcedCell provenance={sv("price", t.price)}>{fmtPrice(t.price, t.currency)}</SourcedCell>, health: null, metricKey: "price", value: t.price },
+    { k: "Market Cap (USD)", v: <SourcedCell provenance={sv("marketCapUsd", t.marketCapUsd)}>{fmtMcapUsd(t.marketCapUsd)}</SourcedCell>, health: null, metricKey: "marketCapUsd", value: t.marketCapUsd },
+    { k: "Trailing P/E", v: <SourcedCell provenance={sv("pe", t.pe)}>{fmtNum(t.pe)}</SourcedCell>, health: getMetricHealth("pe", t.pe), metricKey: "pe", value: t.pe },
+    { k: "Avg Daily Volume", v: <SourcedCell provenance={sv("avgVolume", t.avgVolume)}>{fmtVol(t.avgVolume)}</SourcedCell>, health: null, metricKey: "avgVolume", value: t.avgVolume },
   ];
+
+  const technicalMetrics = [
+    { k: "RSI 14D", v: <SourcedCell provenance={sv("rsi14", t.rsi14)}>{fmtNum(t.rsi14, 1)} ({t.rsiLabel})</SourcedCell>, health: getMetricHealth("rsi14", t.rsi14), metricKey: "rsi14", value: t.rsi14 },
+    { k: "Price vs 20D MA", v: <SourcedCell provenance={sv("ma20", t.ma20)}>{vsMA(t.price, t.ma20).label} ({fmtPrice(t.ma20, t.currency)})</SourcedCell>, health: null, metricKey: "ma20", value: t.ma20 },
+    { k: "Price vs 50D MA", v: <SourcedCell provenance={sv("ma50", t.ma50)}>{vsMA(t.price, t.ma50).label} ({fmtPrice(t.ma50, t.currency)})</SourcedCell>, health: null, metricKey: "ma50", value: t.ma50 },
+    { k: "Price vs 200D MA", v: <SourcedCell provenance={sv("ma200", t.ma200)}>{vsMA(t.price, t.ma200).label} ({fmtPrice(t.ma200, t.currency)})</SourcedCell>, health: null, metricKey: "ma200", value: t.ma200 },
+  ];
+
+  const momentumMetrics = [
+    { k: "5D Performance", v: <SourcedCell provenance={sv("perf5d", t.perf5d)}>{fmtPct(t.perf5d)}</SourcedCell>, health: getMetricHealth("perf5d", t.perf5d), metricKey: "perf5d", value: t.perf5d },
+    { k: "ROC 14D", v: <SourcedCell provenance={sv("roc14", t.roc14)}>{fmtPct(t.roc14)}</SourcedCell>, health: getMetricHealth("roc14", t.roc14), metricKey: "roc14", value: t.roc14 },
+    { k: "ROC 21D", v: <SourcedCell provenance={sv("roc21", t.roc21)}>{fmtPct(t.roc21)}</SourcedCell>, health: getMetricHealth("roc21", t.roc21), metricKey: "roc21", value: t.roc21 },
+  ];
+
+  const valuationMetrics = [
+    { k: "52W Low", v: <SourcedCell provenance={sv("low52", t.low52)}>{fmtPrice(t.low52, t.currency)}</SourcedCell>, health: null, metricKey: "low52", value: t.low52 },
+    { k: "52W High", v: <SourcedCell provenance={sv("high52", t.high52)}>{fmtPrice(t.high52, t.currency)}</SourcedCell>, health: null, metricKey: "high52", value: t.high52 },
+    { k: "% From 52W Low", v: <SourcedCell provenance={sv("pctFromLow", t.pctFromLow)}>{fmtPct(t.pctFromLow)}</SourcedCell>, health: getMetricHealth("pctFromLow", t.pctFromLow), metricKey: "pctFromLow", value: t.pctFromLow },
+  ];
+
+  // Helper to render metric group with tooltips
+  const renderMetricGroup = (title: string, metrics: Array<{ k: string; v: React.ReactNode; health: "good" | "neutral" | "bad" | null; metricKey?: string; value?: number | null }>) => (
+    <div className="panel">
+      <div className="panel-header">{title}</div>
+      <table className="term">
+        <tbody>
+          {metrics.map(({ k, v, health, metricKey, value }) => (
+            <tr key={k}>
+              <td className="flex items-center gap-2">
+                {healthIndicator(health)}
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className={`cursor-help ${healthColor(health)}`}>{k}</span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      <div className="text-[11px] leading-relaxed">
+                        <div className="font-semibold mb-1">{k}</div>
+                        <div>{metricKey && value ? getMetricTooltip(metricKey, value) : "Hover for more details"}</div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </td>
+              <td className={`num ${healthColor(health)}`}>{v}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
   // Compact, factual snapshot to feed the AI narrative — only fields the user
   // can already see on the page. No external data, no forward-looking metrics.
   const facts = [
@@ -435,61 +1247,198 @@ function OverviewSection({ r }: { r: Success }) {
           <div className="panel-header flex items-center justify-between">
             <span>Snapshot · {t.symbol}</span>
             <span className="text-[10px] font-normal normal-case tracking-normal text-muted-foreground flex items-center gap-2">
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[color:var(--bull)]" />High</span>
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-primary" />Med</span>
-              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[color:var(--bear)]" />Low</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[color:var(--bull)]" />Favorable</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-primary" />Neutral</span>
+              <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-[color:var(--bear)]" />Concerning</span>
               <span className="text-muted-foreground/60">· hover for source</span>
             </span>
           </div>
+          <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Company Info */}
+            <div className="space-y-2">
+              <div className="text-xs text-muted-foreground uppercase tracking-wider">Company</div>
+              <div className="text-sm font-mono">{t.symbol} · {t.companyName}</div>
+              <div className="text-xs text-muted-foreground">{t.fullExchange ?? t.exchange ?? "—"} · {t.country ?? t.region} · {t.currency}</div>
+              <div className="text-xs text-muted-foreground">{t.sector ?? "—"} · {t.industry ?? "—"}</div>
+              <div className="text-xs text-muted-foreground">Earnings: {t.earningsDate ? new Date(t.earningsDate).toLocaleDateString() : "—"}</div>
+            </div>
+
+            {/* Key Highlights */}
+            <div className="space-y-2">
+              <div className="text-xs text-muted-foreground uppercase tracking-wider">Key Highlights</div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Rec:</span>
+                <span className={`font-mono text-sm font-semibold ${t.recommendation.rec === "Buy" ? "text-[color:var(--bull)]" : t.recommendation.rec === "Avoid" ? "text-[color:var(--bear)]" : "text-primary"}`}>
+                  {t.recommendation.rec.toUpperCase()}
+                </span>
+                <span className="text-xs text-muted-foreground">·</span>
+                <span className="text-xs text-muted-foreground">{t.outlook}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Value:</span>
+                <span className={t.passesValue ? "text-[color:var(--bull)]" : "text-primary"}>
+                  {t.passesValue ? "Qualifies" : "Does not qualify"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Liquidity:</span>
+                <span className={t.passesGlobal ? "text-[color:var(--bull)]" : "text-[color:var(--bear)]"}>
+                  {t.passesGlobal ? "Passes" : "Fails"} {t.region} filters
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Metrics Explained Panel */}
+        <div className="panel">
+          <div className="panel-header">Metrics Explained</div>
+          <div className="p-5 text-xs text-muted-foreground space-y-3">
+            <div className="flex items-start gap-2">
+              <span className="w-2 h-2 rounded-full bg-[color:var(--bull)] mt-1 flex-shrink-0" />
+              <div>
+                <div className="text-foreground font-medium">Favorable (Green)</div>
+                <div>P/E &lt; 15, RSI &lt; 30 (oversold), near 52W low, positive momentum</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="w-2 h-2 rounded-full bg-primary mt-1 flex-shrink-0" />
+              <div>
+                <div className="text-foreground font-medium">Neutral (Yellow)</div>
+                <div>Mixed signals, mid-range values, no clear direction</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="w-2 h-2 rounded-full bg-[color:var(--bear)] mt-1 flex-shrink-0" />
+              <div>
+                <div className="text-foreground font-medium">Concerning (Red)</div>
+                <div>P/E &gt; 25, RSI &gt; 70 (overbought), far from 52W low, negative momentum</div>
+              </div>
+            </div>
+            <div className="border-t border-border pt-3 mt-3">
+              <div className="text-foreground font-medium mb-1">Quick Guide</div>
+              <div>Lower P/E = cheaper valuation. RSI &lt; 30 = oversold opportunity. &gt; 70 = overbought risk.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Grouped Metrics with Customizable Views */}
+      <div className="panel">
+        <div className="panel-header flex items-center justify-between">
+          <span>Key Metrics</span>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => toggleGroup("fundamentals")}
+              className={`text-[10px] font-mono px-2 py-1 rounded transition-colors ${visibleGroups.includes("fundamentals") ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+            >
+              Fundamentals
+            </button>
+            <button 
+              onClick={() => toggleGroup("technicals")}
+              className={`text-[10px] font-mono px-2 py-1 rounded transition-colors ${visibleGroups.includes("technicals") ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+            >
+              Technicals
+            </button>
+            <button 
+              onClick={() => toggleGroup("momentum")}
+              className={`text-[10px] font-mono px-2 py-1 rounded transition-colors ${visibleGroups.includes("momentum") ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+            >
+              Momentum
+            </button>
+            <button 
+              onClick={() => toggleGroup("valuation")}
+              className={`text-[10px] font-mono px-2 py-1 rounded transition-colors ${visibleGroups.includes("valuation") ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+            >
+              Valuation
+            </button>
+          </div>
+        </div>
+        <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {visibleGroups.includes("fundamentals") && renderMetricGroup("Fundamentals", fundamentalMetrics)}
+          {visibleGroups.includes("technicals") && renderMetricGroup("Technicals", technicalMetrics)}
+          {visibleGroups.includes("momentum") && renderMetricGroup("Momentum", momentumMetrics)}
+          {visibleGroups.includes("valuation") && renderMetricGroup("Valuation", valuationMetrics)}
+        </div>
+      </div>
+
+      {/* Contextual Advice Panel */}
+      <div className="panel">
+        <div className="panel-header">Contextual Analysis</div>
+        <div className="p-5 text-xs space-y-3">
+          {getContextualAdvice(t)}
+        </div>
+      </div>
+
+      {/* Peer Comparison Highlights */}
+      {r.peers.length > 0 && (
+        <div className="panel">
+          <div className="panel-header">Peer Comparison · {r.peers.length} peers</div>
+          <div className="p-5 text-xs space-y-2">
+            {getPeerComparison(t, r.peers)}
+          </div>
+        </div>
+      )}
+
+      {/* Actionable Insights Panel */}
+      <div className="panel">
+        <div className="panel-header">What to Watch</div>
+        <div className="p-5 text-xs space-y-2">
+          {getActionableInsights(t)}
+        </div>
+      </div>
+
+      {/* Metric Trend Indicators */}
+      <div className="panel">
+        <div className="panel-header">Metric Trends</div>
+        <div className="p-5 text-xs space-y-2">
+          {getMetricTrends(t)}
+        </div>
+      </div>
+
+      {/* Historical Context */}
+      <div className="panel">
+        <div className="panel-header">Historical Context (6 Months)</div>
+        <div className="p-5 text-xs space-y-2">
+          {getHistoricalContext(t)}
+        </div>
+      </div>
+
+      {/* Full Details Toggle */}
+      <div className="panel">
+        <div className="panel-header flex items-center justify-between cursor-pointer" onClick={() => document.getElementById("fullDetails")?.classList.toggle("hidden")}>
+          <span>Full Details · {t.symbol}</span>
+          <span className="text-[10px] text-muted-foreground">Click to expand</span>
+        </div>
+        <div id="fullDetails" className="hidden">
           <table className="term">
             <tbody>
-              {rows.map(({ k, v }) => (
-                <tr key={k}><td className="text-muted-foreground w-1/2">{k}</td><td className="num">{v}</td></tr>
-              ))}
+              <tr><td>Company</td><td>{t.companyName}</td></tr>
+              <tr><td>Exchange</td><td>{t.fullExchange ?? t.exchange ?? "—"}</td></tr>
+              <tr><td>Country / Region</td><td>{t.country ?? "—"} · {t.region}</td></tr>
+              <tr><td>Currency</td><td>{t.currency}</td></tr>
+              <tr><td>Sector</td><td>{t.sector ?? "—"}</td></tr>
+              <tr><td>Industry</td><td>{t.industry ?? "—"}</td></tr>
+              <tr><td>Price</td><td><SourcedCell provenance={sv("price", t.price)}>{fmtPrice(t.price, t.currency)}</SourcedCell></td></tr>
+              <tr><td>Market Cap (Local)</td><td><SourcedCell provenance={sv("marketCap", t.marketCap)}>{fmtMcap(t.marketCap, t.currency)}</SourcedCell></td></tr>
+              <tr><td>Market Cap (USD)</td><td><SourcedCell provenance={sv("marketCapUsd", t.marketCapUsd)}>{fmtMcapUsd(t.marketCapUsd)}</SourcedCell></td></tr>
+              <tr><td>Avg Daily Volume</td><td><SourcedCell provenance={sv("avgVolume", t.avgVolume)}>{fmtVol(t.avgVolume)}</SourcedCell></td></tr>
+              <tr><td>52W Low</td><td><SourcedCell provenance={sv("low52", t.low52)}>{fmtPrice(t.low52, t.currency)}</SourcedCell></td></tr>
+              <tr><td>52W High</td><td><SourcedCell provenance={sv("high52", t.high52)}>{fmtPrice(t.high52, t.currency)}</SourcedCell></td></tr>
+              <tr><td>% From 52W Low</td><td><SourcedCell provenance={sv("pctFromLow", t.pctFromLow)}>{fmtPct(t.pctFromLow)}</SourcedCell></td></tr>
+              <tr><td>Trailing P/E</td><td><SourcedCell provenance={sv("pe", t.pe)}>{fmtNum(t.pe)}</SourcedCell></td></tr>
+              <tr><td>5D Performance</td><td><SourcedCell provenance={sv("perf5d", t.perf5d)}>{fmtPct(t.perf5d)}</SourcedCell></td></tr>
+              <tr><td>RSI 14D</td><td><SourcedCell provenance={sv("rsi14", t.rsi14)}>{fmtNum(t.rsi14, 1)} ({t.rsiLabel})</SourcedCell></td></tr>
+              <tr><td>ROC 14D</td><td><SourcedCell provenance={sv("roc14", t.roc14)}>{fmtPct(t.roc14)}</SourcedCell></td></tr>
+              <tr><td>ROC 21D</td><td><SourcedCell provenance={sv("roc21", t.roc21)}>{fmtPct(t.roc21)}</SourcedCell></td></tr>
+              <tr><td>Price vs 20D MA</td><td><SourcedCell provenance={sv("ma20", t.ma20)}>{vsMA(t.price, t.ma20).label} ({fmtPrice(t.ma20, t.currency)})</SourcedCell></td></tr>
+              <tr><td>Price vs 50D MA</td><td><SourcedCell provenance={sv("ma50", t.ma50)}>{vsMA(t.price, t.ma50).label} ({fmtPrice(t.ma50, t.currency)})</SourcedCell></td></tr>
+              <tr><td>Price vs 200D MA</td><td><SourcedCell provenance={sv("ma200", t.ma200)}>{vsMA(t.price, t.ma200).label} ({fmtPrice(t.ma200, t.currency)})</SourcedCell></td></tr>
+              <tr><td>Earnings Date</td><td>{t.earningsDate ? new Date(t.earningsDate).toLocaleDateString() : "—"}</td></tr>
             </tbody>
           </table>
         </div>
-        <div className="space-y-4">
-          <div className="panel">
-            <div className="panel-header">Regional Filter · {t.region}</div>
-            <div className="p-4 text-xs space-y-1 font-mono">
-              <Indicator label="Min Price" value={`${fmtPrice(f.minPrice, t.currency)}`} />
-              <Indicator label="Min Volume" value={fmtVol(f.minVolume)} />
-              <Indicator label="Min Mcap" value={`${fmtMcapUsd(f.minMcapUsd)} equivalent`} />
-              <Indicator label="Status" value={t.passesGlobal ? "✅ Passes" : "❌ Fails"} />
-            </div>
-          </div>
-          <div className="panel">
-            <div className="panel-header">Visual Indicators</div>
-            <div className="p-4 font-mono text-xs space-y-2">
-              <Indicator label="Trend" value={`${trendArrow(t.perf5d)} ${t.perf5d != null && t.perf5d > 0 ? "Positive" : t.perf5d != null && t.perf5d < 0 ? "Negative" : "Flat"}`} />
-              <Indicator label="Value Screen" value={`${t.passesValue ? "✅" : "❌"} ${t.passesValue ? "Qualifies" : "Does not qualify"}`} />
-              <Indicator label="RSI" value={`${t.rsi14 != null && (t.rsi14 > 70 || t.rsi14 < 30) ? "⚠️" : "→"} ${t.rsiLabel}`} />
-              <Indicator label="MA 20D" value={`${t.price && t.ma20 && t.price > t.ma20 ? "↑" : "↓"} ${vsMA(t.price, t.ma20).label}`} />
-              <Indicator label="MA 50D" value={`${t.price && t.ma50 && t.price > t.ma50 ? "↑" : "↓"} ${vsMA(t.price, t.ma50).label}`} />
-              <Indicator label="MA 200D" value={`${t.price && t.ma200 && t.price > t.ma200 ? "↑" : "↓"} ${vsMA(t.price, t.ma200).label}`} />
-            </div>
-          </div>
-          <div className="panel">
-            <div className="panel-header">Peer Universe</div>
-            <div className="p-4 text-xs space-y-1">
-              <div className="text-muted-foreground">Identified <span className="text-primary font-mono">{r.peers.length}</span> peers in {t.industry || t.sector || "sector"} (region-aware).</div>
-              <div className="text-muted-foreground">Value qualifiers: <span className="text-[color:var(--bull)] font-mono">{r.valueQualifiers.length}</span></div>
-              <div className="text-muted-foreground">Momentum top: <span className="text-primary font-mono">{r.momentumTop.length}</span></div>
-              <div className="text-muted-foreground">Cross-screen overlap: <span className="text-primary font-mono">{r.overlap.length}</span></div>
-            </div>
-          </div>
-          {t.dataMissing.length > 0 && (
-            <div className="panel border-primary/30">
-              <div className="panel-header text-primary">⚠ Data Unavailable</div>
-              <div className="p-4 text-xs text-muted-foreground">Missing: {t.dataMissing.join(", ")}</div>
-            </div>
-          )}
-        </div>
       </div>
-      <AiNarrative symbol={t.symbol} facts={facts} />
-      <AskTerminal symbol={t.symbol} facts={facts} />
-      <NewsCatalysts symbol={t.symbol} name={(t as any).companyName ?? undefined} />
     </div>
   );
 }
@@ -747,6 +1696,11 @@ function ChartSection({ r }: { r: Success }) {
         high52={t.high52}
         low52={t.low52}
         rsi={t.rsi14}
+        currency={t.currency}
+      />
+      <VolumeChart
+        volumes={t.volumes ?? []}
+        closes={t.closes ?? []}
         currency={t.currency}
       />
       <div className="panel">

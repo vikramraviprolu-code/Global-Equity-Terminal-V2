@@ -186,6 +186,18 @@ async function fetchHistoryCloses(symbol: string): Promise<number[]> {
   return prices.map((x) => x.adj_close ?? x.close).filter((n) => typeof n === "number");
 }
 
+async function fetchHistoryVolume(symbol: string): Promise<number[]> {
+  const r = await fi<any>("/histories", {
+    symbol, types: ["historical_price"], interval: "1d",
+    start_date: isoDateBack(300), end_date: isoDateBack(0),
+    sort_by: [{ selector: "date", desc: false }],
+  });
+  const items: any[] = r?.items ?? [];
+  const itemsWithVolume = items.filter((x) => !x.type || x.type === "historical_price");
+  itemsWithVolume.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  return itemsWithVolume.map((x) => x.volume ?? 0).filter((n) => typeof n === "number" && n > 0);
+}
+
 async function fetchSearchOne(symbol: string): Promise<any | null> {
   const r = await fi<any>("/search", { symbols: [symbol], limit: 1 });
   return r?.items?.[0] ?? null;
@@ -201,6 +213,8 @@ export async function fetchScreenerRow(u: {
   // comes from many concurrent visitors hitting the same symbols.
   return cachedSWR(`screener:${u.symbol}`, 5 * 60_000, () => fetchScreenerRowUncached(u));
 }
+
+export { fetchHistoryVolume };
 
 async function fetchScreenerRowUncached(u: {
   symbol: string; name: string; exchange: string; country: string; region: RegionKey;

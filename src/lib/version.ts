@@ -1,9 +1,9 @@
 // Single source of truth for app version + feature flags.
 // Bump on every shipped change: minor for features, patch for fixes.
 
-export const APP_VERSION = "1.13.0";
+export const APP_VERSION = "1.14.0";
 export const APP_RELEASE_DATE = "2026-05-12";
-export const APP_CODENAME = "TaskLink";
+export const APP_CODENAME = "MetricsInsight";
 
 export const FEATURE_FLAGS = {
   newsCatalysts: true,
@@ -24,6 +24,14 @@ export const FEATURE_FLAGS = {
   tasks: true,
   taskAlertIntegration: true,
   performanceOptimizations: true,
+  enhancedMetrics: true,
+  metricTooltips: true,
+  contextualAdvice: true,
+  peerComparison: true,
+  actionableInsights: true,
+  customizableViews: true,
+  metricTrends: true,
+  historicalContext: true,
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;

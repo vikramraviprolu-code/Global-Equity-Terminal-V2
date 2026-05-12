@@ -10,6 +10,7 @@ import { stooqQuote } from "./stooq.server";
 import { fmpQuote, fmpSearch } from "./fmp.server";
 import { cachedSWR } from "./cache.server";
 import { UNIVERSE } from "./universe";
+import { fetchHistoryVolume } from "./finimpulse.server";
 
 // Lookup curated metadata for a symbol so we always have at least
 // sector/industry/exchange/region even when upstream profile endpoints
@@ -184,6 +185,7 @@ export type StockMetrics = Listing & {
   dataMissing: string[];
   filter: Filter;
   closes: number[];
+  volumes: number[];
   source: string;
 };
 
@@ -245,10 +247,11 @@ async function fetchMetrics(symbol: string, prefetched?: any): Promise<StockMetr
 async function fetchMetricsUncached(symbol: string, prefetched?: any): Promise<StockMetrics | null> {
   const sym = symbol.trim();
   // Try Finimpulse
-  const [searchItem, summary, closes] = await Promise.all([
+  const [searchItem, summary, closes, volumes] = await Promise.all([
     prefetched ? Promise.resolve(prefetched) : fetchListingsBySymbols([sym]).then((a) => a[0] ?? null).catch(() => null),
     fetchSummary(sym).catch(() => null),
     fetchHistoryCloses(sym).catch(() => [] as number[]),
+    fetchHistoryVolume(sym).catch(() => [] as number[]),
   ]);
 
   if (searchItem || summary || closes.length) {
@@ -287,6 +290,7 @@ async function fetchMetricsUncached(symbol: string, prefetched?: any): Promise<S
       dataMissing: missing,
       filter,
       closes: closes.slice(-260),
+      volumes: volumes.slice(-260),
       source: "Finimpulse",
     };
   }
@@ -306,6 +310,7 @@ async function fetchMetricsFromYahoo(sym: string): Promise<StockMetrics | null> 
   ]);
   if (!chart && !summary) return null;
   const closes = chart?.closes ?? [];
+  const volumes = chart?.volumes ?? [];
   const fb = detectFromSymbol(sym);
   const currency = chart?.currency ?? summary?.currency ?? fb.currency;
   const region = regionFromMarketRegion(chart?.marketRegion ?? null, currency, fb.region);
@@ -354,6 +359,7 @@ async function fetchMetricsFromYahoo(sym: string): Promise<StockMetrics | null> 
     dataMissing: missing,
     filter,
     closes: closes.slice(-260),
+    volumes: volumes.slice(-260),
     source: summary ? "Yahoo Finance" : (fmpFallback ? "Yahoo + FMP" : "Yahoo Finance"),
   };
 }
@@ -362,6 +368,7 @@ async function fetchMetricsFromFmp(sym: string): Promise<StockMetrics | null> {
   const f = await fmpQuote(sym).catch(() => null);
   if (!f || (f.price == null && f.closes.length === 0)) return null;
   const closes = f.closes;
+  const volumes = f.volumes;
   const fb = detectFromSymbol(sym);
   const currency = f.currency ?? fb.currency;
   const region = regionFromMarketRegion(null, currency, fb.region);
@@ -406,6 +413,7 @@ async function fetchMetricsFromFmp(sym: string): Promise<StockMetrics | null> {
     dataMissing: missing,
     filter,
     closes: closes.slice(-260),
+    volumes: volumes.slice(-260),
     source: "Financial Modeling Prep",
   };
 }
@@ -447,6 +455,7 @@ async function fetchMetricsFromStooq(sym: string): Promise<StockMetrics | null> 
     dataMissing: missing,
     filter,
     closes: s.closes.slice(-260),
+    volumes: s.volumes.slice(-260),
     source: "Stooq",
   };
 }
@@ -584,6 +593,60 @@ function buildRecommendation(m: StockMetrics) {
   return { rec, confidence, horizon, valueScore: v, momentumScore: mm.score, penalties: mm.penalties, net };
 }
 
+// ============== ISIN UTILITIES ==============
+// ISIN: International Securities Identification Number
+// Format: 2-letter country code + 9 alphanumeric characters + 1 check digit
+// Example: US0378331005 (Apple Inc.)
+
+function isValidISIN(isin: string): boolean {
+  // Basic format check
+  if (!/^[A-Z]{2}[A-Z0-9]{9}\d$/i.test(isin)) return false;
+
+  // Convert letters to numbers (A=10, B=11, ..., Z=35)
+  const numeric = isin.toUpperCase().split('').map(c => {
+    if (/[0-9]/.test(c)) return parseInt(c);
+    return c.charCodeAt(0) - 55; // A=10, B=11, etc.
+  }).join('');
+
+  // Luhn algorithm check digit validation
+  let sum = 0;
+  let double = false;
+  for (let i = numeric.length - 2; i >= 0; i--) {
+    let digit = parseInt(numeric[i]);
+    if (double) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+    double = !double;
+  }
+  const checkDigit = (10 - (sum % 10)) % 10;
+  return checkDigit === parseInt(numeric[numeric.length - 1]);
+}
+
+async function resolveISIN(isin: string): Promise<string | null> {
+  // Try to resolve ISIN through Finimpulse search
+  const r = await fi<any>("/search", { search_text: isin, quote_types: ["stock"], limit: 1 }).catch(() => null);
+  const items = r?.items ?? [];
+  if (items.length > 0 && items[0].symbol) {
+    return items[0].symbol;
+  }
+
+  // Try Yahoo Finance as fallback
+  const yahoo = await yahooSearch(isin, 1).catch(() => []);
+  if (yahoo.length > 0 && yahoo[0].symbol) {
+    return yahoo[0].symbol;
+  }
+
+  // Try FMP as last resort
+  const fmp = await fmpSearch(isin, 1).catch(() => []);
+  if (fmp.length > 0 && fmp[0].symbol) {
+    return fmp[0].symbol;
+  }
+
+  return null;
+}
+
 // ============== SEARCH / DISAMBIGUATE ==============
 export const searchTickers = createServerFn({ method: "POST" })
   .middleware([supabaseAuthHeaders, optionalSupabaseAuth])
@@ -592,8 +655,41 @@ export const searchTickers = createServerFn({ method: "POST" })
     if (context.userId) await enforceRateLimit(context.userId, "analyze.searchTickers", 120, 3600);
     const q = data.q.trim();
     return cachedSWR(`search:${q.toLowerCase()}`, 5 * 60_000, async () => {
+      // Check if input is a valid ISIN
+      const isIsin = isValidISIN(q);
       const looksLikeSymbol = /^[A-Za-z0-9.\-]{1,15}$/.test(q);
       const results: Listing[] = [];
+
+      // If it's a valid ISIN, try to resolve it to a ticker
+      if (isIsin) {
+        const resolvedSymbol = await resolveISIN(q);
+        if (resolvedSymbol) {
+          // Return the resolved ticker as a single result
+          const listing = await fetchListingsBySymbols([resolvedSymbol]).then((a) => a[0] ?? null).catch(() => null);
+          if (listing) {
+            return [listingFromItem(listing)];
+          }
+          // Fallback to fetching metrics for the resolved symbol
+          const metrics = await fetchMetrics(resolvedSymbol).catch(() => null);
+          if (metrics) {
+            return [{
+              symbol: metrics.symbol,
+              companyName: metrics.companyName,
+              exchange: metrics.exchange,
+              fullExchange: metrics.fullExchange,
+              country: metrics.country,
+              region: metrics.region,
+              currency: metrics.currency,
+              sector: metrics.sector,
+              industry: metrics.industry,
+              marketCap: metrics.marketCap,
+              marketCapUsd: metrics.marketCapUsd,
+              listingType: metrics.listingType,
+            }];
+          }
+        }
+        // If ISIN resolution fails, fall through to regular search
+      }
 
       if (looksLikeSymbol) {
         const [bySym, byName] = await Promise.all([

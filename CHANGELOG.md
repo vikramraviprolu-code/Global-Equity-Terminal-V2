@@ -3,6 +3,48 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.14.0] — 2026-05-12 — "MetricsInsight" (minor)
+
+Transforms the key metrics display into an educational, actionable analytics powerhouse with interactive tooltips, contextual advice, peer comparisons, and historical context.
+
+### Added
+- **Interactive metric tooltips** (`src/components/terminal/terminal-page.tsx`) — hover over any metric to see contextual, threshold-based guidance. P/E tooltips explain valuation ranges from very low (&lt;10) to very high (&gt;35), RSI tooltips show overbought/oversold conditions with specific recommendations, performance and ROC tooltips indicate momentum strength.
+- **Contextual analysis panel** (`src/components/terminal/terminal-page.tsx`) — dynamic recommendations based on metric combinations: value + momentum alignment signals, deep value opportunities (oversold RSI + attractive P/E), overbought warnings, valuation risks, trend confirmation/breakdown, 52W low proximity analysis, and momentum shift detection (ROC divergence).
+- **Peer comparison highlights** (`src/components/terminal/terminal-page.tsx`) — calculates peer averages for P/E, market cap, RSI, and 5D performance; shows relative positioning with interpretive context like "trading at 67% of sector average" or "outperforming peers by 3.2%".
+- **Actionable insights panel** ("What to Watch") — priority-based alert system with high/medium/low classifications. High priority alerts include extreme RSI (&gt;75/&lt;25) and very high P/E (&gt;40). Medium priority includes MA crossovers, weak momentum, extended from lows. Low priority includes low volume warnings and value trap indicators.
+- **Customizable metric views** (`src/components/terminal/terminal-page.tsx`) — toggle buttons for Fundamentals, Technicals, Momentum, and Valuation groups. State-managed via React useState with visual feedback for active/inactive groups. Dynamic grid layout adjusts based on selections.
+- **Metric trend indicators** (`src/components/terminal-page.tsx`) — analyzes metric direction over time using historical price data: price action trends (5-day averages), RSI momentum changes (current vs 5 days ago), moving average structure evolution, volatility regime detection. Uses custom RSI calculation for historical analysis.
+- **Historical context panel** (`src/components/terminal-page.tsx`) — shows where current metrics rank against 6-month historical range: price level percentile, RSI percentile vs historical readings, volatility regime comparison (current vs historical average). Provides percentile-based interpretations for decision-making.
+- **Helper functions** — `getContextualAdvice`, `getPeerComparison`, `getActionableInsights`, `getMetricTrends`, `getHistoricalContext`, `calculateRSI`, `calculateVolatility` for advanced metric analysis.
+
+### Changed
+- **Overview section** (`src/components/terminal/terminal-page.tsx`) — complete restructure with grouped metric panels, educational "Metrics Explained" panel, and progressive disclosure via expandable "Full Details" section. Company info and key highlights moved to compact card layout for better visual hierarchy.
+- **Metric health indicators** — added color-coded health assessment (favorable/neutral/concerning) based on threshold ranges for P/E, RSI, % from 52W low, performance, and ROC indicators.
+- **Volume chart integration** — volume chart component added below price chart in Chart section with volume data from all data providers (Finimpulse, Yahoo, FMP, Stooq).
+
+### UX
+- All metric labels now show help cursor and provide educational tooltips on hover.
+- Metric groups can be toggled on/off for focused analysis.
+- Peer comparison automatically shows when peer data is available.
+- "What to Watch" panel surfaces the most urgent items needing attention.
+- Contextual analysis provides dynamic recommendations based on current metric combinations.
+- Historical context helps users understand if current metrics are typical or unusual.
+
+### Technical
+- Added `fetchHistoryVolume` function to all data providers (Finimpulse, Yahoo, FMP, Stooq) for comprehensive volume data access.
+- Updated StockMetrics type across all providers to include `volumes: number[]` field.
+- Added ISIN validation with Luhn algorithm check digit verification (`src/server/analyze.ts`).
+- Enhanced ISIN resolution with multi-provider fallback (Finimpulse → Yahoo → FMP) in search pipeline.
+- All new features use existing data infrastructure — no additional API calls or performance impact.
+- Type-safe implementation with proper TypeScript throughout.
+
+### Notes
+- Educational tooltips help new users understand complex financial metrics.
+- Contextual advice provides actionable insights similar to professional platforms.
+- Peer comparisons give relative performance context often missing from basic analysis.
+- Historical context helps identify when current conditions are typical or exceptional.
+- Customizable views let experienced users focus on relevant metrics.
+
 ## [1.13.0] — 2026-05-12 — "TaskLink" (minor)
 
 Integrates research tasks with alerts for seamless workflow management and delivers significant performance optimizations across the application.

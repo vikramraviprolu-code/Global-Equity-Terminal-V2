@@ -40,6 +40,7 @@ export type FmpQuote = {
   sector: string | null;
   industry: string | null;
   closes: number[];
+  volumes: number[];
 };
 
 export async function fmpQuote(symbol: string): Promise<FmpQuote | null> {
@@ -59,6 +60,11 @@ export async function fmpQuote(symbol: string): Promise<FmpQuote | null> {
     .reverse()
     .map((x) => Number(x.close))
     .filter((n) => Number.isFinite(n));
+  const volumes = histArr
+    .slice()
+    .reverse()
+    .map((x) => Number(x.volume))
+    .filter((n) => Number.isFinite(n) && n > 0);
   return {
     symbol,
     name: q?.name ?? p?.companyName ?? null,
@@ -77,6 +83,7 @@ export async function fmpQuote(symbol: string): Promise<FmpQuote | null> {
     sector: p?.sector ?? null,
     industry: p?.industry ?? null,
     closes,
+    volumes,
   };
 }
 

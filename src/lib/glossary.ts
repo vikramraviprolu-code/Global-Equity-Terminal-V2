@@ -596,6 +596,18 @@ export const GLOSSARY = {
     hint: "Helps determine if current conditions are typical or exceptional.",
     group: "metric",
   },
+  alphaVantage: {
+    term: "Alpha Vantage",
+    definition: "Free financial data API providing global equities, forex, and crypto data with 500 requests/day limit.",
+    hint: "Used as final fallback when other providers fail.",
+    group: "data",
+  },
+  gracefulDegradation: {
+    term: "Graceful degradation",
+    definition: "System continues functioning with reduced features when some components fail.",
+    hint: "App works without API keys by using free providers.",
+    group: "data",
+  },
 } as const satisfies Record<string, GlossaryEntry>;
 
 export type GlossaryKey = keyof typeof GLOSSARY;

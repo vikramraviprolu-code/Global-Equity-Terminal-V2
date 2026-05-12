@@ -1,9 +1,9 @@
 // Single source of truth for app version + feature flags.
 // Bump on every shipped change: minor for features, patch for fixes.
 
-export const APP_VERSION = "1.14.0";
+export const APP_VERSION = "1.15.0";
 export const APP_RELEASE_DATE = "2026-05-12";
-export const APP_CODENAME = "MetricsInsight";
+export const APP_CODENAME = "DataResilience";
 
 export const FEATURE_FLAGS = {
   newsCatalysts: true,
@@ -32,6 +32,9 @@ export const FEATURE_FLAGS = {
   customizableViews: true,
   metricTrends: true,
   historicalContext: true,
+  alphaVantageIntegration: true,
+  enhancedCaching: true,
+  gracefulDegradation: true,
 } as const;
 
 export type FeatureFlag = keyof typeof FEATURE_FLAGS;

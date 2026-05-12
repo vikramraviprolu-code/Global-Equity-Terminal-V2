@@ -26,13 +26,14 @@ jobs:
 
       - name: Trigger Lovable Deployment
         run: |
-          # Trigger Lovable deployment via webhook
+          # Trigger Lovable deployment via webhook with cache-busting timestamp
           # You need to set up LOVABLE_DEPLOY_WEBHOOK_URL in GitHub Secrets
           if [ -n "${{ secrets.LOVABLE_DEPLOY_WEBHOOK_URL }}" ]; then
+            TIMESTAMP=$(date +%s)
             curl -X POST "${{ secrets.LOVABLE_DEPLOY_WEBHOOK_URL }}" \
               -H "Content-Type: application/json" \
-              -d '{"event":"push","branch":"${{ github.ref_name }}","commit":"${{ github.sha }}"}'
-            echo "✅ Lovable deployment triggered successfully"
+              -d "{\"event\":\"push\",\"branch\":\"${{ github.ref_name }}\",\"commit\":\"${{ github.sha }}\",\"timestamp\":\"${TIMESTAMP}\",\"cache_bust\":\"true\"}"
+            echo "✅ Lovable deployment triggered successfully with cache-bust"
           else
             echo "⚠️ LOVABLE_DEPLOY_WEBHOOK_URL not set - deployment webhook not called"
             echo "To enable auto-deployment, add your Lovable webhook URL as a GitHub secret"

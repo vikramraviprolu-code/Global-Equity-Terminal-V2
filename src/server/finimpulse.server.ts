@@ -9,17 +9,20 @@ import { cachedSWR } from "./cache.server";
 
 const FI_BASE = "https://api.finimpulse.com/v1";
 
-function key() {
+function key(): string | null {
   const k = process.env.FINIMPULSE_API_KEY;
-  if (!k) throw new Error("FINIMPULSE_API_KEY not configured");
+  if (!k) return null;
   return k;
 }
 
 export async function fi<T = any>(path: string, body: Record<string, unknown>): Promise<T | null> {
+  const k = key();
+  if (!k) return null; // Gracefully skip Finimpulse if no API key
+
   try {
     const res = await fetchWithRetry(`${FI_BASE}${path}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key()}` },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${k}` },
       body: JSON.stringify(body),
       label: `finimpulse${path}`,
     });
@@ -209,9 +212,9 @@ export async function fetchScreenerRow(u: {
   symbol: string; name: string; exchange: string; country: string; region: RegionKey;
   currency: string; sector: string; industry: string;
 }): Promise<ScreenerRow> {
-  // Cache rows for 5 min — universe is fairly static and rate-limit pressure
+  // Cache rows for 10 min — universe is fairly static and rate-limit pressure
   // comes from many concurrent visitors hitting the same symbols.
-  return cachedSWR(`screener:${u.symbol}`, 5 * 60_000, () => fetchScreenerRowUncached(u));
+  return cachedSWR(`screener:${u.symbol}`, 10 * 60_000, () => fetchScreenerRowUncached(u));
 }
 
 export { fetchHistoryVolume };

@@ -11,6 +11,7 @@ import { fmpQuote, fmpSearch } from "./fmp.server";
 import { cachedSWR } from "./cache.server";
 import { UNIVERSE } from "./universe";
 import { fetchHistoryVolume } from "./finimpulse.server";
+import { alphaVantageQuote, alphaVantageSearch } from "./alphavantage.server";
 
 // Lookup curated metadata for a symbol so we always have at least
 // sector/industry/exchange/region even when upstream profile endpoints
@@ -236,12 +237,12 @@ function listingFromItem(it: any): Listing {
 
 async function fetchMetrics(symbol: string, prefetched?: any): Promise<StockMetrics | null> {
   const sym = symbol.trim();
-  // Always cache by symbol (2 min). Peer enrichment previously bypassed the
-  // cache when `prefetched` was supplied, which let one anonymous /analyze
-  // call fan out to ~25 uncached upstream fetches. The `prefetched` listing
-  // is still passed to short-circuit the symbol lookup on cache miss, but
-  // the resolved metrics are now always cached per symbol.
-  return cachedSWR(`analyze:${sym}`, 2 * 60_000, () => fetchMetricsUncached(sym, prefetched));
+  // Always cache by symbol (5 min). Extended cache time for better performance.
+  // Peer enrichment previously bypassed the cache when `prefetched` was supplied,
+  // which let one anonymous /analyze call fan out to ~25 uncached upstream fetches.
+  // The `prefetched` listing is still passed to short-circuit the symbol lookup on
+  // cache miss, but the resolved metrics are now always cached per symbol.
+  return cachedSWR(`analyze:${sym}`, 5 * 60_000, () => fetchMetricsUncached(sym, prefetched));
 }
 
 async function fetchMetricsUncached(symbol: string, prefetched?: any): Promise<StockMetrics | null> {
@@ -295,12 +296,14 @@ async function fetchMetricsUncached(symbol: string, prefetched?: any): Promise<S
     };
   }
 
-  // Fallback chain: Yahoo → FMP → Stooq
+  // Fallback chain: Yahoo → FMP → Stooq → Alpha Vantage
   const yahoo = await fetchMetricsFromYahoo(sym);
   if (yahoo) return yahoo;
   const fmp = await fetchMetricsFromFmp(sym);
   if (fmp) return fmp;
-  return fetchMetricsFromStooq(sym);
+  const stooq = await fetchMetricsFromStooq(sym);
+  if (stooq) return stooq;
+  return fetchMetricsFromAlphaVantage(sym);
 }
 
 async function fetchMetricsFromYahoo(sym: string): Promise<StockMetrics | null> {
@@ -457,6 +460,60 @@ async function fetchMetricsFromStooq(sym: string): Promise<StockMetrics | null> 
     closes: s.closes.slice(-260),
     volumes: s.volumes.slice(-260),
     source: "Stooq",
+  };
+}
+
+async function fetchMetricsFromAlphaVantage(sym: string): Promise<StockMetrics | null> {
+  const s = await alphaVantageQuote(sym);
+  if (!s || (s.price == null && s.closes.length === 0)) return null;
+  const closes = s.closes;
+  const fb = detectFromSymbol(sym);
+  const currency = s.currency ?? fb.currency;
+  const region = regionFromMarketRegion(null, currency, fb.region);
+  const um = universeMeta(sym);
+  const listing: Listing = {
+    symbol: sym,
+    companyName: s.name ?? um?.name ?? sym,
+    exchange: s.exchange ?? fb.exchange ?? um?.exchange ?? null,
+    fullExchange: null,
+    country: um?.country ?? fb.country,
+    region,
+    currency,
+    sector: s.sector ?? um?.sector ?? null,
+    industry: s.industry ?? um?.industry ?? null,
+    marketCap: s.marketCap,
+    marketCapUsd: null,
+    listingType: "stock",
+  };
+  const filter = REGIONAL_FILTERS[region] ?? REGIONAL_FILTERS.OTHER;
+  const price = s.price;
+  const pctFromLow = price && s.low52 ? ((price - s.low52) / s.low52) * 100 : null;
+  const missing: string[] = [];
+  if (s.pe == null) missing.push("P/E");
+  if (s.marketCap == null) missing.push("market cap");
+  
+  return {
+    ...listing,
+    price,
+    priceUsd: null,
+    avgVolume: s.avgVolume,
+    pe: s.pe,
+    pb: s.pb,
+    high52: s.high52, low52: s.low52, pctFromLow,
+    perf5d: closes.length >= 5 ? ((closes[closes.length - 1] - closes[closes.length - 5]) / closes[closes.length - 5]) * 100 : null,
+    rsi14: rsi(closes, 14),
+    roc14: roc(closes, 14),
+    roc21: roc(closes, 21),
+    ma20: sma(closes, 20),
+    ma50: s.ma50 ?? sma(closes, 50),
+    ma200: s.ma200 ?? sma(closes, 200),
+    earningsDate: null,
+    dividendYield: s.dividendYield,
+    dataMissing: missing,
+    filter,
+    closes: closes.slice(-260),
+    volumes: s.volumes.slice(-260),
+    source: "Alpha Vantage",
   };
 }
 
@@ -654,7 +711,7 @@ export const searchTickers = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     if (context.userId) await enforceRateLimit(context.userId, "analyze.searchTickers", 120, 3600);
     const q = data.q.trim();
-    return cachedSWR(`search:${q.toLowerCase()}`, 5 * 60_000, async () => {
+    return cachedSWR(`search:${q.toLowerCase()}`, 10 * 60_000, async () => {
       // Check if input is a valid ISIN
       const isIsin = isValidISIN(q);
       const looksLikeSymbol = /^[A-Za-z0-9.\-]{1,15}$/.test(q);
@@ -738,11 +795,35 @@ export const searchTickers = createServerFn({ method: "POST" })
         for (const it of fmp) {
           if (seen.has(it.symbol)) continue;
           seen.add(it.symbol);
+          results.push({
+            symbol: it.symbol,
+            companyName: it.name ?? it.symbol,
+            exchange: it.exchange,
+            fullExchange: null,
+            country: null,
+            region: "US",
+            currency: "USD",
+            sector: it.sector ?? null,
+            industry: it.industry ?? null,
+            marketCap: it.marketCap,
+            marketCapUsd: it.marketCap,
+            listingType: "stock",
+          });
+        }
+      }
+
+      // Alpha Vantage fallback if still nothing
+      if (results.length === 0) {
+        const av = await alphaVantageSearch(q, 15).catch(() => []);
+        const seen = new Set<string>();
+        for (const it of av) {
+          if (seen.has(it.symbol)) continue;
+          seen.add(it.symbol);
           const fb = detectFromSymbol(it.symbol);
           results.push({
             symbol: it.symbol,
             companyName: it.name ?? it.symbol,
-            exchange: it.exchange ?? fb.exchange,
+            exchange: null,
             fullExchange: null,
             country: fb.country,
             region: fb.region,

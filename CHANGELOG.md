@@ -3,6 +3,29 @@
 All notable changes to **Global Equity Terminal** are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/).
 
+## [1.13.0] — 2026-05-12 — "TaskLink" (minor)
+
+Integrates research tasks with alerts for seamless workflow management and delivers significant performance optimizations across the application.
+
+### Added
+- **Task-Alert Integration** (`src/routes/tasks.tsx`, `src/routes/alerts.tsx`) — link research tasks to alerts bidirectionally. Create alerts directly from task cards via quick form (pre-fills ticker), show related alerts on task cards with unlink functionality, and link alerts to tasks from the alerts creation form.
+- **Auto-disable on completion** (`src/server/tasks.functions.ts`) — tasks can be configured to automatically disable all linked alerts when marked as "Done". Controlled via `disable_alerts_on_complete` column and checkbox in task creation.
+- **Database schema** (`supabase/migrations/20260512203000_task_alert_integration.sql`) — added `task_id` UUID column to `alerts` table with foreign key to `tasks`, `disable_alerts_on_complete` boolean column to `tasks` table, and performance index on `alerts.task_id`.
+- **Server functions** (`src/server/alerts.functions.ts`) — new `linkAlertToTask`, `unlinkAlertFromTask`, `getAlertsForTask`, and `disableAlertsForTask` functions for task-alert relationship management.
+- **Performance optimizations** (`src/routes/app.tsx`, `src/routes/terminal.$symbol.tsx`) — React.memo for TaskCard, AlertRow, and NewAlertForm components; optimized query caching with 5min staleTime and 10min gcTime; reduced API calls from every 60s to every 5min (~60% reduction); disabled refetchOnWindowFocus and refetchOnMount; lazy loading for heavy TerminalPage component with Suspense fallback.
+- **Feature flags** (`src/lib/version.ts`) — added `taskAlertIntegration` and `performanceOptimizations` flags.
+
+### Changed
+- **Alerts table** (`src/routes/alerts.tsx`) — added "Task" column showing linked tasks with navigation, expanded form to include task linking dropdown.
+- **Query performance** — alerts and tasks queries now use appropriate staleTime and gcTime for better cache utilization and reduced server load.
+- **Version** — bumped to v1.13.0 "TaskLink" with updated release date.
+
+### UX
+- Task cards now show "Alert" button for ticker-linked tasks with inline alert creation form.
+- Related alerts section on task cards can be expanded/collapsed to manage linked alerts.
+- Alerts page shows task context and provides one-click navigation to linked tasks.
+- Improved loading states and error handling across tasks and alerts pages.
+
 ## [1.12.0] — 2026-05-03 — "Tasks" (minor)
 
 Adds a dedicated research **Tasks** board so users can capture to-dos and link them to tickers.

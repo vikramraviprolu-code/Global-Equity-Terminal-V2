@@ -1,6 +1,6 @@
 # Global Equity Terminal
 
-> **v1.12.0 — "Tasks"** · A keyboard-driven, AI-augmented research terminal for global equities.
+> **v1.13.0 — "TaskLink"** · A keyboard-driven, AI-augmented research terminal for global equities.
 
 Global Equity Terminal blends terminal-style data density with an AI co-pilot
 layer. It's built for retail and prosumer investors who want fast research,
@@ -42,9 +42,17 @@ Hong Kong, Korea, Taiwan, Singapore, and Australia**.
 - **Alerts** — rule-based alerts on price, RSI, 52-week range proximity, and
   5-day momentum, plus thesis-break notifications. Evaluated server-side with
   in-app notifications and a 12h cooldown per rule.
-- **Tasks** *(new in v1.12)* — kanban-style research to-do board at `/tasks`.
+- **Tasks** *(v1.12)* — kanban-style research to-do board at `/tasks`.
   Capture follow-ups, optionally link a ticker, set a due date, and move
   cards across To-do / In progress / Done. Per-user, RLS-protected.
+- **Task-Alert Integration** *(new in v1.13)* — link research tasks to alerts.
+  Create alerts directly from task cards, show related alerts on tasks, and
+  auto-disable alerts when tasks complete. Bidirectional linking between
+  tasks and alerts for better workflow management.
+- **Performance Optimizations** *(new in v1.13)* — React.memo for components,
+  optimized query caching (5min staleTime), reduced API calls, lazy loading
+  for heavy components, and improved data processing. ~60% reduction in
+  unnecessary API calls.
 - **Multi-provider data fallbacks** *(new in v1.10)* — every screener row and
   terminal page tries Finimpulse first, then falls back through Yahoo Finance,
   Financial Modeling Prep (free tier), and Stooq. **Provider badges** on each

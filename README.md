@@ -1,6 +1,6 @@
 # Global Equity Terminal
 
-> **v1.13.0 — "TaskLink"** · A keyboard-driven, AI-augmented research terminal for global equities.
+> **v1.14.0 — "MetricsInsight"** · A keyboard-driven, AI-augmented research terminal for global equities.
 
 Global Equity Terminal blends terminal-style data density with an AI co-pilot
 layer. It's built for retail and prosumer investors who want fast research,
@@ -53,6 +53,7 @@ Hong Kong, Korea, Taiwan, Singapore, and Australia**.
   optimized query caching (5min staleTime), reduced API calls, lazy loading
   for heavy components, and improved data processing. ~60% reduction in
   unnecessary API calls.
+- **Enhanced Metrics Analytics** *(new in v1.14)* — transforms key metrics display into an educational, actionable analytics powerhouse. Interactive metric tooltips with threshold-based guidance, contextual analysis panel with dynamic recommendations, peer comparison highlights showing relative positioning, actionable "What to Watch" insights panel with priority-based alerts, customizable metric views with toggle buttons, metric trend indicators analyzing historical direction, and historical context showing percentile positions in 6-month ranges.
 - **Multi-provider data fallbacks** *(new in v1.10)* — every screener row and
   terminal page tries Finimpulse first, then falls back through Yahoo Finance,
   Financial Modeling Prep (free tier), and Stooq. **Provider badges** on each

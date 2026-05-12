@@ -561,6 +561,41 @@ export const GLOSSARY = {
     hint: "Open from Workspace → Tasks. Per-user and RLS-protected.",
     group: "navigation",
   },
+  peerComparison: {
+    term: "Peer comparison",
+    full: "Sector peer analysis",
+    definition: "Shows where a stock's metrics (P/E, market cap, RSI, performance) rank relative to sector averages.",
+    hint: "Helps identify over/under-valued stocks within their industry context.",
+    group: "metric",
+  },
+  contextualAdvice: {
+    term: "Contextual advice",
+    full: "Dynamic metric recommendations",
+    definition: "AI-generated insights analyzing metric combinations to provide actionable investment guidance.",
+    hint: "Considers value, momentum, and technical indicators together.",
+    group: "score",
+  },
+  actionableInsights: {
+    term: "Actionable insights",
+    full: "What to Watch panel",
+    definition: "Priority-based alert system highlighting high/medium/low priority items requiring attention.",
+    hint: "Focuses on extreme RSI, valuation risks, and momentum shifts.",
+    group: "alert",
+  },
+  metricTrends: {
+    term: "Metric trends",
+    full: "Historical metric direction",
+    definition: "Analysis showing how metrics like price, RSI, and volatility are trending over time.",
+    hint: "Identifies improving, deteriorating, or stable metric conditions.",
+    group: "metric",
+  },
+  historicalContext: {
+    term: "Historical context",
+    full: "Historical percentile ranking",
+    definition: "Shows where current metrics rank against 6-month historical ranges as percentiles.",
+    hint: "Helps determine if current conditions are typical or exceptional.",
+    group: "metric",
+  },
 } as const satisfies Record<string, GlossaryEntry>;
 
 export type GlossaryKey = keyof typeof GLOSSARY;

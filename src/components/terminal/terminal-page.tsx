@@ -520,9 +520,9 @@ function getContextualAdvice(t: Success["target"]): React.ReactNode {
 // Helper function for peer comparison highlights
 function getPeerComparison(t: Success["target"], peers: Success["peers"]): React.ReactNode {
   const allPeers = peers || [];
-  if (allPeers.length === 0) return <div className="text-muted-foreground">No peer data available for comparison</div>;
+  if (!allPeers || allPeers.length === 0) return <div className="text-muted-foreground">No peer data available for comparison</div>;
 
-  // Calculate peer averages
+  // Calculate peer averages with defensive checks
   const avgPE = allPeers.reduce((sum, p) => sum + (p.pe ?? 0), 0) / allPeers.length;
   const avgMcapUsd = allPeers.reduce((sum, p) => sum + (p.marketCapUsd ?? 0), 0) / allPeers.length;
   const avgRSI = allPeers.reduce((sum, p) => sum + (p.rsi14 ?? 50), 0) / allPeers.length;
@@ -748,6 +748,11 @@ function getActionableInsights(t: Success["target"]): React.ReactNode {
 function getMetricTrends(t: Success["target"]): React.ReactNode {
   const trends: Array<{ metric: string; trend: "improving" | "deteriorating" | "stable"; description: string }> = [];
   const closes = t.closes ?? [];
+
+  // Early return if insufficient data
+  if (!closes || closes.length < 5) {
+    return <div className="text-muted-foreground">Insufficient historical data for trend analysis</div>;
+  }
   
   // Price trend based on recent closes
   if (closes.length >= 10) {
@@ -925,7 +930,12 @@ function calculateRSI(closes: number[], period: number): number | null {
 function getHistoricalContext(t: Success["target"]): React.ReactNode {
   const contexts: Array<{ metric: string; context: string; percentile: string; interpretation: string }> = [];
   const closes = t.closes ?? [];
-  
+
+  // Early return if insufficient data
+  if (!closes || closes.length < 20) {
+    return <div className="text-muted-foreground">Insufficient historical data for context analysis (need 20+ data points)</div>;
+  }
+
   // Current price vs historical range
   if (closes.length >= 20) {
     const currentPrice = t.price;
@@ -1371,7 +1381,7 @@ function OverviewSection({ r }: { r: Success }) {
       </div>
 
       {/* Peer Comparison Highlights */}
-      {r.peers.length > 0 && (
+      {r.peers && r.peers.length > 0 && (
         <div className="panel">
           <div className="panel-header">Peer Comparison · {r.peers.length} peers</div>
           <div className="p-5 text-xs space-y-2">

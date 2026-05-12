@@ -21,6 +21,8 @@ jobs:
     permissions:
       contents: read
       security-events: write  # required for SARIF upload to Code Scanning
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # Opt into Node.js 24 to avoid deprecation warning
     steps:
       - uses: actions/checkout@v4
         with:
@@ -73,6 +75,8 @@ jobs:
     name: Docs consistency (pre-publish)
     runs-on: ubuntu-latest
     needs: security
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # Opt into Node.js 24 to avoid deprecation warning
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -90,6 +94,8 @@ jobs:
     name: Unit (Vitest)
     runs-on: ubuntu-latest
     needs: docs
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # Opt into Node.js 24 to avoid deprecation warning
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -101,6 +107,8 @@ jobs:
     name: E2E (Playwright)
     runs-on: ubuntu-latest
     needs: unit
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # Opt into Node.js 24 to avoid deprecation warning
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2

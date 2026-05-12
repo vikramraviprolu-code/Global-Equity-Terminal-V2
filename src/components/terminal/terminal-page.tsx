@@ -1701,7 +1701,6 @@ function ChartSection({ r }: { r: Success }) {
       <VolumeChart
         volumes={t.volumes ?? []}
         closes={t.closes ?? []}
-        currency={t.currency}
       />
       <div className="panel">
         <div className="panel-header">Technical Summary</div>

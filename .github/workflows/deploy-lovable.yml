@@ -1,0 +1,39 @@
+name: Deploy to Lovable
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build and Deploy to Lovable
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build project
+        run: bun run build
+
+      - name: Trigger Lovable Deployment
+        run: |
+          # Trigger Lovable deployment via webhook
+          # You need to set up LOVABLE_DEPLOY_WEBHOOK_URL in GitHub Secrets
+          if [ -n "${{ secrets.LOVABLE_DEPLOY_WEBHOOK_URL }}" ]; then
+            curl -X POST "${{ secrets.LOVABLE_DEPLOY_WEBHOOK_URL }}" \
+              -H "Content-Type: application/json" \
+              -d '{"event":"push","branch":"${{ github.ref_name }}","commit":"${{ github.sha }}"}'
+            echo "✅ Lovable deployment triggered successfully"
+          else
+            echo "⚠️ LOVABLE_DEPLOY_WEBHOOK_URL not set - deployment webhook not called"
+            echo "To enable auto-deployment, add your Lovable webhook URL as a GitHub secret"
+          fi

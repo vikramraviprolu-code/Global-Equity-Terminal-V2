@@ -125,3 +125,4 @@ The top nav is grouped into 4 dropdown menus:
   components.
 - Server-side logic lives under `src/server/` (`*.functions.ts` for typed RPC,
   `*.server.ts` for server-only helpers).
+- GitHub ↔ Lovable two-way sync is enabled on the `main` branch.

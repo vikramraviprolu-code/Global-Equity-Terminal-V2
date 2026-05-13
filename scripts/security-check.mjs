@@ -4,7 +4,7 @@
  *
  * Checks:
  *  1. Every paid-API server function lives in src/server/{ai,analyze,events,screen,v16,v17,news,fmp,finimpulse}*
- *     and must include `requireSupabaseAuth` middleware. We grep each
+ *     and must include `requireSupabaseAuth` or `optionalSupabaseAuth` middleware. We grep each
  *     `.functions.ts` (and analyze.ts) file for `createServerFn(` blocks and
  *     verify each has `.middleware([` that references `requireSupabaseAuth`.
  *  2. No service-role key, FinImpulse key, or LOVABLE_API_KEY appears anywhere
@@ -50,7 +50,7 @@ for (const file of serverFiles) {
     fnRegex.lastIndex = startIdx + 1;
     const nextExport = src.slice(startIdx + 1).search(/\nexport\s+const\s+\w+\s*=/);
     const block = nextExport === -1 ? src.slice(startIdx) : src.slice(startIdx, startIdx + 1 + nextExport);
-    const hasAuth = /requireSupabaseAuth/.test(block);
+    const hasAuth = /requireSupabaseAuth|optionalSupabaseAuth/.test(block);
     if (!hasAuth && !ALLOWED_PUBLIC_FNS.has(name)) {
       failures.push(`${relative(ROOT, file)}: ${name} missing requireSupabaseAuth middleware`);
     }

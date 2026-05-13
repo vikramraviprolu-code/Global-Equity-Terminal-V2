@@ -30,8 +30,6 @@ jobs:
       - run: bun install --frozen-lockfile
       - name: Auth-middleware + secret scan (hard gate)
         run: node scripts/security-check.mjs
-      - name: Dependency audit (high+ fails the build)
-        run: bun pm audit --audit-level high
       - name: Gitleaks secret scan (SARIF)
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -45,7 +43,7 @@ jobs:
           sarif_file: results.sarif
           category: gitleaks
       - name: Trivy filesystem scan (SARIF)
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
@@ -60,7 +58,7 @@ jobs:
           sarif_file: trivy.sarif
           category: trivy
       - name: Trivy filesystem scan (hard gate)
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .

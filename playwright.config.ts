@@ -24,7 +24,20 @@ export default defineConfig({
   webServer: process.env.E2E_BASE_URL
     ? undefined
     : {
-        command: `bun run preview --port ${PORT}`,
+        // Lovable/TanStack's production build emits a Cloudflare Worker entry
+        // instead of the dist/server/server.js expected by vite preview. For
+        // deterministic CI smoke tests, run the Vite dev server after the build
+        // gate and provide inert Supabase placeholders so auth/error-reporting
+        // paths degrade without requiring real project secrets.
+        command: `npm run dev -- --host 127.0.0.1 --port ${PORT}`,
+        env: {
+          ...process.env,
+          SUPABASE_URL: process.env.SUPABASE_URL ?? "http://127.0.0.1:54321",
+          SUPABASE_PUBLISHABLE_KEY: process.env.SUPABASE_PUBLISHABLE_KEY ?? "placeholder",
+          SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "placeholder",
+          VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL ?? "http://127.0.0.1:54321",
+          VITE_SUPABASE_PUBLISHABLE_KEY: process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "placeholder",
+        },
         url: BASE_URL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

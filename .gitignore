@@ -42,3 +42,6 @@ dist-ssr
 .secrets
 secrets.json
 .npmrc.local
+
+# Local git worktrees
+.worktrees/

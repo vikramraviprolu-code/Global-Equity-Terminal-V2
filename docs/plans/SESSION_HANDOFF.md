@@ -8,10 +8,10 @@ Branch: `implement-performance-free-data`
 Plan source: `docs/plans/2026-05-26-performance-free-data-multi-agent-kanban.md`
 
 Current objective
-- Finish current Foundation / bundle / source-transparency batch.
-- Verify under Node >=22.13.0 if available.
-- Commit and push once verified.
-- Then check GitHub Actions / Lovable sync status.
+- Complete PR #3: https://github.com/vikramraviprolu-code/Global-Equity-Terminal-V2/pull/3
+- PR branch is `implement-performance-free-data-mainline`; local worktree branch name may still show `implement-performance-free-data`, so push explicitly with `git push origin HEAD:implement-performance-free-data-mainline`.
+- CI failed only in E2E due to a strict Playwright text locator in `tests/e2e/data-transparency.spec.ts`; local fix narrows selectors.
+- Verify, commit, push, and watch PR #3 until checks complete.
 
 Recovered/implemented cards
 - F1: Node runtime requirement added to package.json, README, and CI workflows.

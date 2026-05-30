@@ -1,0 +1,5 @@
+# Allowlist historical findings from gpt-engineer-app[bot] commit.
+# These are Supabase PUBLISHABLE (anon) keys — intentionally public.
+[allowlist]
+  description = "Historical publishable-key findings from initial bot commit"
+  commits = ["0ffa8bfb6173c2ef1b945c187d10ce5e90b7290d"]

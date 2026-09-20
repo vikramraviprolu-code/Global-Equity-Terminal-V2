@@ -65,3 +65,16 @@ node scripts/security-check.mjs
 `npm run lint` currently reports thousands of pre-existing prettier and
 `no-explicit-any` errors. Don't bulk-reformat the repo to clear them — fix lint
 only in files you are already changing.
+
+## GitHub cost control
+
+Additional GitHub Actions spend for this repo is capped at $0. Follow
+[`GITHUB_COST_POLICY.md`](./GITHUB_COST_POLICY.md): never raise the cap without
+explicit owner approval, run the "Before pushing" commands above locally and batch
+commits instead of using CI as a retry loop, and if the cap blocks CI stop and report
+rather than re-running or re-pushing. Do not add `schedule:`/cron workflows.
+
+This does **not** weaken `regression.yml`: the `Security checks`, `Docs consistency`,
+`Unit (Vitest)` and `E2E (Playwright)` gates stay exactly as described in the CI
+section, and `Dependency advisories` keeps its current behaviour. Pass this policy to
+any sub-agent you delegate to.
